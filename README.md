@@ -5,7 +5,7 @@
     git clone https://github.com/Avrahqedivra/HBJson.git
     cd HBJson
 
-    run is  python3 monitor.py
+    run with : python3 monitor.py
 
 
 **HBmonitor is a "web dashboard" for HBlink by N0MJS.**
