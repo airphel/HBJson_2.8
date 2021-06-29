@@ -6,6 +6,8 @@
     cd HBJson
 
     run with : python3 monitor.py
+    
+    connect with your browser on http://monitor-ip:port
 
 
 **HBmonitor is a "web dashboard" for HBlink by N0MJS.**
