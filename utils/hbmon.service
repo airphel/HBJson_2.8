@@ -10,7 +10,7 @@ Wants=network-online.target
 StandardOutput=null
 WorkingDirectory=/opt/HBmonitor
 RestartSec=3
-ExecStart=/usr/bin/python3 /opt/HBmonitor/monitor.py
+ExecStart=/usr/bin/python3 /opt/HBJson/monitor.py
 Restart=on-abort
 
 [Install]
