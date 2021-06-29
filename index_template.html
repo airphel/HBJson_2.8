@@ -491,7 +491,7 @@
                         }
                     }
 
-                    var cnx = ((data == null || data[0] == "") ? "msTS": ((data && data[0] == "RX") ? "msTSRX":"msTSTX"));
+                    var cnx = ((data == null || data[0] == "") ? "msTS": ((data && data[0] == "TX") ? "msTSRX":"msTSTX"));
                 
                     content += '<td class="' + cnx + '">' + entry + '</td>';
                 content += '</tr>';
