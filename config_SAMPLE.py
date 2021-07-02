@@ -11,12 +11,15 @@ HBLINK_PORT     = 4321                           # HBlink's TCP reporting socket
 FREQUENCY       = 10                             # Frequency to push updates to web clients
 SOCKET_SERVER_PORT = 9010                        # Websocket server for realtime monitoring
 JSON_SERVER_PORT = 9990                          # Has to be above 1024 if you're not running as root
+DISPLAY_LINES =  20                              # number of lines displayed in index_template
 CLIENT_TIMEOUT  = 0                              # Clients are timed out after this many seconds, 0 to disable
 
 # Put list of NETWORK_ID from OPB links to don't show local traffic in lastheard, for example: "260210,260211,260212"
 OPB_FILTER = ""
+# tg1, tg2 etc to be exscluded, for example: "800,801,802"
+TGID_FILTER = ""
 
-# Authorization of access to dashboard
+# Authorization of access to dashboard 
 WEB_AUTH =  False
 WEB_USER =  'hblink'
 WEB_PASS =  'hblink'

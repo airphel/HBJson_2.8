@@ -28,7 +28,7 @@
 ###############################################################################
 ###############################################################################
 #
-#   JSON service by jmc F-16987
+#   JSON service by Avrahqedivra F-16987
 #
 ###############################################################################
 
@@ -92,8 +92,8 @@ BRIDGES_RX  = ''
 CONFIG_RX   = ''
 #LOGBUF      = deque(50*[''], 50)
 
-LASTHEARDSIZE       = 50
-TRAFFICSIZE         = 10
+LASTHEARDSIZE       = 100
+TRAFFICSIZE         = 50
 CTABLEJ             = ""
 BTABLEJ             = ""
 MESSAGEJ            = []
@@ -282,6 +282,7 @@ def add_hb_peer(_peer_conf, _ctable_loc, _peer):
 
     _ctable_peer['CONNECTION'] = _peer_conf['CONNECTION']
     _ctable_peer['CONNECTED'] = since(_peer_conf['CONNECTED'])
+    #_ctable_peer['ONLINE'] = str(_peer_conf['CONNECTED'])
     _ctable_peer['IP'] = _peer_conf['IP']
     _ctable_peer['PORT'] = _peer_conf['PORT']
     #_ctable_peer['LAST_PING'] = _peer_conf['LAST_PING']
@@ -341,10 +342,12 @@ def build_hblink_table(_config, _stats_table):
 
                     if _hbp_data['XLXSTATS']['CONNECTION'] == "YES":
                         _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = since(_hbp_data['XLXSTATS']['CONNECTED'])
+                        #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = str(_hbp_data['XLXSTATS']['CONNECTED'])
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = _hbp_data['XLXSTATS']['PINGS_SENT']
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = _hbp_data['XLXSTATS']['PINGS_ACKD']
                     else:
                         _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = "--   --"
+                        #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = "0"
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = 0
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = 0
                 else:
@@ -352,10 +355,12 @@ def build_hblink_table(_config, _stats_table):
 
                     if _hbp_data['STATS']['CONNECTION'] == "YES":
                         _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = since(_hbp_data['STATS']['CONNECTED'])
+                        #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = str(_hbp_data['STATS']['CONNECTED'])
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = _hbp_data['STATS']['PINGS_SENT']
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = _hbp_data['STATS']['PINGS_ACKD']
                     else:
                         _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = "--   --"
+                        #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = "0"
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = 0
                         _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = 0
 
@@ -419,22 +424,26 @@ def update_hblink_table(_config, _stats_table):
         if _stats_table['PEERS'][_hbp]['MODE'] == 'XLXPEER':
             if _config[_hbp]['XLXSTATS']['CONNECTION'] == "YES":
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = since(_config[_hbp]['XLXSTATS']['CONNECTED'])
+                #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = str(_config[_hbp]['XLXSTATS']['ONLINE'])
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTION'] = _config[_hbp]['XLXSTATS']['CONNECTION']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = _config[_hbp]['XLXSTATS']['PINGS_SENT']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = _config[_hbp]['XLXSTATS']['PINGS_ACKD']
             else:
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = "--   --"
+                #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = "0"
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTION'] = _config[_hbp]['XLXSTATS']['CONNECTION']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = 0
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = 0
         else:
             if _config[_hbp]['STATS']['CONNECTION'] == "YES":
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = since(_config[_hbp]['STATS']['CONNECTED'])
+                #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = str(_config[_hbp]['STATS']['ONLINE'])
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTION'] = _config[_hbp]['STATS']['CONNECTION']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = _config[_hbp]['STATS']['PINGS_SENT']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = _config[_hbp]['STATS']['PINGS_ACKD']
             else:
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTED'] = "--   --"
+                #_stats_table['PEERS'][_hbp]['STATS']['ONLINE'] = "0"
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTION'] = _config[_hbp]['STATS']['CONNECTION']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = 0
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = 0
@@ -541,7 +550,12 @@ def rts_update(p):
             if action == 'START':
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TIMEOUT'] = timeout
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TS'] = True
-                CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = "TX" if (sourcePeer == peer) else "RX"
+                
+                if sourcePeer in (None, '') or peer in (None, ''):
+                    CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = ''
+                else:
+                    CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = "TX" if (sourcePeer == peer) else "RX"
+
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TYPE'] = callType
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SRC'] = peer
                 if destination in (800,801,802,803,804,805):
@@ -579,21 +593,25 @@ def rts_update(p):
                 del CTABLE['OPENBRIDGES'][system]['STREAMS'][streamId]
 
     if system in CTABLE['PEERS']:
-        CTABLE['PEERS'][system][timeSlot]['TXRX'] = trx
-
         if action == 'START':
             CTABLE['PEERS'][system][timeSlot]['TIMEOUT'] = timeout
             CTABLE['PEERS'][system][timeSlot]['TS'] = True
             CTABLE['PEERS'][system][timeSlot]['SUB'] = '{} ({})'.format(alias_short(sourceSub,subscriber_ids),sourceSub)
             CTABLE['PEERS'][system][timeSlot]['SRC'] = sourcePeer
             CTABLE['PEERS'][system][timeSlot]['DEST'] = '{} ({})'.format(alias_tgid(destination,talkgroup_ids),destination)
-                                                           
+
+            if not sourcePeer or not sourceSub or not destination:
+                CTABLE['PEERS'][system][timeSlot]['TXRX'] = ''
+            else:
+                CTABLE['PEERS'][system][timeSlot]['TXRX'] = trx
+
         if action == 'END':
             CTABLE['PEERS'][system][timeSlot]['TS'] = False
             CTABLE['PEERS'][system][timeSlot]['TYPE'] = ''
             CTABLE['PEERS'][system][timeSlot]['SUB'] = ''
             CTABLE['PEERS'][system][timeSlot]['SRC'] = ''
             CTABLE['PEERS'][system][timeSlot]['DEST'] = ''                                                  
+            CTABLE['PEERS'][system][timeSlot]['TXRX'] = ''
 
     build_stats()
 
@@ -921,8 +939,11 @@ if __name__ == '__main__':
         peer_ids.update(local_peer_ids)
 
     # Create Static Website index file
-    index_html = get_template(PATH + 'index_template.html')
+    index_html = get_template(PATH + "index_template.html")
+    index_html = index_html.replace("<<<system_name>>>", REPORT_NAME)
+    index_html = index_html.replace("<<<TGID_FILTER>>>", str(TGID_FILTER))
     index_html = index_html.replace("<<<SOCKER_SERVER_PORT>>>", str(SOCKET_SERVER_PORT))
+    index_html = index_html.replace("<<<DISPLAY_LINES>>>", str(DISPLAY_LINES))
 
     # Start update loop
     update_stats = task.LoopingCall(build_stats)
@@ -955,4 +976,3 @@ if __name__ == '__main__':
     reactor.listenTCP(JSON_SERVER_PORT, website)
 
     reactor.run()
-
