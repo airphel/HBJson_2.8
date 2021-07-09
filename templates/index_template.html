@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="shortcut icon" href="ispt.ico">
+        <meta charset="UTF-8">
+        <meta name="robots" content="noindex, nofollow">
+        <title>HBLink JSON Monitor</title>
+
+        <link rel="stylesheet" href="theme_template.css">
+        <link rel="stylesheet" href="mysite_template.css">
+
+	    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+    </head>
+
+	<body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="pageHeader">
+                <img id="siteLogo" src="hblink.png"/>
+                <h1 class="text"><<<system_name>>></h1>
+
+                <div name="hbtables">
+                    <div id="insertPoint"></div>
+                    <br>
+                    <table class="tables tablefixed">
+                        <thead  id="theadOpenbridges" tbodyid="openbridges">
+                            <tr class="headerRow">
+                            <th class="thopmaster">OpenBridge</th>
+                            <th class="thopnetid">ID Réseau(x)</th>
+                            <th class="thopcalls">Appel(s) Actif(s)</th>
+                        </tr>
+                        </thead>
+                        <tbody id="openbridges">
+                        </tbody>
+                    </table>
+                    <br>
+                    <table class="tables tablefixed">
+                        <thead id="theadMasters" tbodyid="masters">
+                            <tr class="headerRow">
+                                <th class="thmsmaster">Master</th>
+                                <th class="thmsnetid">NetID</th>
+                                <th class="thmstime">Connecté(s)</th>
+                                <th class="thmsslot">Slot</th>
+                                <th class="thmstx">Poste(s) Connecté(s) TX</th>
+                                <th class="thmsdest">Conf. Destination</th>
+                                </tr>
+                        </thead>
+                        <tbody id="masters">
+                        </tbody>
+                    </table>
+                    <br>
+                    <table class="tables tablefixed">
+                        <thead id="theadPeers" tbodyid="peers">
+                            <tr class="headerRow">
+                            <th class="thpemaster">Peer</th>
+                            <th class="thpenetid">NetID</th>
+                            <th class="thpetime">Connecté(s)</th>
+                            <th class="thpeslot">Slot</th>
+                            <th class="thpetx">Poste(s) Connecté(s) TX</th>
+                            <th class="thpedest">Conf. Destination</th>
+                        </tr>
+                        </thead>
+                        <tbody id="peers">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="footer">
+                    <span>Copyright (c) 2016, 2017, 2018, 2019, 2020 , Modified by NumeriX 2019,2020
+                        <br>The Regents of the K0USY Group. All rights reserved.
+                        <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019,2020</a>.
+                        <br><a href=https://github.com/avrahqedivra/HBJson>JSON version by jmc 2021</a>.
+                        <br><br>
+                    </span>
+
+                    <br>
+                    <span>Copyright (c) 2016, 2017, 2018, 2019<br>The Regents of the <a href=http://k0usy.mystrikingly.com><p style="color:#8E8E8E">K0USY Group.</p></a></span>
+                </div>
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
+        </center>
+    </body>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(document).on("click", ".tables thead", function() {
+            $("#hblink"+$(this).attr('tgid')).toggle(100);
+        });
+
+        $(document).on("click", ".tablefixed thead", function() {
+            $("#"+$(this).attr('tbodyid')).toggle(100);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    var lastheardOpen = true;
+    var traffic = [];
+    var sock = null;
+    var displayLines = parseInt("<<<DISPLAY_LINES>>>");
+    var tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
+    var names = [];
+
+    names["Andre"] = "André";
+    names["Francois"] = "François";
+    names["Herve"] = "Hervé";
+    names["Jerome"] = "Jérôme";
+    names["Jerôme"] = "Jérôme";
+    names["Stephane"] = "Stéphane";
+    names["Gerard"] = "Gérard";
+    names["Jean-Noel"] = "Jean-Noël";
+    names["Remi"] = "Rémi";
+    names["Clement"] = "Clément";
+    names["Frederic"] = "Frédéric";
+    names["Jeremy"] = "Jérémy";
+    names["Jean-Francois"] = "Jean-François";
+    names["Gregory"] = "Grégory";
+    names["Anne-Cecile"] = "Anne-Cécile";
+    names["Mickael"] = "Mickaël";
+    names["Theophile"] = "Théophile";
+    names["Sebastien"] = "Sébastien";
+    names["Raphael"] = "Raphaël";
+    names["Cedric"] = "Cédric";
+    names["Rene"] = "René";
+    names["Nathanael"] = "Nathanaël";
+    names["Joel"] = "Joël";
+    names["Jeremie"] = "Jérémie";
+
+    cookieSettingsName = "hbjson_settings";
+    settingsValidity = 5;	    // 5 days
+    settings = [{ name: "openbridges", "open": true }, {"name": "masters", "open": true }, { "name": "peers", "open": true }];
+
+    function createCookie(name, value, days) {
+        var expires;
+
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            expires = "; expires=" + date.toGMTString();
+        } else {
+            expires = "";
+        }
+            document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
+    }
+
+    function readCookie(name) {
+        var nameEQ = encodeURIComponent(name) + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) === ' ')
+                c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) === 0)
+                return decodeURIComponent(c.substring(nameEQ.length, c.length));
+        }
+        return null;
+    }
+
+    function saveSettings() {
+        settings = [
+            { "name": "openbridges",    "open": $('#openbridges').is(':visible'), "colspan": $("#theadOpenbridges tr th").length },
+            { "name": "masters",        "open": $('#masters').is(':visible'), "colspan": $("#theadMasters tr th").length },
+            { "name": "peers",          "open": $('#peers').is(':visible'), "colspan": $("#theadPeers tr th").length }
+        ];
+
+        createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity);
+    }
+
+    function eraseCookie(name) {
+        createCookie(name, "", -1);
+    }
+
+    function enhanceNames(name) {
+        if (names[name] != null)
+            return names[name];
+
+        return name;
+    }
+
+    //   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+    function uniqByKeepFirst(a, key) {
+        let seen = new Set();
+        return a.filter(item => {
+            let k = key(item);
+            return seen.has(k) ? false : seen.add(k);
+        });
+    }
+
+    function uniqByKeepLast(a, key) {
+        return [
+            ...new Map(
+                a.map(x => [key(x), x])
+            ).values()
+        ]
+    }
+
+    function updateBridges(bridges) {
+        if (bridges != null) {
+            var content = "";
+
+            console.log(JSON.stringify(bridges));
+        }
+    }
+
+    function updateOpenBridges(openBridges) {
+        if (openBridges != null && $('#openbridges').is(':visible')) {
+            $("#openbridges tr").remove();
+
+            // console.log("");
+            // console.log(JSON.stringify(openBridges));
+            // console.log("");
+
+            var content = "";
+
+            for (let openBridge in openBridges) {
+                record = openBridges[openBridge];
+                content += '<tr>';
+                    content += "<td class='obName'>" + openBridge + "</td>";
+                    content += "<td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
+
+                    var entry = "";
+                    var data = null;
+
+                    if (Object.keys(record["STREAMS"]) > 0) {
+                        for(let streamId in record["STREAMS"]) {
+                            if ((data = record["STREAMS"][streamId]) != null) {
+                                entry = "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
+                                break;
+                            }
+                        }
+                    }
+
+                    var cnx = ((data == null || data[0] == "") ? "msTS": ((data && data[0] == "TX") ? "msTSRX":"msTSTX"));
+
+                    content += '<td class="' + cnx + '">' + entry + '</td>';
+                content += '</tr>';
+            }
+
+            $("#openbridges").append(content);
+        }
+    }
+
+    function updatePeers(peers) {
+        if (peers != null  && $('#peers').is(':visible')) {
+           $("#peers tr").remove();
+
+        //    console.log("");
+        //    console.log(JSON.stringify(peers));
+        //    console.log("");
+
+            var content = "";
+
+           for (let peer in peers) {
+               record = peers[peer];
+               ts1 = (record["1"]["TXRX"] == "") ? "msTS1": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+               ts2 = (record["2"]["TXRX"] == "") ? "msTS2": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+               cnx1 = (record["1"]["TXRX"] == "") ? "msTS": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+               cnx2 = (record["2"]["TXRX"] == "") ? "msTS": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+               peState = record["STATS"]["CONNECTION"] == "YES" ? "peON":"peOFF";
+
+               content += '<tr>';
+               content += "<td class='msMasters' rowspan='3'>" + peer;
+               content += "<br><div class='msRepeat'>Mode:&nbsp;"+record["MODE"]+"</div></td>";
+               content += '</tr>';
+
+               content += '<tr>';
+                   content += '<td rowspan="2">';
+                   content += '<div class="tooltip">';
+                       content += '<div class="msCallsign">' + record["CALLSIGN"] + '</div>';
+                       content += '<span class="msNetID">&nbsp;(Id: '+ record["RADIO_ID"] + ')</span>';
+                       content += '<span class="tooltiptext">';
+                           content += '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">';
+                               content += '&nbsp;&nbsp;&nbsp;<b><font color="yellow">Linked Time Slot:&nbsp;</font></b>'+ record["SLOTS"];
+                           content += '</span>';
+                   content += '</span>';
+                   content += '</div>';
+                   content += '<br>';
+
+                   content += '<div class="msLocation">' + record["LOCATION"] + '</div>';
+                   content += '</td>';
+
+
+                    content += '<td class="' + peState + '" rowspan="2">';
+                    content += record["STATS"]["CONNECTED"] + '<br><div style="font: 8pt arial, sans-serif">' + record["STATS"]["PINGS_SENT"] + " / " + record["STATS"]["PINGS_ACKD"] + " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) + "</div>";
+                    content +'</td>';
+
+                   content += '<td class="' + ts1 + '">TS1</td>';
+                   content += '<td class="' + cnx1 + '">' +record["1"]["SUB"]+'</td>';
+                   content += '<td class="' + cnx1 + '">' +record["1"]["DEST"]+'</td>';
+               content += '</tr>';
+
+               content += '<tr>';
+                   content += '<td class="' + ts2 + '">TS2</td>';
+                   content += '<td class="' + cnx2 + '">' +record["2"]["SUB"]+'</td>';
+                   content += '<td class="' + cnx2 + '">' +record["2"]["DEST"]+'</td>';
+               content += '</tr>'
+           }
+
+           $("#peers").append(content);
+       }
+    }
+
+    // https://gist.github.com/umidjons/9614157
+    function sortMastersPeersByOnlineTime(peers) {
+        var peersArray = [];
+
+        // convert to array
+        for(var key in peers) {
+            peersArray.push([key, peers[key]]);
+        }
+
+        // convert online time to seconds
+        for(let i=0; i < peersArray.length; i++) {
+            var t = peersArray[i]["1"]["CONNECTED"].split(" ");
+            switch(t.length) {
+                case 3:
+                    peersArray[i]["1"]["ONLINE"] = ""+(parseInt(t[0])*86400+parseInt(t[1])*3600+parseInt(t[2]));
+                break;
+
+                case 2:
+                    chr = t[0].slice(-1);
+                    if (chr == 'd')
+                        peersArray[i]["1"]["ONLINE"] = ""+(parseInt(t[0])*86400+parseInt(t[1])*3600);
+                    else
+                    if (chr == 'h')
+                        peersArray[i]["1"]["ONLINE"] = ""+(parseInt(t[0])*3600+parseInt(t[1])*60);
+                    else
+                    if (chr == 'm')
+                        peersArray[i]["1"]["ONLINE"] = ""+(parseInt(t[0])*60+parseInt(t[1]));
+                break;
+
+                case 1:
+                peersArray[i]["1"]["ONLINE"] = ""+parseInt(t[0]);
+                break;
+
+                default:
+                peersArray[i]["1"]["ONLINE"] = "0";
+                break;
+            }
+        }
+
+        // sort peers array
+        peersArray.sort((a, b) => {
+            y = parseInt(a[1]["ONLINE"]);
+            x = parseInt(b[1]["ONLINE"]);
+
+            return x < y ? -1 : x > y ? 1 : 0;
+        });
+
+        return peersArray;
+    }
+
+    function updateMasters(masters) {
+        if (masters != null && $('#masters').is(':visible')) {
+            var content = "";
+            $("#masters tr").remove();
+
+            for (let entry in masters) {
+                done = false;
+
+                if (!done) {
+                    // skip empty peers
+                    var length = Object.keys(masters[entry]["PEERS"]).length;
+                    if (length == 0)
+                        continue;
+
+                    rowspan = length * 2 +1;
+                    content += '<tr>';
+                    content += "<td class='msMasters' rowspan='" + rowspan + "'>" + entry;
+                    content += "<br><div class='msRepeat'>"+masters[entry]["REPEAT"]+"</div></td>";
+                    content += '</tr>';
+                    done = true;
+                }
+
+                var peers = sortMastersPeersByOnlineTime(masters[entry]["PEERS"]);
+
+                try {
+                    for(let i=0; i < peers.length; i++) {
+                        netID = peers[i][0];
+                        record = peers[i][1];
+
+                        ts1 = (record["1"]["TXRX"] == "") ? "msTS1": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+                        ts2 = (record["2"]["TXRX"] == "") ? "msTS2": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+                        cnx1 = (record["1"]["TXRX"] == "") ? "msTS": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+                        cnx2 = (record["2"]["TXRX"] == "") ? "msTS": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+
+                        hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
+
+                        content += '<tr>';
+                            content += '<td rowspan="2">';
+                                content += '<div class="tooltip">';
+                                    content += '<div class="msCallsign">' + record["CALLSIGN"] + '</div>';
+                                    content += '<span class="msNetID">&nbsp;(Id: '+ netID + ')</span>';
+                                    content += '<span class="tooltiptext">';
+                                        content += '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">';
+                                            content += '&nbsp;&nbsp;&nbsp;<b><font color="yellow">' + hardwareType + '</font></b><br>';
+                                            content += '&nbsp;&nbsp;&nbsp;<b>Type/Slot</b>: ' + record["SLOTS"];
+                                            content += '<br>&nbsp;&nbsp;&nbsp;<b>Soft_Ver</b>: ' + record["SOFTWARE_ID"];
+                                            content += '<br>&nbsp;&nbsp;&nbsp;<b>Hardware</b>: ' + record["PACKAGE_ID"];
+                                        content += '</span>';
+                                    content += '</span>';
+                                content += '</div>';
+                                content += '<br>';
+
+                                content += '<div class="msLocation">' + record["LOCATION"] + '</div>';
+                            content += '</td>';
+
+                            content += '<td class="tdGradient" rowspan="2">' + record["CONNECTED"] + '</td>';
+
+                            content += '<td class="' + ts1 + '">TS1</td>';
+                            content += '<td class="' + cnx1 + '">' +record["1"]["SUB"]+'</td>';
+                            content += '<td class="' + cnx1 + '">' +record["1"]["DEST"]+'</td>';
+                        content += '</tr>';
+
+                        content += '<tr>';
+                            content += '<td class="' + ts2 + '">TS2</td>';
+                            content += '<td class="' + cnx2 + '">' +record["2"]["SUB"]+'</td>';
+                            content += '<td class="' + cnx2 + '">' +record["2"]["DEST"]+'</td>';
+                        content += '</tr>'
+                    }
+                } catch(error) {
+
+                }
+            }
+
+            $("#masters").append(content);
+            content = "";
+        }
+    }
+
+    function doTraffic(t) {
+        if (t != null)  {
+            if (!Array.isArray(t)) {
+                if (t.PACKET == "END")
+                    traffic.push( t );
+            }
+            else
+                traffic = t;
+
+            if (traffic.length > 0) {
+                // keeps the n last unique items
+                traffic = uniqByKeepLast(traffic, it => it.DMRID).slice(-displayLines);
+
+                // sort in reverse order
+                traffic.sort((a,b) => {
+                    if (a.DATE > b.DATE) return -1;
+                    if (a.DATE < b.DATE) return 1;
+
+                    if (a.TIME > b.TIME) return -1;
+                    if (a.TIME < b.TIME) return 1;
+                });
+
+                var content = "";
+
+                cleaned = true;
+                $(".lastheard tbody tr").remove();
+
+                for(var i=0; i < traffic.length; i++) {
+                    var tgid = parseInt(traffic[i].TGID);
+
+                    // skip excluded TG
+                    if (tgfilter.has(tgid))
+                        continue;
+
+                    var tgName = "tgId"+tgid;
+
+                    switch(traffic[i].TGID) {
+                        case "38": bgClass = 'tgGreen'; break;
+                        case "39": bgClass = 'tgYellow'; break;
+                        case "7": bgClass = 'tgBlue'; break;
+                        case "777": bgClass = 'tgPurple'; break;
+                        case "800": bgClass = 'tgPurple'; break;
+                        default: bgClass = 'tgWhite'; break;
+                    }
+
+                    /* check if table already exists */
+                    if (document.getElementById(tgName) == null) {
+                        /* build the missing table */
+                        var emptyTable = '<table class="tables lastheard tablefixed">'
+                            +'<thead id="'+ tgName +'" tgid="'+ tgid +'">'
+                                +'<tr class="headerRow">'
+                                    +'<th class="thledate">Date</th>'
+                                    +'<th class="thletime">Heure</th>'
+                                    +'<th class="thleslot">Slot</th>'
+                                    +'<th class="thletx" colspan=2>TX Connectés</th>'
+                                    +'<th class="thlename">Name</th>'
+                                    +'<th class="thletg">TG#</th>'
+                                    +'<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>'
+                                    +'<th class="thledelay">Durée TX</th>'
+                                    +'<th class="thlenetid">NetID</th>'
+                                    +'<th class="thlemaster">Master Infra</th>'
+                                +'</tr>'
+                            +'</thead>'
+                            +'<tbody id="hblink' + tgid + '"></tbody></table>';
+
+                        /* insert new table into tg tables area */
+                        $('#insertPoint').append(emptyTable);
+                    }
+
+                    /* deal with content */
+                    content = '<tr class=' + bgClass + '>';
+                    content += "<td>" + traffic[i].DATE + "</td>";
+                    content += "<td>" + traffic[i].TIME + "</td>";
+                    content += "<td>" + traffic[i].TS + "</td>";
+                    content += "<td class='callsign'><a target='_blank' href=https://qrz.com/db/" + traffic[i].CALLSIGN + ">" + traffic[i].CALLSIGN + "</a></td>";
+                    content += "<td class='dmrid'>(" + traffic[i].DMRID + ")</td>";
+                    content += "<td class='firstname'>" + enhanceNames(traffic[i].NAME) + "</td>";
+                    content += "<td class='talkgroup'>" + traffic[i].TGID + "</td>";
+                    content += "<td class='alias'>" + traffic[i].ALIAS + "</td>";
+                    content += "<td class='delay'>" + ((traffic[i].DELAY != undefined) ? traffic[i].DELAY : "") + "</td>";
+                    content += "<td class='netid'>" + traffic[i].SRC_ID + "</td>";
+                    content += "<td class='infra'>" + traffic[i].SYS + "</td>";
+                    content += "</tr>";
+
+                    $("#hblink" + tgid).append(content);
+                }
+            }
+        }
+    }
+
+    function log(msg) {
+        console.log(msg);
+    };
+
+    function treatTables(CTable) {
+        if (CTable != null) {
+            updateOpenBridges(CTable["OPENBRIDGES"]);
+            updateMasters(CTable["MASTERS"]);
+            updatePeers(CTable["PEERS"]);
+        }
+    }
+
+    window.onload = function() {
+        var wsuri;
+        wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
+
+        // $.ajaxSetup({ cache: false });
+        // window.location.reload(false);
+
+        // retrieve settings
+	    if ((cookie = JSON.parse(readCookie(cookieSettingsName))) == null)
+		    createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity);
+	    else {
+		    settings = cookie;
+
+            for(let i=0; i < settings.length; i++) {
+                var tbs = settings[i];
+
+                if (tbs.open) {
+                    $("#"+tbs.name).show();
+                    var count = tbs.colspan;
+                    if (count == null)
+                        count = 3;
+                    $("#"+tbs.name).append("<tr><td colspan="+count+">Mise à jour en cours...</td></tr>");
+                }
+                else
+                    $("#"+tbs.name).hide();
+            }
+        }
+
+        if (isNaN(displayLines))
+            displayLines = 10;
+
+        if ("WebSocket" in window) {
+            sock = new WebSocket(wsuri);
+        } else if ("MozWebSocket" in window) {
+            sock = new MozWebSocket(wsuri);
+        } else {
+            log("Browser does not support WebSocket!");
+        }
+
+        if (sock) {
+            sock.onopen = () => {
+                log("Connected to " + wsuri)
+            }
+
+            sock.onclose = (e) => {
+                log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                sock = null;
+            }
+
+            sock.onmessage = (e) => {
+				var data = null;
+
+				try {
+					data = JSON.parse(e.data);
+
+                    // console.log("");
+                    // console.log(data);
+                    // console.log("");
+
+   					if (data != null) {
+						if (data.CTABLE) {
+							CTable = data.CTABLE;
+	
+							if (CTable != null)
+								treatTables(CTable);
+						}
+						else
+						if (data.TRAFFIC)
+							doTraffic(data.TRAFFIC);
+	   					else
+						if (data.BRIDGES)
+						   	updateBridges(data.BRIDGES);
+						else	
+						if (data.CONFIG) {
+							var CTable = data.CONFIG.CTABLE;
+
+							if (CTable != null)
+								treatTables(CTable);
+						}
+						else
+					   	if (data.BTABLE)
+							log(JSON.stringify(data.BTABLE));
+	   					else
+						if (data.STATUS)
+							log(data.STATUS);
+					}
+				} catch(error) {
+				   log(error);
+				}
+           }
+        }
+    };
+ </script>
+</html>

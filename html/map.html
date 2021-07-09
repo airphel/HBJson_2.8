@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="robots" content="noindex, nofollow">
+	    <meta name="description" content="Copyright (c) 2021 jmc. All rights reserved." />
+
+        <title>HBJson Map</title>
+        <link rel="shortcut icon" href="ispt.ico">
+
+        <link rel="stylesheet" href="theme_template.css">
+        <link rel="stylesheet" href="mysite_template.css">
+    </head>
+
+	<body>
+        <center>
+            <noscript>You must enable JavaScript</noscript>
+
+            <div id="pageHeader">
+                <img id="siteLogo" src="hblink.png"/>
+                <h1 class="text"><<<system_name>>></h1>
+
+                <div name="hbtables">
+                    <div id="insertPoint">
+                        <div id="mapfrance" class="map"></div>
+                    </div>
+                    <br>
+                </div>
+
+                <div id="footer">
+                    <span>Copyright (c) 2021 <a href=https://github.com/avrahqedivra/HBJson>jmc</a></span>
+                </div>
+                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
+            </div>
+        </center>
+    </body>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+
+    <style>
+        #svgfrance {
+            display: block;
+            margin: auto;
+        }
+
+        .map {
+            margin-top: 1rem;
+        }
+
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            color: white;
+            background-color: #404040;
+            width: auto;
+            height: auto;
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 0px;
+            border-radius: 3px;
+            pointer-events: none;
+        }
+
+        .department {
+            fill:   #2e2e2e;
+            stroke: #505050;
+            stroke-width: .5px;
+        }
+    </style>
+
+    <script>
+        function initMap() {
+            departementsjson = null;
+            width = 1000, height = 1000;
+            path = d3.geoPath();
+
+            projection = d3.geoConicConformal()
+                                .center([2.454071, 46.279229])
+                                .scale(5000)
+                                .translate([width / 2, height / 2]);
+
+            path.projection(projection);
+
+            svg = d3.select('#mapfrance').append("svg")
+                .attr("id", "svgfrance")
+                .attr("width", width)
+                .attr("height", height);
+
+            deps = svg.append("g")
+                .attr("class", "main-container")
+                .attr("transform", "matrix(1 0 0 1 0 0)");
+
+            maptooltip = d3.select("body").append("div")
+                .attr("class", "tooltip")
+                .style("opacity", 0);
+
+                departementsjson = d3.json(mapurl).then((geojson) => {
+                deps.selectAll("path")
+                    .data(geojson.features)
+                    .enter()
+                    .append("path")
+                    .attr('class', 'department')
+                    .attr('id', d => "d" + d.properties.CODE_DEPT)
+                    .attr('dept', d => d.properties.NOM_DEPT)
+                    .attr('region', d => d.properties.NOM_REGION)
+                    .attr("d", path)
+                    .on("mouseover", (d) => {
+                        maptooltip.transition()
+                            .duration(200)
+                            .style("opacity", .9);
+                            maptooltip.html("Département : " + d.properties.CODE_DEPT + "<br/>"
+                            +  "Région : " + d.properties.NOM_REGION)
+                            .style("left", (d3.event.pageX + 30) + "px")
+                            .style("top", (d3.event.pageY - 30) + "px")
+                    })
+                    .on("mouseout", function(d) {
+                        maptooltip.style("opacity", 0);
+                        maptooltip.html("")
+                            .style("left", "-500px")
+                            .style("top", "-500px");
+                    });
+            });
+        }
+
+        function dealWithMap(packets) {
+            var promises = [];
+
+            promises.push(departementsjson);
+            promises.push(packets);
+
+            Promise.all(promises).then((values) => {
+                const geojson = values[0];
+                const scores = values[1];
+
+                var b  = path.bounds(geojson),
+                    s = .80 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
+                    t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+
+                projection
+                    .scale(s)
+                    .translate(t);
+
+                scores.forEach((packet, i) => {
+					// adapt the code to find the area identifier that suits your needs
+					// here we use 2 digits from the CALLSIGN
+                    dept = packet.CALLSIGN.substring(2, 4);
+
+                    item = d3.select("#d" + dept);
+
+                    item.style("fill", (packet.TGID == "7" ? "#fcdcf9": (packet.PACKET == "START" ? "#ce9178":"#569cd6")))
+                        .on("mouseover", (d) => {
+                            maptooltip.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                                maptooltip.html(
+                                    "Callsign : " + packet.CALLSIGN + "<br/>"
+                                +   "Prénom : " + packet.NAME + "<br/>"
+                                +   "Online à : " + packet.TIME + " le " + packet.DATE + "<br/>"
+                                +   "Département : " + d.properties.CODE_DEPT + "<br/>"
+                                +   "Région : " + d.properties.NOM_REGION)
+                                .style("left", (d3.event.pageX + 30) + "px")
+                                .style("top", (d3.event.pageY - 30) + "px")
+                        })
+                        .on("mouseout", function(d) {
+                            maptooltip.style("opacity", 0);
+                            maptooltip.html("")
+                                .style("left", "-500px")
+                                .style("top", "-500px");
+                        });
+                });
+            });
+        }
+
+        function beginDrag(e) {
+            e.stopPropagation();
+            let target = e.target;
+
+            if (target.classList.contains('draggable')) {
+                selected = target;
+            } else {
+                selected = document.querySelector('.main-container');
+            }
+
+            selected.dataset.startMouseX = e.clientX;
+            selected.dataset.startMouseY = e.clientY;
+        }
+
+        function drag(e) {
+            if (!selected) return;
+                e.stopPropagation();
+
+            let startX = parseFloat(selected.dataset.startMouseX),
+                startY = parseFloat(selected.dataset.startMouseY),
+                dx = (e.clientX - startX),
+                dy = (e.clientY - startY);
+
+            if (selected.classList.contains('draggable')) {
+                let selectedBox = selected.getBoundingClientRect(),
+                    boundaryBox = selected.parentElement.getBoundingClientRect();
+
+                if (selectedBox.right + dx > boundaryBox.right) {
+                    dx = (boundaryBox.right - selectedBox.right);
+                } else if (selectedBox.left + dx < boundaryBox.left) {
+                    dx = (boundaryBox.left - selectedBox.left);
+                }
+
+                if (selectedBox.bottom + dy > boundaryBox.bottom) {
+                    dy = (boundaryBox.bottom - selectedBox.bottom);
+                }
+                else if (selectedBox.top + dy < boundaryBox.top) {
+                    dy = (boundaryBox.top - selectedBox.top);
+                }
+            }
+
+            let currentMatrix = selected.transform.baseVal.consolidate().matrix,
+                newMatrix = currentMatrix.translate(dx / scale, dy / scale),
+                transform = svgmap.createSVGTransformFromMatrix(newMatrix);
+
+            selected.transform.baseVal.initialize(transform);
+            selected.dataset.startMouseX = dx + startX;
+            selected.dataset.startMouseY = dy + startY;
+        }
+
+        function endDrag(e) {
+            e.stopPropagation();
+
+            if (selected) {
+                selected = undefined;
+            }
+        }
+
+        function zoom(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            let delta = e.wheelDelta,
+                container = document.querySelector('svg .main-container'),
+                scaleStep = delta > 0 ? 1.25 : 0.8;
+
+            if (scale * scaleStep > maxScale) {
+                scaleStep = maxScale / scale;
+            }
+
+            if (scale * scaleStep < minScale) {
+                scaleStep = minScale / scale;
+            }
+
+            scale *= scaleStep;
+
+            let box = svgmap.getBoundingClientRect();
+            let point = svgmap.createSVGPoint();
+            point.x = e.clientX - box.left;
+            point.y = e.clientY - box.top;
+
+            let currentZoomMatrix = container.getCTM();
+
+            point = point.matrixTransform(currentZoomMatrix.inverse());
+
+            let matrix = svgmap.createSVGMatrix()
+                .translate(point.x, point.y)
+                .scale(scaleStep)
+                .translate(-point.x, -point.y);
+
+
+            let newZoomMatrix = currentZoomMatrix.multiply(matrix);
+            container.transform.baseVal.initialize(svgmap.createSVGTransformFromMatrix(newZoomMatrix));
+
+            console.log("scale", scale);
+            let t = newZoomMatrix;
+            console.log("zoomMatrix", t.a, t.b, t.c, t.d, t.e, t.f);
+        }
+    </script>
+
+    <script>
+        function log(msg) {
+            console.log(msg);
+        };
+
+        function getUser(id) {
+            if (subscribers != null) {
+                for(let i=0; i < subscribers.length; i++) {
+                    subscriber = subscribers[i];
+                    if (subscriber.id == id) {
+                        return subscriber;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        function doTraffic(t) {
+            if (t != null)  {
+                if (!Array.isArray(t)) {
+                    if (t.PACKET == "END")
+                        traffic.push(t);
+                }
+                else
+                    traffic = t;
+
+                // deal with END packets
+                dealWithMap(traffic);
+
+                // treat START one
+                if (t.PACKET == "START")
+                    dealWithMap([t]);
+            }
+        }
+
+        // https://mdbootstrap.com/snippets/jquery/ascensus/531046#js-tab-view
+        // https://www.datavis.fr/index.php?page=map-population
+        // https://colorbrewer2.org/#
+
+        window.onload = () => {
+            var wsuri;
+            subscribers = null;
+			// adjust the geojson map url to your needs
+			// if local file, store it into hbjon assets folder
+            mapurl = "departments.json";
+            wsuri = "ws://" + window.location.hostname + ":9020";
+            departments = [];
+            maxScale = 9;
+            minScale = 1;
+            scale = 1;
+            selected = false;
+
+            initMap();
+
+
+            svgmap = document.querySelector('svg');
+
+            document.querySelector('svg .main-container').addEventListener('mousedown', beginDrag);
+            document.querySelector('svg .main-container').addEventListener('mousewheel', zoom);
+            svgmap.addEventListener('mousemove', drag);
+            window.addEventListener('mouseup', endDrag);
+
+            if ("WebSocket" in window) {
+                sock = new WebSocket(wsuri);
+            } else if ("MozWebSocket" in window) {
+                sock = new MozWebSocket(wsuri);
+            } else {
+                log("Browser does not support WebSocket!");
+            }
+
+            if (sock) {
+                sock.onopen = () => {
+                    log("Connected to " + wsuri)
+
+                    sock.send(JSON.stringify({"request": "users"}));
+                }
+
+                sock.onclose = (e) => {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                    sock = null;
+                }
+
+                sock.onmessage = (e) => {
+                    var data = null;
+
+                    try {
+                        data = JSON.parse(e.data);
+
+                        // console.log("");
+                        // console.log(data);
+                        // console.log("");
+
+                        if (data != null) {
+                            if (data.TRAFFIC)
+                                doTraffic(data.TRAFFIC);
+                            else
+                            if (data.CONFIG) {
+                                if (data.CONFIG.USERS) {
+                                    subscribers = data.CONFIG.USERS.results;
+                                }
+                            }
+                        }
+                    } catch(error) {
+                        log(error);
+                    }
+                }
+            }
+
+        };
+    </script>
+
+</html>

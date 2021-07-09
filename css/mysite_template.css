@@ -1,0 +1,50 @@
+/* --Buttons HTML code-- */
+#pageHeader {
+    width: 82rem;
+}
+#siteLogo {
+    width: 22rem;
+    margin-left: 6.5rem;
+}
+#infoLine {
+    margin: 1rem 0 1rem 0;
+    color:#8E8E8E;
+    font-size: 0.8rem;
+    font-weight:normal;
+}
+#marquee {
+    height:2rem;
+    width:70rem;
+    color:#B1B1B1;
+    border-width:0;
+    border-style: double;
+    border-color:#000000;
+}
+h1 {
+    font-size: 17px;
+    color: #8E8E8E;
+}
+
+.button {
+    margin: 0;
+    font-size: 0.9rem;
+    background-color: #404040;
+    border: none;
+    color: #ffffff;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border-radius: 3px;
+    box-shadow: 0px 8px 10px rgba(0,0,0,0.1);
+}
+
+.audiolink {
+    padding: 0 1rem 0 1rem;
+    background-color: #404040;
+    color: #ffffff;
+}
+
+.button:hover, .audiolink:hover {
+    background-color: #525252;
+    color: #ffffff;
+}

@@ -38,15 +38,20 @@ import logging
 import datetime
 
 import os
+import csv
 from itertools import islice
 from subprocess import check_call, CalledProcessError
 
 # Twisted modules
 from twisted.internet.protocol import ReconnectingClientFactory, Protocol
-from twisted.protocols.basic import NetstringReceiver
-from twisted.internet import reactor, task
+from twisted.protocols.basic import NetstringReceiver, FileSender
+from twisted.internet import reactor, endpoints, task, defer
 from twisted.web.server import Site
-from twisted.web.resource import Resource
+from twisted.web import http
+from twisted.web.client import URI
+from twisted.web.resource import Resource, NoResource
+from twisted.web.static import File
+from twisted.web import server
 import base64
 
 # Autobahn provides websocket service under Twisted
@@ -90,7 +95,6 @@ BTABLE      = {}
 BTABLE['BRIDGES'] = {}
 BRIDGES_RX  = ''
 CONFIG_RX   = ''
-#LOGBUF      = deque(50*[''], 50)
 
 LASTHEARDSIZE       = 100
 TRAFFICSIZE         = 50
@@ -135,7 +139,7 @@ def alias_only(_id, _dict):
                 alias.pop(x)
 
         return alias
-    else:    
+    else:
         return ["", str(alias)]
 
 def alias_short(_id, _dict):
@@ -183,7 +187,7 @@ def since(_time):
         return '{}s'.format(seconds)
 
 ##################################################
-# Cleaning entries in tables - Timeout (5 min) 
+# Cleaning entries in tables - Timeout (5 min)
 #
 def cleanTE():
     timeout = datetime.datetime.now().timestamp()
@@ -225,14 +229,14 @@ def cleanTE():
             if td > 3:
                  del CTABLE['OPENBRIDGES'][system]['STREAMS'][streamId]
 
-                    
+
 def add_hb_peer(_peer_conf, _ctable_loc, _peer):
     _ctable_loc[int_id(_peer)] = {}
     _ctable_peer = _ctable_loc[int_id(_peer)]
 
     # if the Frequency is 000.xxx assume it's not an RF peer, otherwise format the text fields
     # (9 char, but we are just software)  see https://wiki.brandmeister.network/index.php/Homebrew/example/php2
-    
+
     if _peer_conf['TX_FREQ'].strip().isdigit() and _peer_conf['RX_FREQ'].strip().isdigit() and str(type(_peer_conf['TX_FREQ'])).find("bytes") != -1 and str(type(_peer_conf['RX_FREQ'])).find("bytes") != -1:
         if _peer_conf['TX_FREQ'][:3] == b'000' or _peer_conf['RX_FREQ'][:3] == b'000':
             _ctable_peer['TX_FREQ'] = 'N/A'
@@ -246,7 +250,7 @@ def add_hb_peer(_peer_conf, _ctable_loc, _peer):
 
     # timeslots are kinda complicated too. 0 = none, 1 or 2 mean that one slot, 3 is both, and anything else it considered DMO
     # Slots (0, 1=1, 2=2, 1&2=3 Duplex, 4=Simplex) see https://wiki.brandmeister.network/index.php/Homebrew/example/php2
-    
+
     if (_peer_conf['SLOTS'] == b'0'):
         _ctable_peer['SLOTS'] = 'NONE'
     elif (_peer_conf['SLOTS'] == b'1' or _peer_conf['SLOTS'] == b'2'):
@@ -276,7 +280,7 @@ def add_hb_peer(_peer_conf, _ctable_loc, _peer):
        _ctable_peer['CALLSIGN'] = _peer_conf['CALLSIGN'].decode('utf-8').strip()
     else:
        _ctable_peer['CALLSIGN'] = _peer_conf['CALLSIGN']
-    
+
     _ctable_peer['COLORCODE'] = _peer_conf['COLORCODE'].decode('utf-8')
     _ctable_peer['CALLSIGN'] = _peer_conf['CALLSIGN'].decode('utf-8')
 
@@ -337,7 +341,7 @@ def build_hblink_table(_config, _stats_table):
                 _stats_table['PEERS'][_hbp]['MASTER_PORT'] = _hbp_data['MASTER_PORT']
                 _stats_table['PEERS'][_hbp]['STATS'] = {}
 
-                if _stats_table['PEERS'][_hbp]['MODE'] == 'XLXPEER': 
+                if _stats_table['PEERS'][_hbp]['MODE'] == 'XLXPEER':
                     _stats_table['PEERS'][_hbp]['STATS']['CONNECTION'] = _hbp_data['XLXSTATS']['CONNECTION']
 
                     if _hbp_data['XLXSTATS']['CONNECTION'] == "YES":
@@ -447,7 +451,7 @@ def update_hblink_table(_config, _stats_table):
                 _stats_table['PEERS'][_hbp]['STATS']['CONNECTION'] = _config[_hbp]['STATS']['CONNECTION']
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_SENT'] = 0
                 _stats_table['PEERS'][_hbp]['STATS']['PINGS_ACKD'] = 0
-    
+
     cleanTE()
     build_stats()
 
@@ -484,7 +488,7 @@ def build_bridge_table(_bridges):
                 _stats_table[_bridge][system['SYSTEM']]['EXP_TIME'] = 'N/A'
                 _stats_table[_bridge][system['SYSTEM']]['TO_ACTION'] = 'None'
 
-            if system['ACTIVE'] == True:                
+            if system['ACTIVE'] == True:
                 _stats_table[_bridge][system['SYSTEM']]['ACTIVE'] = 'Connected'
             elif system['ACTIVE'] == False:
                 _stats_table[_bridge][system['SYSTEM']]['ACTIVE'] = 'Disconnected'
@@ -544,13 +548,13 @@ def rts_update(p):
     timeSlot = int(p[7])
     destination = int(p[8])
     timeout = datetime.datetime.now().timestamp()
-    
+
     if system in CTABLE['MASTERS']:
         for peer in CTABLE['MASTERS'][system]['PEERS']:
             if action == 'START':
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TIMEOUT'] = timeout
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TS'] = True
-                
+
                 if sourcePeer in (None, '') or peer in (None, ''):
                     CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = ''
                 else:
@@ -558,13 +562,9 @@ def rts_update(p):
 
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TYPE'] = callType
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SRC'] = peer
-                if destination in (800,801,802,803,804,805):
-                    CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['DEST'] = '***'
-                    CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SUB'] = 'MAINTENANCE/ISPT'
-                else :
-                    CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SUB'] = '{} ({})'.format(alias_short(sourceSub, subscriber_ids), sourceSub)
-                    CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['DEST'] = '{} ({})'.format(alias_tgid(destination,talkgroup_ids),destination)
-              
+				CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SUB'] = '{} ({})'.format(alias_short(sourceSub, subscriber_ids), sourceSub)
+				CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['DEST'] = '{} ({})'.format(alias_tgid(destination,talkgroup_ids),destination)
+
             if action == 'END':
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TS'] = False
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = ''
@@ -572,18 +572,6 @@ def rts_update(p):
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SUB'] = ''
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SRC'] = ''
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['DEST'] = ''
-                if destination ==800 :    
-                    os.system('reboot')
-                elif destination  ==801 :    
-                    os.system('sudo systemctl restart hbmon.service')
-                elif destination  ==802 :   
-                    os.system('sudo systemctl stop hbmon2.service')
-                elif destination  ==803 :     
-                    os.system('sudo systemctl restart freedmr.service')
-                elif destination  ==804 :     
-                    os.system('sudo systemctl stop freedmr.service')
-                elif destination  ==805 :     
-                    os.system('shutdown')
 
     if system in CTABLE['OPENBRIDGES']:
         if action == 'START':
@@ -610,14 +598,54 @@ def rts_update(p):
             CTABLE['PEERS'][system][timeSlot]['TYPE'] = ''
             CTABLE['PEERS'][system][timeSlot]['SUB'] = ''
             CTABLE['PEERS'][system][timeSlot]['SRC'] = ''
-            CTABLE['PEERS'][system][timeSlot]['DEST'] = ''                                                  
+            CTABLE['PEERS'][system][timeSlot]['DEST'] = ''
             CTABLE['PEERS'][system][timeSlot]['TXRX'] = ''
 
     build_stats()
 
 ######################################################################
 #
-# PROCESS INCOMING MESSAGES AND TAKE THE CORRECT ACTION DEPENING ON
+# LOG+
+#
+def createLogTable():
+    logTable = '<table id="loglast" class="tables lastheard tablefixed">\n<thead><tr class="headerRow"><th class="thledate">Date</th><th class="thletime">Heure</th><th class="thleslot">Slot</th><th class="thletx" colspan=2>TX Connectés</th><th class="thlename">Name</th><th class="thletg">TG#</th><th class="thlelog">Conf. Infra</th><th class="thledelay">Durée TX</th><th class="thlenetid">NetID</th><th class="thlemaster">Master Infra</th></tr></thead><tbody>\n'
+
+    with open(LOG_PATH + "lastheard.log", "r") as lastheard:
+        for row in islice(reversed(list(csv.reader(lastheard))), 2000):
+
+            REPORT_DATE     = row[0]
+            REPORT_DELAY    = row[1]
+            REPORT_INFRA    = row[4]
+
+            REPORT_SRC_ID   = row[5]
+            REPORT_DMRID    = row[10]
+
+            REPORT_TS       = row[7]
+            REPORT_TGID     = row[8]
+            REPORT_LOGP     = row[9]
+
+            REPORT_NETID    = row[6]
+
+            REPORT_CALLSIGN = row[11]
+
+            if len(row) < 13:
+                row.append("---")
+
+            REPORT_NAME     = row[12]
+
+            if REPORT_LOGP =='ECHO/PARROT':
+                BGCLASS = "tgPurple"
+            else:
+                BGCLASS = "tgWhite"
+
+            logTable = logTable + "<tr class='" + BGCLASS + "'><td>" + REPORT_DATE[:10] + "</td><td>" + REPORT_DATE[11:16] + "</td><td>" + REPORT_TS[2:] + "</td><td class='callsign'><a target='_blank' href=https://qrz.com/db/" + REPORT_CALLSIGN + ">" + REPORT_CALLSIGN + "</a></td><td class='dmrid'>(" + REPORT_DMRID + ")</td><td class='firstname'>" + REPORT_NAME + "</td><td class='talkgroup'>"+REPORT_TGID[2:]+"</td><td class='alias' style='color:'" + BGCLASS + ">" + REPORT_LOGP+"</td><td class='delay'>"+REPORT_DELAY+"</td><td class='netid'>"+REPORT_NETID+"</td><td class='infra'>"+REPORT_INFRA+"</td></tr>\n"
+
+        logTable = logTable + "</tbody></table>"
+        return logTable
+
+######################################################################
+#
+# PROCESS INCOMING MESSAGES AND TAKE thE CORRECT ACTION DEPENING ON
 #    THE OPCODE
 #
 def process_message(_bmessage):
@@ -646,9 +674,9 @@ def process_message(_bmessage):
     elif opcode == OPCODE['LINK_EVENT']:
         logging.info('LINK_EVENT Received: {}'.format(repr(_message[1:])))
 
-    elif opcode == OPCODE['BRDG_EVENT']:        
+    elif opcode == OPCODE['BRDG_EVENT']:
         logging.info('BRIDGE EVENT: {}'.format(repr(_message[1:])))
-        
+
         p = _message[1:].split(",")
         rts_update(p)
         opbfilter = get_opbf()
@@ -674,8 +702,6 @@ def process_message(_bmessage):
             if REPORT_PACKET == 'END':
                 REPORT_DELAY    = int(float(p[9]))
 
-                #log_message = '{} {} {}   SYS: {:8.8s} SRC_ID: {:9.9s} TS: {} TGID: {:7.7s} {:17.17s} SUB: {:9.9s}; {:18.18s} Time: {}s '.format(_now[10:19], REPORT_TYPE[6:], REPORT_PACKET, REPORT_SYS, REPORT_SRC_ID, REPORT_TS, REPORT_TGID, REPORT_ALIAS, REPORT_DMRID, REPORT_BOTH, REPORT_DELAY)
-
                 # read saved history
                 with open(LOG_PATH + "lastheard.json", 'r') as infile:
                     traffic = json.load(infile)
@@ -692,29 +718,23 @@ def process_message(_bmessage):
                 with open(LOG_PATH + "lastheard.json", 'w') as outfile:
                     json.dump({ "TRAFFIC" : MESSAGEJ }, outfile, indent=4)
 
-                # log only to file if system is NOT OpenBridge event (not logging open bridge system, name depends on your OB definitions) 
-                # and transmit time is LONGER as 2sec (make sense for very short transmits)
-                # if LASTHEARD_INC and int(float(p[9])) > 2: 
-                #     log_lh_message = '{},{},{},{},{},{},{},TS{},TG{},{},{},{}'.format(_now, p[9], p[0], p[1], p[3], p[5], alias_call(int(p[5]), subscriber_ids), p[7], p[8],alias_tgid(int(p[8]),talkgroup_ids),p[6], alias_short(int(p[6]), subscriber_ids))
-                    
-                #     # append to file
-                #     lh_logfile = open(LOG_PATH+"lastheard.log", "a")                        
-                #     lh_logfile.write(log_lh_message + '\n')
-                #     lh_logfile.close() 
+                # log only to file if system is NOT OpenBridge event (not logging open bridge system, name depends on your OB definitions)
+                # and transmit time is LONGER as N sec (make sense for very short transmits)
+                if LASTHEARD_INC and int(float(p[9])) > 0:
+                    log_lh_message = '{},{},{},{},{},{},{},TS{},TG{},{},{},{}'.format(_now, REPORT_DELAY, REPORT_TYPE, REPORT_PACKET, REPORT_SYS, REPORT_SRC_ID, alias_call(int(REPORT_SRC_ID), subscriber_ids), REPORT_TS, REPORT_TGID,alias_tgid(int(REPORT_TGID),talkgroup_ids),REPORT_DMRID, alias_short(int(REPORT_DMRID), subscriber_ids))
+                    # append to file
+                    lh_logfile = open(LOG_PATH + "lastheard.log", "a")
+                    lh_logfile.write(log_lh_message + '\n')
+                    lh_logfile.close()
 
             elif REPORT_PACKET == 'START':
-                #log_message = '{} {} {} SYS: {:8.8s} SRC_ID: {:9.9s} TS: {} TGID: {:7.7s} {:17.17s} SUB: {:9.9s}; {:18.18s}'.format(_now[10:19], REPORT_TYPE[6:], REPORT_PACKET, REPORT_SYS, REPORT_SRC_ID, REPORT_TS, REPORT_TGID, REPORT_ALIAS, REPORT_DMRID, REPORT_BOTH)
-                jsonStr = { 'DATE': _now[0:10], 'TIME': _now[11:16], 'TYPE': p[0][6:], 'PACKET': p[1], 'SYS': p[3], 'SRC_ID': p[5], 'TS': p[7], 'TGID': p[8], 'ALIAS': alias_tgid(int(p[8]), talkgroup_ids), 'DMRID': p[6], 'CALLSIGN': alias_only(int(p[6]), subscriber_ids)[0].strip(), 'NAME': alias_only(int(p[6]), subscriber_ids)[1].strip() }
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_NAME, 'DELAY': 0 }
 
             elif REPORT_PACKET == 'END WITHOUT MATCHING START':
-                #log_message = '{} {} {} on SYSTEM {:8.8s}: SRC_ID: {:9.9s} TS: {} TGID: {:7.7s} {:17.17s} SUB: {:9.9s}; {:18.18s}'.format(_now[10:19], REPORT_TYPE[6:], REPORT_PACKET, REPORT_SYS, REPORT_SRC_ID, REPORT_TS, REPORT_TGID, REPORT_ALIAS, REPORT_DMRID, REPORT_BOTH)
-                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_NAME }
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_NAME, 'DELAY': 0 }
             else:
-                #log_message = '{} UNKNOWN GROUP VOICE LOG MESSAGE'.format(_now)
                 jsonStr = { 'DATE': _now[0:10], 'TIME': _now[11:16], 'PACKET' : 'UNKNOWN GROUP VOICE LOG MESSAGE' }
 
-            #LOGBUF.append(log_message)
-            
             dashboard_server.broadcast( {"TRAFFIC": jsonStr  } )
         else:
             logging.debug('{} UNKNOWN LOG MESSAGE'.format(_now[10:19]))
@@ -788,11 +808,13 @@ class dashboard(WebSocketServerProtocol):
         _message = {}
         _message["CTABLE"] = CTABLE
         _message["EMPTY_MASTERS"] = EMPTY_MASTERS
-        self.sendMessage(json.dumps({ "CONFIG": _message }, ensure_ascii = False).encode('utf8'))
+        with open(PATH + LOCAL_SUB_FILE, 'r') as infile:
+            _message["USERS"] = json.load(infile)
+        self.sendMessage(json.dumps({ "CONFIG": _message }, ensure_ascii = False).encode('utf-8'))
 
         # _message = {}
         # _message["BTABLE"] = BTABLE
-        # self.sendMessage(json.dumps({ "BTABLE": _message }, ensure_ascii = False).encode('utf8'))
+        # self.sendMessage(json.dumps({ "BTABLE": _message }, ensure_ascii = False).encode('utf-8'))
 
         # read saved history or create traffic file for later
         if os.path.exists(LOG_PATH + "lastheard.json"):
@@ -800,7 +822,7 @@ class dashboard(WebSocketServerProtocol):
                 _message = json.load(infile)
                 if _message and _message["TRAFFIC"]:
                     _message = _message["TRAFFIC"][-TRAFFICSIZE:]
-                    self.sendMessage(json.dumps({ "TRAFFIC": _message }, ensure_ascii = False).encode('utf8'))
+                    self.sendMessage(json.dumps({ "TRAFFIC": _message }, ensure_ascii = False).encode('utf-8'))
                 else:
                     logging.info("Creating empty " + LOG_PATH + "lastheard.json")
                     with open(LOG_PATH + "lastheard.json", 'w') as outfile:
@@ -809,12 +831,6 @@ class dashboard(WebSocketServerProtocol):
             logging.info("Creating empty " + LOG_PATH + "lastheard.json")
             with open(LOG_PATH + "lastheard.json", 'w') as outfile:
                 json.dump({ "TRAFFIC" : [] }, outfile)
-
-    def onMessage(self, payload, isBinary):
-        if isBinary:
-            logging.info('Binary message received: %s bytes', len(payload))
-        else:
-            logging.info('Text message received: %s', payload)
 
     def connectionLost(self, reason):
         WebSocketServerProtocol.connectionLost(self, reason)
@@ -843,17 +859,100 @@ class dashboardFactory(WebSocketServerFactory):
     def broadcast(self, msg):
         logging.debug('broadcasting message to: %s', self.clients)
         for c in self.clients:
-            c.sendMessage(json.dumps(msg, ensure_ascii = False).encode('utf8'))
+            c.sendMessage(json.dumps(msg, ensure_ascii = False).encode('UTF-8'))
             logging.debug('message sent to %s', c.peer)
 
 ######################################################################
 #
 # STATIC WEBSERVER
 #
+class staticFile(Resource):
+    def __init__(self, file_Name, file_Folder, file_contentType):
+        self.file_Name = file_Name
+        self.file_Folder = file_Folder
+        self.file_contentType = file_contentType
+        Resource.__init__(self)
+
+    def render_GET(self, request):
+        @defer.inlineCallbacks
+        def _feedfile():
+            filepath = "{}/{}".format(PATH + self.file_Folder, self.file_Name.decode("UTF-8"))
+
+            @defer.inlineCallbacks
+            def _setContentDispositionAndSend(file_path, file_name, content_type):
+                request.setHeader('content-disposition', 'filename=' + file_name.decode("UTF-8"))
+                request.setHeader('content-type', content_type)
+
+                with open(file_path, 'rb') as f:
+                    yield FileSender().beginFileTransfer(f, request)
+                    f.close()
+
+                defer.returnValue(0)
+
+            if os.path.exists(filepath):
+                yield _setContentDispositionAndSend(filepath, self.file_Name, self.file_contentType)
+            else:
+                request.setResponseCode(http.NOT_FOUND)
+
+            request.finish()
+
+            defer.returnValue(0)
+
+        _feedfile()
+        return server.NOT_DONE_YET
+
+class loglast(Resource):
+    def __init__(self):
+        Resource.__init__(self)
+
+    def render_GET(self, request):
+        loglast_html = get_template(PATH + "templates/loglast_template.html")
+        loglast_html = loglast_html.replace("<<<system_name>>>", REPORT_NAME)
+        return str.encode(loglast_html.replace("<<<logtable_html>>>", createLogTable()))
+
 class web_server(Resource):
-    isLeaf = True
+    def __init__(self):
+        Resource.__init__(self)
+
+    def getChild(self, name, request):
+        page = name.decode("utf-8")
+
+        logging.info("requested page \"" + page + "\"")
+
+        if page == '':
+            return self
+
+        if page == 'loglast.html':
+            return loglast()
+
+        #
+        # deal with static files (images, css etc...)
+        # call static file with file name, location folder, controlType
+        #
+        if page.endswith(".html") or page.endswith(".htm"):
+            return staticFile(name, "html", "text/html; charset=utf-8")
+        if page.endswith(".css"):
+            return staticFile(name, "css", "text/css; charset=utf-8")
+        elif page.endswith(".js"):
+            return staticFile(name, "scripts", "text/html; charset=utf-8")
+        elif page.endswith(".jpg") or page.endswith(".jpeg"):
+            return staticFile(name, "images", "image/jpeg")
+        elif page.endswith(".gif"):
+            return staticFile(name, "images", "image/gif")
+        elif page.endswith(".png"):
+            return staticFile(name, "images", "image/png")
+        elif page.endswith(".svg"):
+            return staticFile(name, "images", "image/svg+xml")
+        elif page.endswith(".ico"):
+            return staticFile(name, "images", "image/x-icon")
+        elif page.endswith(".json"):
+            return staticFile(name, "assets", "application/json")
+
+        return NoResource()
+
     def render_GET(self, request):
         logging.info('static website requested: %s', request)
+
         if WEB_AUTH:
           user = WEB_USER.encode('utf-8')
           password = WEB_PASS.encode('utf-8')
@@ -862,18 +961,20 @@ class web_server(Resource):
              decodeddata = base64.b64decode(auth.split(' ')[1])
              if decodeddata.split(b':') == [user, password]:
                  logging.info('Authorization OK')
-                 return (index_html).encode('utf-8')
-          request.setResponseCode(401)
-          request.setHeader('WWW-Authenticate', 'Basic realm="realmname"')
+                 return index_html.encode('utf-8')
+
+          request.setResponseCode(http.UNAUTHORIZED)
+          request.setHeader('www-authenticate', 'Basic realm="realmname"')
           logging.info('Someone wanted to get access without authorization')
+
           return "<html<head></hread><body style=\"background-color: #EEEEEE;\"><br><br><br><center> \
                     <fieldset style=\"width:600px;background-color:#e0e0e0e0;text-algin: center; margin-left:15px;margin-right:15px; \
                      font-size:14px;border-top-left-radius: 10px; border-top-right-radius: 10px; \
                      border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;\"> \
                   <p><font size=5><b>Authorization Required</font></p></filed></center></body></html>".encode('utf-8')
         else:
-            return (index_html).encode('utf-8')
-        
+            return index_html.encode('utf-8')
+
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
@@ -893,7 +994,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v1.0.0:\n\t2021 Jean-Michel Cohen, F-16987\n\n')
+                '\n\n\tHBJSON v2.0.0:\n\t2021 Jean-Michel Cohen, F-16987\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):
@@ -919,7 +1020,7 @@ if __name__ == '__main__':
     subscriber_ids = mk_full_id_dict(PATH, SUBSCRIBER_FILE, 'subscriber')
     if subscriber_ids:
         logging.info('ID ALIAS MAPPER: subscriber_ids dictionary is available')
-        
+
     local_subscriber_ids = mk_full_id_dict(PATH, LOCAL_SUB_FILE, 'local_subscriber')
     if subscriber_ids:
         logging.info('ID ALIAS MAPPER: local_subscriber_ids dictionary is available')
@@ -939,7 +1040,7 @@ if __name__ == '__main__':
         peer_ids.update(local_peer_ids)
 
     # Create Static Website index file
-    index_html = get_template(PATH + "index_template.html")
+    index_html = get_template(PATH + "templates/index_template.html")
     index_html = index_html.replace("<<<system_name>>>", REPORT_NAME)
     index_html = index_html.replace("<<<TGID_FILTER>>>", str(TGID_FILTER))
     index_html = index_html.replace("<<<SOCKER_SERVER_PORT>>>", str(SOCKET_SERVER_PORT))
@@ -972,7 +1073,12 @@ if __name__ == '__main__':
     reactor.listenTCP(SOCKET_SERVER_PORT, dashboard_server)
 
     # Create static web server to push initial index.html
-    website = Site(web_server())
-    reactor.listenTCP(JSON_SERVER_PORT, website)
+    root = web_server()
+    factory = Site(root)
+    endpoint = endpoints.TCP4ServerEndpoint(reactor, JSON_SERVER_PORT)
+    endpoint.listen(factory)
+
+    # reactor.listenTCP(JSON_SERVER_PORT, factory)
 
     reactor.run()
+

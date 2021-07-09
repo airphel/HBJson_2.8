@@ -1,0 +1,390 @@
+::-webkit-scrollbar {
+  display: none;
+}
+html, body {
+  font: 10pt calibri, sans-serif;
+  background-color: #1e1e1e;
+  width:100%;
+  height:100%;
+}
+#footer {
+  margin-top: 2rem;
+  color:#8E8E8E;
+  font-size: 0.8rem;
+  font-weight:bold;
+  text-align: center;
+}
+a:link {
+  color: #0066ff;
+  text-decoration: none;
+}
+/* visited link */
+a:visited {
+  color: #0066ff;
+  text-decoration: none;
+}
+/* mouse over link */
+a:hover {
+  color: hotpink;
+  text-decoration: underline;
+}
+/* selected link */
+a:active {
+  color: #0066ff;
+  text-decoration: none;
+}
+.tooltip {
+  position: relative;
+  opacity: 1;
+  display: inline-block;
+  border-bottom: 1px dotted #000000;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 18rem;
+  background-color: #4e4e4e;
+/* box-shadow: 4px 4px 6px #800000; */
+  color: #000000;
+  text-align: left;
+  border-radius: 3px;
+  padding: 8px 0;
+  left: 100%;
+  opacity: 1;
+/* Position the tooltip */
+  position: absolute;
+  z-index: 1;
+}
+.tooltip:hover .tooltiptext {
+  right: 100%;
+  visibility: visible;
+}
+.dropdown:hover .dropbtn {
+  background-color: #525252;
+  color: #ffffff;
+}
+
+.dropbtn {
+  font-size: 1rem;
+  background-color: #356244;
+  border: none;
+  color: #ffffff;
+  padding: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin: 4px 2px;
+  border-radius: 3px;
+}
+/* The container
+  <div>
+  - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  font-size: 1rem;
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 10rem;
+  z-index: 1;
+}
+/* Links inside the dropdown */
+.dropdown-content a {
+  color: #000000;
+  padding: 6px 16px;
+  text-decoration: none;
+  text-align: left;
+  display: block;
+}
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+  background-color: #ddd;
+}
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+  background-color: #3e8e41;
+}
+table, td, th {
+  border: .5px solid #404040;
+  padding: 2px;
+  border-collapse: collapse;
+  text-align: center;
+}
+tr {
+  background-color:#1e1e1e;
+}
+thead {
+  font-size: 1.1rem;
+}
+::selection {
+  background-color: #C3CFE2;
+}
+.tablefixed {
+  table-layout: fixed;
+}
+.tables {
+  margin-top: 1rem;
+}
+.headerRow {
+  background-color: #37373d;
+  color: #ffffff;
+  height: 15px;
+  cursor: pointer;
+}
+.tgBlue {
+  color: #D2E5FB;
+}
+.tgGreen {
+  color: #DCDCAA;
+}
+.tgLtGreen {
+  color: #b5cea8;
+}
+.tgRed {
+  color: #fba392;
+}
+.tgYellow {
+  color: #EBFDC6;
+}
+.tgPurple {
+  color: #c586c0;
+}
+.tgOrange {
+  color: #ce9178;
+}
+.tgWhite {
+  color: #ffffff;
+}
+.tgPink {
+  color: #EBC6FD;
+}
+/*
+  LASTHEARD STYLE CLASSES
+*/
+.thledate {
+  width: 6rem;
+}
+.thletime {
+  width: 4rem;
+}
+.thleslot {
+  width: 2rem;
+}
+.thletx {
+  width: 11rem;
+}
+.thlename {
+  width: 10rem;
+}
+.thletg {
+  width: 5rem;
+}
+.thlelog {
+  width: 18rem;
+}
+.thledelay {
+  width: 6rem;
+}
+.thlenetid {
+  width: 7rem;
+}
+.thlemaster {
+  width: 11rem;
+}
+
+#hbtables {
+  scrollbar-width: thin;
+  display: block;
+  overflow-y: scroll;
+}
+#hbtables::-webkit-scrollbar
+{
+  display: block;
+  width: 6px;
+  background-color: #404040;
+}
+#hbtables::-webkit-scrollbar-thumb
+{
+  background-color: #569cd6;
+}
+
+.lastheard {
+  font-weight: normal;
+}
+.firstname {
+  text-align: left;
+  padding-left: 2rem;
+  color: #569cd6;
+}
+.talkgroup {
+  color: #569cd6;
+}
+.alias {
+  color: #b5cea8;
+  text-align: left;
+  padding-left: 3rem;
+}
+.callsign {
+  text-align: left;
+  padding-left: 1rem;
+}
+.callsign a {
+  color: #ce9178;
+}
+.callsign a:hover {
+  color: hotpink;
+  text-decoration: underline;
+}
+.dmrid {
+  font-size: 0.7rem;
+  font-weight: normal;
+  color: #fefefe;
+  text-align: end;
+  padding-right: 0.5rem;
+}
+.delay {
+  font-weight: normal;
+}
+.netid {
+  text-align: right;
+  padding-right: 1rem;
+  font-weight: normal;
+}
+.infra {
+  text-align: left;
+  padding-left: 1rem;
+  font-weight: normal;
+}
+
+.message a:hover {
+  color: #FF69B4 !important;
+  text-decoration: underline;
+}
+
+/*
+  OPENBRIDGES STYLE CLASSES
+*/
+.thopmaster {
+  width: 12rem;
+}
+.thopnetid {
+  width: 11rem;
+}
+.thopcalls {
+  width: 58rem;
+}
+.obName {
+color: #569cd6;
+  text-align: left;
+  padding-left: 1rem;
+}
+.obNetID {
+  color: #fba392;
+}
+
+/*
+  MASTERS STYLE CLASSES
+*/
+.thmsmaster {
+  width: 10rem;
+}
+.thmsnetid {
+  width: 12rem;
+}
+.thmstime {
+  width: 5rem;
+}
+.thmsslot {
+  width: 3rem;
+}
+.thmstx {
+  width: 25rem;
+}
+.thmsdest {
+  width: 25rem;
+}
+.msMasters {
+color: #569cd6;
+font-weight: normal;
+}
+.msCallsign {
+  color: #fba392;
+  font-weight: normal;
+  border-bottom: 1px dotted #000000;
+  display: inline-block;
+}
+.msRepeat {
+  font-size: 0.7rem;
+  color: #fefefe;
+  font-weight: normal;
+}
+.msLocation {
+  font-size: 0.7rem;
+  font-weight: normal;
+  color: #569cd6;
+}
+.msNetID {
+  color: #fefefe;
+  font-size: 0.8rem;
+}
+.msTS {
+  font-size: 0.9rem;
+  color: #000000;
+  background-color: #1e1e1e;
+}
+.msTS1 {
+  font-size: 0.9rem;
+  color: #c586c0;
+  background-color: #1e1e1e;
+}
+.msTS2 {
+  font-size: 0.9rem;
+  color: #569cd6;
+  background-color: #1e1e1e;
+}
+.msTSTX {
+  font-size: 0.9rem;
+  color: #fba392;
+}
+.msTSRX {
+  font-size: 0.9rem;
+  color: #CEFDC6;
+}
+
+/* PEERS STYLE CLASSES */
+.thpemaster {
+  width: 10rem;
+}
+.thpenetid {
+  width: 12rem;
+}
+.thpetime {
+  width: 5rem;
+}
+.thpeslot {
+  width: 3rem;
+}
+.thpetx {
+  width: 25rem;
+}
+.thpedest {
+  width: 25rem;
+}
+.peON {
+  background-color:#b5cea8;
+}
+.peOFF {
+  background-color:#FF69B4;
+}
+.tdGradient {
+  color: #fefefe;
+  background-color: #2e2e2e;
+  font-size: 0.9rem;
+}
