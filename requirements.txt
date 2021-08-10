@@ -3,4 +3,6 @@ dmr_utils3
 bitstring
 autobahn
 json
-
+mysql-connector
+pandas
+XlsxWriter

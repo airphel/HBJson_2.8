@@ -1,30 +1,28 @@
 /* --Buttons HTML code-- */
-#pageHeader {
+#siteHeader {
     width: 82rem;
 }
-#siteLogo {
-    width: 22rem;
-    margin-left: 6.5rem;
+#shieldLogo {
+    width: 16rem;
+    margin-top: 1rem;
+    margin-left: 5rem;
 }
 #infoLine {
     margin: 1rem 0 1rem 0;
-    color:#8E8E8E;
-    font-size: 0.8rem;
+    color: var(--color-fg-infoline);
+    font-size: 0.8rem; 
     font-weight:normal;
 }
 #marquee {
     height:2rem;
     width:70rem;
-    color:#B1B1B1;
-    border-width:0;
-    border-style: double;
-    border-color:#000000;
+    color: var(--color-fg-marquee);
 }
 h1 {
-    font-size: 17px;
-    color: #8E8E8E;
+    font-size: 17px;  
+    color: var(--color-fg-h1);
 }
-
+    
 .button {
     margin: 0;
     font-size: 0.9rem;
@@ -40,7 +38,7 @@ h1 {
 
 .audiolink {
     padding: 0 1rem 0 1rem;
-    background-color: #404040;
+    background-color: #404040; 
     color: #ffffff;
 }
 

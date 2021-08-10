@@ -1,278 +1,283 @@
 <!DOCTYPE html>
-<html>
+<html class="theme-dark">
     <head>
-        <meta charset="UTF-8">
-        <meta name="robots" content="noindex, nofollow">
-	    <meta name="description" content="Copyright (c) 2021 jmc. All rights reserved." />
+        <meta charset="UTF-8"/>
+	    <meta name="description" content="Copyright (c) 2021 jmc. All rights reserved."/>
 
-        <title>HBJson Map</title>
-        <link rel="shortcut icon" href="ispt.ico">
-
-        <link rel="stylesheet" href="theme_template.css">
-        <link rel="stylesheet" href="mysite_template.css">
+        <title>HBJSON Monitor</title>
+        <link rel="shortcut icon" href="site.ico"/>
+        <link rel="stylesheet" href="theme_template.css"/>
+        <link rel="stylesheet" href="mysite_template.css"/>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="crossorigin=""/>
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="crossorigin=""></script>
+        <script src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
     </head>
 
 	<body>
         <center>
             <noscript>You must enable JavaScript</noscript>
 
-            <div id="pageHeader">
-                <img id="siteLogo" src="hblink.png"/>
-                <h1 class="text"><<<system_name>>></h1>
-
+            <div id="siteHeader">
+                <div id="sitelogo">
+                    <<<site_logo>>>
+                </div>
+                <div id="buttonArea">
+                    <<<button_bar>>>
+                </div>
+                <br/>
                 <div name="hbtables">
                     <div id="insertPoint">
-                        <div id="mapfrance" class="map"></div>
+                        <div id="lastcallercontainer"style="text-align: left;">
+                            <div id="callerinfo"></div>
+                        </div>
+                        <div id="legendcontainer"style="text-align: left;">
+                            <div id="legendinfo">
+                                <div>TG38<div style="background-color: #569cd6" class="legendIndicator"></div></div>
+                                <div>TG39<div style="background-color: #a3e978" class="legendIndicator"></div></div>
+                                <div>TG7<div style="background-color: #fca33c" class="legendIndicator"></div></div>
+                                <div>TG777<div style="background-color: #bc7ebb" class="legendIndicator"></div></div>
+                                <div>TX<div style="background-color: #fbd379" class="legendIndicator"></div></div>
+                                <div>IND<div style="background-color: #fefefe" class="legendIndicator"></div></div>
+                                <div>SWL<div id="listeners" class="legendIndicator">0</div></div>
+                            </div>
+                        </div>
+                        <div id="mapfrance">
+                            <div id="map" class="tabContent" style="display: block;"><div id="mapid" style="height: 1000px;"></div>
+                        </div>
                     </div>
-                    <br>
                 </div>
-
+            
                 <div id="footer">
                     <span>Copyright (c) 2021 <a href=https://github.com/avrahqedivra/HBJson>jmc</a></span>
                 </div>
                 <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
-            </div>
+            </div>                
         </center>
     </body>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-
     <style>
-        #svgfrance {
-            display: block;
-            margin: auto;
+        #insertPoint {
+            background-color: #202020;
         }
 
         .map {
             margin-top: 1rem;
         }
-
-        div.tooltip {
-            position: absolute;
-            text-align: left;
-            color: white;
-            background-color: #404040;
-            width: auto;
-            height: auto;
-            padding: 0.5rem;
-            font-size: 1rem;
-            border: 0px;
-            border-radius: 3px;
-            pointer-events: none;
-        }
-
+        
         .department {
             fill:   #2e2e2e;
             stroke: #505050;
             stroke-width: .5px;
         }
+
+        #lastcallercontainer {
+            display: none;
+        }
+
+        #callerinfo {
+            display: hidden;
+            margin: 4rem 0 0 4rem;
+            position: absolute;
+            color: white;
+            text-align: left;
+            padding: 0.5rem;
+            background-color: rgba(78, 78, 78, 0.6);
+            border-radius: 8px;
+            z-index: 650;
+        }
+
+        #legendinfo {
+            width: 6rem;
+            margin: 4rem 0rem 4rem 72rem;
+            position: absolute;
+            color: white;
+            text-align: left;
+            padding: 0.5rem;
+            background-color: rgba(78, 78, 78, 0.6);
+            border-radius: 8px;
+            z-index: 650;
+        }
+
+        .legendIndicator {
+            float: right;
+            width: 1rem;
+            height: 1rem;
+            color: var(--color-fg-marquee);
+            background-color: var(--color-page);
+            display: inline-block;
+            margin-left: 1rem;
+            text-align: center;
+        }
+
+        .leaflet-tooltip-left:before {
+            right: 0;
+            margin-right: -12px;
+            border-left-color: #4e4e4e;
+        }
+        
+        .leaflet-tooltip-right:before {
+            left: 0;
+            margin-left: -12px;
+            border-right-color: #4e4e4e;
+        }        
+
+        .leaflet-tooltip-own {
+            position: absolute;
+            padding: 4px;
+            text-align: left;
+            background-color: #4e4e4e;
+            border: 0;
+            color: #ffffff;
+            white-space: nowrap;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            pointer-events: none;
+            border-radius: 8px;
+        }
+        .svgicon {
+            height: 1.4rem;
+            filter: brightness(118%) contrast(119%);
+            stroke: white;
+        }
     </style>
 
+    <!-- 
+        france, dom, belgique, suisse geojson 
+    -->
+    <script src="mapssvg.js"></script>
+
     <script>
-        function initMap() {
-            departementsjson = null;
-            width = 1000, height = 1000;
-            path = d3.geoPath();
+        var names = [];    
 
-            projection = d3.geoConicConformal()
-                                .center([2.454071, 46.279229])
-                                .scale(5000)
-                                .translate([width / 2, height / 2]);
+        names["Andre"] = "André";
+        names["Francois"] = "François";
+        names["Herve"] = "Hervé";
+        names["Jerome"] = "Jérôme";
+        names["Jerôme"] = "Jérôme";
+        names["Stephane"] = "Stéphane";
+        names["Gerard"] = "Gérard";
+        names["Jean-Noel"] = "Jean-Noël";
+        names["Remi"] = "Rémi";
+        names["Clement"] = "Clément";
+        names["Frederic"] = "Frédéric";
+        names["Jeremy"] = "Jérémy";
+        names["Jean-Francois"] = "Jean-François";
+        names["Gregory"] = "Grégory";    
+        names["Anne-Cecile"] = "Anne-Cécile";
+        names["Mickael"] = "Mickaël";
+        names["Theophile"] = "Théophile";
+        names["Sebastien"] = "Sébastien";
+        names["Raphael"] = "Raphaël";
+        names["Cedric"] = "Cédric";
+        names["Rene"] = "René";
+        names["Nathanael"] = "Nathanaël";
+        names["Joel"] = "Joël";
+        names["Jeremie"] = "Jérémie";
+        
+        function enhanceNames(name) {
+            if (names[name] != null)
+                return names[name];
 
-            path.projection(projection);
+            return name;            
+        }
 
-            svg = d3.select('#mapfrance').append("svg")
-                .attr("id", "svgfrance")
-                .attr("width", width)
-                .attr("height", height);
+        function displayLastCaller() {
+            if (lastCaller != null) {
+                html =  "Dernier appel de : <br/><br/>"
+                        + "Indicatif : " + lastCaller.packet.CALLSIGN + " - TG" + lastCaller.packet.TGID + "<br/>"
+                        + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
+                        + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
 
-            deps = svg.append("g")
-                .attr("class", "main-container")
-                .attr("transform", "matrix(1 0 0 1 0 0)");
+                html += ((lastCaller.user != null && lastCaller.user.CITY != "") ? ("Ville : " + lastCaller.user.CITY + "<br/>") : "");
+                html += ((lastCaller.user != null && lastCaller.user.COUNTRY.toLowerCase() == "france") ? ("Département : " + lastCaller.dept + "<br/>") : "");
 
-            maptooltip = d3.select("body").append("div")
-                .attr("class", "tooltip")
-                .style("opacity", 0);
-
-                departementsjson = d3.json(mapurl).then((geojson) => {
-                deps.selectAll("path")
-                    .data(geojson.features)
-                    .enter()
-                    .append("path")
-                    .attr('class', 'department')
-                    .attr('id', d => "d" + d.properties.CODE_DEPT)
-                    .attr('dept', d => d.properties.NOM_DEPT)
-                    .attr('region', d => d.properties.NOM_REGION)
-                    .attr("d", path)
-                    .on("mouseover", (d) => {
-                        maptooltip.transition()
-                            .duration(200)
-                            .style("opacity", .9);
-                            maptooltip.html("Département : " + d.properties.CODE_DEPT + "<br/>"
-                            +  "Région : " + d.properties.NOM_REGION)
-                            .style("left", (d3.event.pageX + 30) + "px")
-                            .style("top", (d3.event.pageY - 30) + "px")
-                    })
-                    .on("mouseout", function(d) {
-                        maptooltip.style("opacity", 0);
-                        maptooltip.html("")
-                            .style("left", "-500px")
-                            .style("top", "-500px");
-                    });
-            });
+                $('#callerinfo').empty().append(html);
+                $('#lastcallercontainer').show();
+            } 
+            else
+                $('#lastcallercontainer').hide();
         }
 
         function dealWithMap(packets) {
             var promises = [];
 
-            promises.push(departementsjson);
+            // promises.push(departementsjson);
             promises.push(packets);
-
+                
             Promise.all(promises).then((values) => {
-                const geojson = values[0];
-                const scores = values[1];
+                var html = null;
+                var foundStartPacket = false;                
+                const transmissions = values[0];
 
-                var b  = path.bounds(geojson),
-                    s = .80 / Math.max((b[1][0] - b[0][0]) / width, (b[1][1] - b[0][1]) / height),
-                    t = [(width - s * (b[1][0] + b[0][0])) / 2, (height - s * (b[1][1] + b[0][1])) / 2];
+                transmissions.forEach((packet) => {
+                    var dept = "0";
+                    var country = "France";
 
-                projection
-                    .scale(s)
-                    .translate(t);
+                    var user = getUser(packet.DMRID.substr(0, 7));
 
-                scores.forEach((packet, i) => {
-					// adapt the code to find the area identifier that suits your needs
-					// here we use 2 digits from the CALLSIGN
-                    dept = packet.CALLSIGN.substring(2, 4);
+                    if ((packet.CALLSIGN.startsWith("FR") && !packet.CALLSIGN.startsWith("FRS")) || packet.CALLSIGN.startsWith("FS") || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
+                        dept = packet.CALLSIGN.substring(2, 4);
+                        if (dept == "97") { // treat 971 to 97x
+                            if ((user != null) && user.STATE.toString().startsWith("97")) {                                
+                                if ((dept = parseInt(user.STATE)) < 10)
+                                    dept = "0"+dept;
+                                
+                                country = user.COUNTRY;
+                            }
+                        } else {
+                            if (dept == "99") {
+                                if ((user != null) && user.STATE.trim() != "") {
+                                    country = user.COUNTRY;
+                                    dept = user.STATE;
+                                }
+                            }
+                        }
+                    } 
+                    else {                        
+                        if (packet.CALLSIGN.startsWith("FRS")) { // case FRSxxxx
+                            if (user != null) {
+                                if ((dept = parseInt(user.STATE)) < 10)
+                                    dept = "0"+dept;                                
+                            }
+                        } else { // HAMs
+                            // sock.send(JSON.stringify({"request": "user", "callsign": packet.CALLSIGN }));
+                        }
+                    }
 
-                    item = d3.select("#d" + dept);
+                    if (packet.PACKET == "START") {
+                        // set START backbground color
+                        bgcolor = "#fbd379";
 
-                    item.style("fill", (packet.TGID == "7" ? "#fcdcf9": (packet.PACKET == "START" ? "#ce9178":"#569cd6")))
-                        .on("mouseover", (d) => {
-                            maptooltip.transition()
-                                .duration(200)
-                                .style("opacity", .9);
-                                maptooltip.html(
-                                    "Callsign : " + packet.CALLSIGN + "<br/>"
-                                +   "Prénom : " + packet.NAME + "<br/>"
-                                +   "Online à : " + packet.TIME + " le " + packet.DATE + "<br/>"
-                                +   "Département : " + d.properties.CODE_DEPT + "<br/>"
-                                +   "Région : " + d.properties.NOM_REGION)
-                                .style("left", (d3.event.pageX + 30) + "px")
-                                .style("top", (d3.event.pageY - 30) + "px")
-                        })
-                        .on("mouseout", function(d) {
-                            maptooltip.style("opacity", 0);
-                            maptooltip.html("")
-                                .style("left", "-500px")
-                                .style("top", "-500px");
-                        });
+                        lastCaller = { "user": user, "dept": dept, "packet": packet, "timeout": Date.now() };
+                        foundStartPacket = true;
+                    }
+                    else {
+                        switch(packet.TGID) {
+                            // set END backbground color
+                            case   "7": bgcolor = "#fca33c"; break;
+                            case  "38": bgcolor = "#569cd6"; break;
+                            case  "39": bgcolor = "#a3e978" /*"#9fd87c"*/; break;
+                            case "777": bgcolor = "#bc7ebb"; break;
+                            default:    bgcolor = "#fefefe"; break;
+                        }
+
+                        if (!foundStartPacket)
+                            lastCaller = { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() };
+                    }
+
+                    hiliteMap(dept, country, packet, user, bgcolor);
                 });
+
+                displayLastCaller();
             });
         }
 
-        function beginDrag(e) {
-            e.stopPropagation();
-            let target = e.target;
+        var geojson = null;
+        var map = null;
+        var lastcallerPanel = null;
 
-            if (target.classList.contains('draggable')) {
-                selected = target;
-            } else {
-                selected = document.querySelector('.main-container');
-            }
-
-            selected.dataset.startMouseX = e.clientX;
-            selected.dataset.startMouseY = e.clientY;
-        }
-
-        function drag(e) {
-            if (!selected) return;
-                e.stopPropagation();
-
-            let startX = parseFloat(selected.dataset.startMouseX),
-                startY = parseFloat(selected.dataset.startMouseY),
-                dx = (e.clientX - startX),
-                dy = (e.clientY - startY);
-
-            if (selected.classList.contains('draggable')) {
-                let selectedBox = selected.getBoundingClientRect(),
-                    boundaryBox = selected.parentElement.getBoundingClientRect();
-
-                if (selectedBox.right + dx > boundaryBox.right) {
-                    dx = (boundaryBox.right - selectedBox.right);
-                } else if (selectedBox.left + dx < boundaryBox.left) {
-                    dx = (boundaryBox.left - selectedBox.left);
-                }
-
-                if (selectedBox.bottom + dy > boundaryBox.bottom) {
-                    dy = (boundaryBox.bottom - selectedBox.bottom);
-                }
-                else if (selectedBox.top + dy < boundaryBox.top) {
-                    dy = (boundaryBox.top - selectedBox.top);
-                }
-            }
-
-            let currentMatrix = selected.transform.baseVal.consolidate().matrix,
-                newMatrix = currentMatrix.translate(dx / scale, dy / scale),
-                transform = svgmap.createSVGTransformFromMatrix(newMatrix);
-
-            selected.transform.baseVal.initialize(transform);
-            selected.dataset.startMouseX = dx + startX;
-            selected.dataset.startMouseY = dy + startY;
-        }
-
-        function endDrag(e) {
-            e.stopPropagation();
-
-            if (selected) {
-                selected = undefined;
-            }
-        }
-
-        function zoom(e) {
-            e.stopPropagation();
-            e.preventDefault();
-
-            let delta = e.wheelDelta,
-                container = document.querySelector('svg .main-container'),
-                scaleStep = delta > 0 ? 1.25 : 0.8;
-
-            if (scale * scaleStep > maxScale) {
-                scaleStep = maxScale / scale;
-            }
-
-            if (scale * scaleStep < minScale) {
-                scaleStep = minScale / scale;
-            }
-
-            scale *= scaleStep;
-
-            let box = svgmap.getBoundingClientRect();
-            let point = svgmap.createSVGPoint();
-            point.x = e.clientX - box.left;
-            point.y = e.clientY - box.top;
-
-            let currentZoomMatrix = container.getCTM();
-
-            point = point.matrixTransform(currentZoomMatrix.inverse());
-
-            let matrix = svgmap.createSVGMatrix()
-                .translate(point.x, point.y)
-                .scale(scaleStep)
-                .translate(-point.x, -point.y);
-
-
-            let newZoomMatrix = currentZoomMatrix.multiply(matrix);
-            container.transform.baseVal.initialize(svgmap.createSVGTransformFromMatrix(newZoomMatrix));
-
-            console.log("scale", scale);
-            let t = newZoomMatrix;
-            console.log("zoomMatrix", t.a, t.b, t.c, t.d, t.e, t.f);
-        }
-    </script>
-
-    <script>
         function log(msg) {
             console.log(msg);
         };
@@ -281,107 +286,313 @@
             if (subscribers != null) {
                 for(let i=0; i < subscribers.length; i++) {
                     subscriber = subscribers[i];
-                    if (subscriber.id == id) {
+                    if (subscriber.ID == id)
                         return subscriber;
-                    }
                 }
             }
-
             return null;
         }
 
+        function uniqByKeepLast(a, key) {
+            return [
+                ...new Map(
+                    a.map(x => [key(x), x])
+                ).values()
+            ]
+        }
+
+        function doUser(user) {
+        }
+
         function doTraffic(t) {
+            var traffic = null;
+
             if (t != null)  {
-                if (!Array.isArray(t)) {
-                    if (t.PACKET == "END")
-                        traffic.push(t);
-                }
-                else
+                if (!Array.isArray(t))
+                    traffic = [t];
+                else 
                     traffic = t;
+
+                // sort in reverse order
+                traffic.sort((a, b) => {
+                    if (a.DATE > b.DATE) return 1;
+                    if (a.DATE < b.DATE) return -1;
+
+                    if (a.TIME > b.TIME) return 1;
+                    if (a.TIME < b.TIME) return -1;
+                });
+
+                // keep the last N packets from traffic
+                // traffic = uniqByKeepLast(traffic, it => it.DMRID);
 
                 // deal with END packets
                 dealWithMap(traffic);
 
                 // treat START one
-                if (t.PACKET == "START")
+                if (!Array.isArray(t) && t.PACKET == "START") {
                     dealWithMap([t]);
+                }
             }
         }
+/*
+        function sendMessage(sock, callsign) {
+            return new Promise((resolve, reject) => {
+                sock.send( JSON.stringify({"request": "user", "callsign": callsign }));
 
+                sock.onmessage = (e) => {
+                    resolve(JSON.parse(e.data));
+                };
+                sock.onerror = (err) => {
+                    reject(err);
+                };
+
+            });
+        }
+*/
         // https://mdbootstrap.com/snippets/jquery/ascensus/531046#js-tab-view
         // https://www.datavis.fr/index.php?page=map-population
         // https://colorbrewer2.org/#
+        // https://www.wrld3d.com/wrld.js/latest/docs/leaflet/L.Path/#path-option
+        // https://github.com/mathiasleroy/Belgium-Geographic-Data
+        // https://gist.github.com/BrendonKoz/b1df234fe3ee388b402cd8e98f7eedbd
+        // https://github.com/yigityuce/Leaflet.Control.Custom
+        // https://www.2c2r.fr/wp-content/plugins/edservices_common/france-geojson/
+        // https://github.com/joergdietrich/Leaflet.Terminator
+
+        function highlightFeature(e) {
+            var layer = e.target;
+            layer.setStyle( { "fillColor": "#569cd6" } );
+        }        
+
+        function resetHighlight(e) {
+            var layer = e.target;
+            layer.setStyle( { "fillColor": "black", "fillOpacity":  0.3 } );
+        }        
+
+        function hiliteMap(dept, country, packet, user, bgcolor) {
+            Object.keys(geojson._layers).forEach(function(key) {
+                layer = geojson._layers[key];
+                feature = layer.feature;
+
+                if (country == "Espagne")
+                    dept = "ES"+dept;
+
+                if (feature.properties.code == dept) {
+                    var code = ""+feature.properties.code;
+                    
+                    if (code.startsWith("ES"))
+                        code = code.substr(2);
+
+                    opacity = (country == "France") ? 0.6 : 0.8;
+
+                    layer.setStyle({ 'fillColor': bgcolor, "fillOpacity":  opacity, "color": "#002000" });
+
+                    html = "<div style='padding:1px 3px 1px 3px'>Callsign : " + packet.CALLSIGN + "<br/>"
+                        + "Prénom : " + enhanceNames(packet.NAME) + "<br/>"
+                        + "En ligne à : " + packet.TIME + " le " + packet.DATE + "<br/>";
+
+                    html += ((user != null && user.CITY != "") ? ("Ville : " + user.CITY + "<br/>") : "")
+                        + "Département : " + feature.properties.nom + " (" + code + ")<br/>";
+
+                    layer.bindTooltip(html, {
+                            direction: 'right',
+                            permanent: false,
+                            sticky: true,
+                            offset: [20, 0],
+                            opacity: 0.75,
+                            className: 'leaflet-tooltip-own' 
+                    });
+                }
+            });
+        }
+
+        function initMap() {
+            map = L.map('map', 
+                {   
+                    zoomDelta: 0.25,
+                    zoomSnap: 0,
+                    minZoom: 3,
+                    maxZoom: 10 }).setView([47.0781336, 2.3282644], currentZoom);
+
+            L.control.scale().addTo(map);
+
+            // var osm = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+	        //     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+            //     className: 'map-tiles'
+            // }).addTo(map);
+
+            // var osm = L.tileLayer('https://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png', {
+	        //     attribution: '&copy; OpenStreetMap France | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            //     className: 'map-tiles'
+            // }).addTo(map);
+
+            var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                className: 'map-tiles'
+            }).addTo(map);
+
+            geojson = L.geoJson(frbesw, { 
+                style : function(feature) {
+                    return {    
+                        "stroke":               true,
+                        "color":                "#004000",
+                        "weight":               1,
+                        "opacity":              0.20,
+                        "fill":                 true,       // to display tooltips
+                        "fillOpacity":          "var(--normal-fillopacity)",
+                        "fillColor":            "var(--normal-fillcolor)"
+                    }
+                },
+                onEachFeature : function (feature, layer) {                    
+                    layer._leaflet_id = feature.properties.nom;
+
+                    layer.on({
+                        // mouseover: highlightFeature,
+                        // mouseout: resetTooltip
+                    });
+
+                    var code = ""+feature.properties.code;
+                    
+                    if (code.startsWith("ES"))
+                        code = code.substr(2);
+
+                    layer.bindTooltip("<div style='padding:1px 3px 1px 3px'>" + "Département : " + code + "<br/>Région : " + feature.properties.nom + "</div>", 
+                    {
+                        direction: 'right',
+                        permanent: false,
+                        sticky: true,
+                        offset: [20, 0],
+                        opacity: 0.75,
+                        className: 'leaflet-tooltip-own' 
+                    });
+                }
+            });
+
+            map.on('zoomend', function () {
+                currentZoom = map.getZoom();
+
+                // console.log("weight : " + Math.round(currentZoom / 2.5));
+                
+                if (currentZoom > 8)
+                    geojson.setStyle({ weight: Math.round(currentZoom / 2.5) });
+                else
+                    geojson.setStyle({ weight: 1 });
+            });
+            
+            map.addLayer(geojson);
+
+            // night and day layer
+            var terminator = L.terminator();
+            terminator.setStyle({ "fillOpacity":  0.2 });
+            terminator.addTo(map);
+            
+            setInterval(() => {
+                terminator.setTime();
+            }, 1000);
+        }
 
         window.onload = () => {
-            var wsuri;
+            listeners = 0;
+            currentZoom = 6.5;
             subscribers = null;
-			// adjust the geojson map url to your needs
-			// if local file, store it into hbjon assets folder
-            mapurl = "departments.json";
-            wsuri = "ws://" + window.location.hostname + ":9020";
-            departments = [];
-            maxScale = 9;
-            minScale = 1;
-            scale = 1;
-            selected = false;
+            departments = [];            
+            lastCaller = null;
+            tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
+
+            getConfigFromLocalStorage();
+
+            var wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
 
             initMap();
 
-
-            svgmap = document.querySelector('svg');
-
-            document.querySelector('svg .main-container').addEventListener('mousedown', beginDrag);
-            document.querySelector('svg .main-container').addEventListener('mousewheel', zoom);
-            svgmap.addEventListener('mousemove', drag);
-            window.addEventListener('mouseup', endDrag);
-
-            if ("WebSocket" in window) {
-                sock = new WebSocket(wsuri);
-            } else if ("MozWebSocket" in window) {
-                sock = new MozWebSocket(wsuri);
-            } else {
-                log("Browser does not support WebSocket!");
+            function WSConnection() {
+                'use strict';
+                this.socket = {};
             }
 
-            if (sock) {
-                sock.onopen = () => {
-                    log("Connected to " + wsuri)
+            WSConnection.prototype.connect = (url) => {
+                'use strict';
 
-                    sock.send(JSON.stringify({"request": "users"}));
-                }
-
-                sock.onclose = (e) => {
-                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
-                    sock = null;
-                }
-
-                sock.onmessage = (e) => {
-                    var data = null;
-
-                    try {
-                        data = JSON.parse(e.data);
-
-                        // console.log("");
-                        // console.log(data);
-                        // console.log("");
-
-                        if (data != null) {
-                            if (data.TRAFFIC)
-                                doTraffic(data.TRAFFIC);
-                            else
-                            if (data.CONFIG) {
-                                if (data.CONFIG.USERS) {
-                                    subscribers = data.CONFIG.USERS.results;
-                                }
-                            }
-                        }
-                    } catch(error) {
-                        log(error);
+                return new Promise((resolve, reject) => {
+                    if ("WebSocket" in window)
+                        this.socket = new WebSocket(url);
+                    else if ("MozWebSocket" in window)
+                        this.socket = new MozWebSocket(url);
+                    else {
+                        log("Browser does not support WebSocket!");
+                        resolve();
                     }
-                }
-            }
 
+                    this.socket.onopen = () => {
+                        log("Connected to " + url)
+                        resolve();
+                    };
+
+                    this.socket.onmessage = (e) => {
+                        var data = null;
+
+                        // clears lastCaller after N minutes
+                        if ((lastCaller != null) && (Date.now() - lastCaller.timeout > 3 * 60 * 1000)) { // 3 min
+                            $('#lastcallercontainer').hide();
+                            lastCaller = null;
+                        }
+
+                        try {
+                            if (themeSettings == "auto")
+                                adjustTheme();
+
+                            if ((data = JSON.parse(e.data)) != null) {
+                                // console.log("");
+                                // console.log(data);
+                                // console.log("");
+                                if (data.BIGEARS)
+                                    $("#listeners").text(data.BIGEARS);
+
+                                if (data.TRAFFIC)
+                                    doTraffic(data.TRAFFIC);                                    
+                                else
+                                if (data.CONFIG) {
+                                    if (data.CONFIG.BIGEARS)
+                                        $("#listeners").text(data.CONFIG.BIGEARS);
+
+                                    if (data.CONFIG.USERS)
+                                        subscribers = data.CONFIG.USERS;
+
+                                    if (data.CONFIG.PACKETS)
+                                        doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+                                } 
+                                else
+                                if (data.USER)
+                                    doUser();
+                            }
+                        } catch(error) {
+                            log(error);
+                        }
+                    };
+
+                    socket.onerror = function (error) {
+                        console.log('WebSocket error: ' + error);
+                        reject(error);
+                    };
+
+                    socket.onclose = function (e) {
+                        log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                        this.sock = null;
+                    };
+                });
+            };
+
+            WSConnection.prototype.disconnect = () => {
+                'use strict';
+                console.log("Disconnect request from local app layer");
+                this.socket.close();
+            };
+
+            socket = new WSConnection().connect(wsuri);
         };
-    </script>
 
+        window.onunload = () => {
+            socket = null;
+        }
+</script>
 </html>

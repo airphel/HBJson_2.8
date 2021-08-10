@@ -1,11 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html class="theme-dark">
     <head>
-        <link rel="shortcut icon" href="ispt.ico">
+        <link rel="shortcut icon" href="site.ico">
         <meta charset="UTF-8">
+        <meta http-equiv="refresh" content="20000"/>
         <meta name="robots" content="noindex, nofollow">
-        <title>HBLink JSON Monitor</title>
-
+        <title>HBJSON Monitor</title>
+        
         <link rel="stylesheet" href="theme_template.css">
         <link rel="stylesheet" href="mysite_template.css">
 
@@ -16,10 +17,16 @@
         <center>
             <noscript>You must enable JavaScript</noscript>
 
-            <div id="pageHeader">
-                <img id="siteLogo" src="hblink.png"/>
-                <h1 class="text"><<<system_name>>></h1>
+            <div id="siteHeader">
+                <div id="sitelogo">
+                    <<<site_logo>>>
+                </div>
 
+                <div id="buttonArea">
+                    <<<button_bar>>>
+                    <button class="button" id="listeners">&#x1F441 0</button>
+                </div>
+        
                 <div name="hbtables">
                     <div id="insertPoint"></div>
                     <br>
@@ -65,7 +72,7 @@
                         </tbody>
                     </table>
                 </div>
-
+            
                 <div id="footer">
                     <span>Copyright (c) 2016, 2017, 2018, 2019, 2020 , Modified by NumeriX 2019,2020
                         <br>The Regents of the K0USY Group. All rights reserved.
@@ -78,11 +85,9 @@
                     <span>Copyright (c) 2016, 2017, 2018, 2019<br>The Regents of the <a href=http://k0usy.mystrikingly.com><p style="color:#8E8E8E">K0USY Group.</p></a></span>
                 </div>
                 <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
-            </div>
+            </div>                
         </center>
     </body>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 
 <script type="text/javascript">
     $(document).ready(function() {
@@ -92,17 +97,18 @@
 
         $(document).on("click", ".tablefixed thead", function() {
             $("#"+$(this).attr('tbodyid')).toggle(100);
-        });
+        });        
     });
-</script>
+</script> 
 
 <script type="text/javascript">
     var lastheardOpen = true;
     var traffic = [];
     var sock = null;
     var displayLines = parseInt("<<<DISPLAY_LINES>>>");
-    var tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
-    var names = [];
+    var names = [];    
+    tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
+    tgorder = new Set("<<<TGID_ORDER>>>".split(','));
 
     names["Andre"] = "André";
     names["Francois"] = "François";
@@ -117,7 +123,7 @@
     names["Frederic"] = "Frédéric";
     names["Jeremy"] = "Jérémy";
     names["Jean-Francois"] = "Jean-François";
-    names["Gregory"] = "Grégory";
+    names["Gregory"] = "Grégory";    
     names["Anne-Cecile"] = "Anne-Cécile";
     names["Mickael"] = "Mickaël";
     names["Theophile"] = "Théophile";
@@ -128,56 +134,12 @@
     names["Nathanael"] = "Nathanaël";
     names["Joel"] = "Joël";
     names["Jeremie"] = "Jérémie";
-
-    cookieSettingsName = "hbjson_settings";
-    settingsValidity = 5;	    // 5 days
-    settings = [{ name: "openbridges", "open": true }, {"name": "masters", "open": true }, { "name": "peers", "open": true }];
-
-    function createCookie(name, value, days) {
-        var expires;
-
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-            expires = "; expires=" + date.toGMTString();
-        } else {
-            expires = "";
-        }
-            document.cookie = encodeURIComponent(name) + "=" + encodeURIComponent(value) + expires + "; path=/";
-    }
-
-    function readCookie(name) {
-        var nameEQ = encodeURIComponent(name) + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) === ' ')
-                c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0)
-                return decodeURIComponent(c.substring(nameEQ.length, c.length));
-        }
-        return null;
-    }
-
-    function saveSettings() {
-        settings = [
-            { "name": "openbridges",    "open": $('#openbridges').is(':visible'), "colspan": $("#theadOpenbridges tr th").length },
-            { "name": "masters",        "open": $('#masters').is(':visible'), "colspan": $("#theadMasters tr th").length },
-            { "name": "peers",          "open": $('#peers').is(':visible'), "colspan": $("#theadPeers tr th").length }
-        ];
-
-        createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity);
-    }
-
-    function eraseCookie(name) {
-        createCookie(name, "", -1);
-    }
-
+    
     function enhanceNames(name) {
         if (names[name] != null)
             return names[name];
 
-        return name;
+        return name;            
     }
 
     //   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
@@ -207,7 +169,7 @@
 
     function updateOpenBridges(openBridges) {
         if (openBridges != null && $('#openbridges').is(':visible')) {
-            $("#openbridges tr").remove();
+            $("#openbridges tr").remove(); 
 
             // console.log("");
             // console.log(JSON.stringify(openBridges));
@@ -234,25 +196,25 @@
                     }
 
                     var cnx = ((data == null || data[0] == "") ? "msTS": ((data && data[0] == "TX") ? "msTSRX":"msTSTX"));
-
+                
                     content += '<td class="' + cnx + '">' + entry + '</td>';
                 content += '</tr>';
             }
 
-            $("#openbridges").append(content);
+            $("#openbridges").append(content); 
         }
     }
 
     function updatePeers(peers) {
         if (peers != null  && $('#peers').is(':visible')) {
-           $("#peers tr").remove();
-
+           $("#peers tr").remove(); 
+   
         //    console.log("");
         //    console.log(JSON.stringify(peers));
         //    console.log("");
-
+            
             var content = "";
-
+   
            for (let peer in peers) {
                record = peers[peer];
                ts1 = (record["1"]["TXRX"] == "") ? "msTS1": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
@@ -260,12 +222,12 @@
                cnx1 = (record["1"]["TXRX"] == "") ? "msTS": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
                cnx2 = (record["2"]["TXRX"] == "") ? "msTS": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
                peState = record["STATS"]["CONNECTION"] == "YES" ? "peON":"peOFF";
-
+   
                content += '<tr>';
                content += "<td class='msMasters' rowspan='3'>" + peer;
                content += "<br><div class='msRepeat'>Mode:&nbsp;"+record["MODE"]+"</div></td>";
                content += '</tr>';
-
+   
                content += '<tr>';
                    content += '<td rowspan="2">';
                    content += '<div class="tooltip">';
@@ -278,20 +240,20 @@
                    content += '</span>';
                    content += '</div>';
                    content += '<br>';
-
+   
                    content += '<div class="msLocation">' + record["LOCATION"] + '</div>';
                    content += '</td>';
-
+   
 
                     content += '<td class="' + peState + '" rowspan="2">';
                     content += record["STATS"]["CONNECTED"] + '<br><div style="font: 8pt arial, sans-serif">' + record["STATS"]["PINGS_SENT"] + " / " + record["STATS"]["PINGS_ACKD"] + " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) + "</div>";
                     content +'</td>';
-
+   
                    content += '<td class="' + ts1 + '">TS1</td>';
                    content += '<td class="' + cnx1 + '">' +record["1"]["SUB"]+'</td>';
                    content += '<td class="' + cnx1 + '">' +record["1"]["DEST"]+'</td>';
                content += '</tr>';
-
+               
                content += '<tr>';
                    content += '<td class="' + ts2 + '">TS2</td>';
                    content += '<td class="' + cnx2 + '">' +record["2"]["SUB"]+'</td>';
@@ -299,16 +261,16 @@
                content += '</tr>'
            }
 
-           $("#peers").append(content);
+           $("#peers").append(content); 
        }
     }
 
     // https://gist.github.com/umidjons/9614157
     function sortMastersPeersByOnlineTime(peers) {
         var peersArray = [];
-
+        
         // convert to array
-        for(var key in peers) {
+        for(var key in peers) { 
             peersArray.push([key, peers[key]]);
         }
 
@@ -325,7 +287,7 @@
                     if (chr == 'd')
                         peersArray[i]["1"]["ONLINE"] = ""+(parseInt(t[0])*86400+parseInt(t[1])*3600);
                     else
-                    if (chr == 'h')
+                    if (chr == 'h')    
                         peersArray[i]["1"]["ONLINE"] = ""+(parseInt(t[0])*3600+parseInt(t[1])*60);
                     else
                     if (chr == 'm')
@@ -338,7 +300,7 @@
 
                 default:
                 peersArray[i]["1"]["ONLINE"] = "0";
-                break;
+                break;              
             }
         }
 
@@ -356,7 +318,7 @@
     function updateMasters(masters) {
         if (masters != null && $('#masters').is(':visible')) {
             var content = "";
-            $("#masters tr").remove();
+            $("#masters tr").remove(); 
 
             for (let entry in masters) {
                 done = false;
@@ -388,7 +350,7 @@
                         cnx2 = (record["2"]["TXRX"] == "") ? "msTS": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
 
                         hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
-
+    
                         content += '<tr>';
                             content += '<td rowspan="2">';
                                 content += '<div class="tooltip">';
@@ -414,7 +376,7 @@
                             content += '<td class="' + cnx1 + '">' +record["1"]["SUB"]+'</td>';
                             content += '<td class="' + cnx1 + '">' +record["1"]["DEST"]+'</td>';
                         content += '</tr>';
-
+                        
                         content += '<tr>';
                             content += '<td class="' + ts2 + '">TS2</td>';
                             content += '<td class="' + cnx2 + '">' +record["2"]["SUB"]+'</td>';
@@ -426,15 +388,15 @@
                 }
             }
 
-            $("#masters").append(content);
+            $("#masters").append(content); 
             content = "";
         }
     }
 
-    function doTraffic(t) {
+    function doTraffic(t) {        
         if (t != null)  {
             if (!Array.isArray(t)) {
-                if (t.PACKET == "END")
+                // if (t.PACKET == "END")
                     traffic.push( t );
             }
             else
@@ -442,27 +404,27 @@
 
             if (traffic.length > 0) {
                 // keeps the n last unique items
-                traffic = uniqByKeepLast(traffic, it => it.DMRID).slice(-displayLines);
+                traffic = uniqByKeepLast(traffic, it => it.DMRID);
 
                 // sort in reverse order
                 traffic.sort((a,b) => {
-                    if (a.DATE > b.DATE) return -1;
-                    if (a.DATE < b.DATE) return 1;
+                    aa = a.DATE + " " + a.TIME;
+                    bb = b.DATE + " " + b.TIME;
 
-                    if (a.TIME > b.TIME) return -1;
-                    if (a.TIME < b.TIME) return 1;
+                    if (aa > bb) return -1;
+                    if (aa <= bb) return 1;
                 });
 
                 var content = "";
 
-                cleaned = true;
-                $(".lastheard tbody tr").remove();
+                cleaned = true;                        
+                $(".lastheard tbody tr").remove(); 
 
                 for(var i=0; i < traffic.length; i++) {
                     var tgid = parseInt(traffic[i].TGID);
 
                     // skip excluded TG
-                    if (tgfilter.has(tgid))
+                    if (tgfilter.has(''+tgid))
                         continue;
 
                     var tgName = "tgId"+tgid;
@@ -476,11 +438,20 @@
                         default: bgClass = 'tgWhite'; break;
                     }
 
+                    var tgs = [38, 39, 7, 777, 800, 700];
+                    tgs.forEach(element => {
+                        var tbid = 'tbtg'+element;
+                        if (document.getElementById(tbid) != null) {
+                            if ($('#' + tbid + ' >tbody >tr').length == 0)
+                                $('#' + tbid).remove();
+                        }
+                    });
+
                     /* check if table already exists */
                     if (document.getElementById(tgName) == null) {
                         /* build the missing table */
-                        var emptyTable = '<table class="tables lastheard tablefixed">'
-                            +'<thead id="'+ tgName +'" tgid="'+ tgid +'">'
+                        var emptyTable = '<table id=tb'+ tgName + ' class="tables lastheard tablefixed">'
+                            +'<thead id="'+ tgName +'" tgid="'+ tgid +'">' 
                                 +'<tr class="headerRow">'
                                     +'<th class="thledate">Date</th>'
                                     +'<th class="thletime">Heure</th>'
@@ -496,31 +467,39 @@
                             +'</thead>'
                             +'<tbody id="hblink' + tgid + '"></tbody></table>';
 
-                        /* insert new table into tg tables area */
-                        $('#insertPoint').append(emptyTable);
+                        /* insert new table into tg tables area regarding tgorder */
+                        if (document.getElementById("tg"+tgid+"marker") != null)
+                            $(emptyTable).insertBefore("#tg"+tgid+"marker");
+                        else
+                            $('#insertPoint').append(emptyTable);
+                    } 
+                    
+                    /* deal with content if < displaylines */
+                    if ($('#tb' + tgName +' >tbody >tr').length < displayLines) {
+                        content = '<tr class=' + bgClass + '>';
+                        content += "<td>" + traffic[i].DATE + "</td>";
+                        content += "<td>" + traffic[i].TIME + "</td>";
+                        content += "<td>" + traffic[i].TS + "</td>";
+                        content += "<td class='callsign ellipsis'><a target='_blank' href=https://qrz.com/db/" + traffic[i].CALLSIGN + ">" + traffic[i].CALLSIGN + "</a></td>";
+                        content += "<td class='dmrid'>(" + traffic[i].DMRID + ")</td>";
+                        content += "<td class='firstname ellipsis'>" + enhanceNames(traffic[i].NAME) + "</td>";
+                        content += "<td class='talkgroup'>" + traffic[i].TGID + "</td>";
+                        content += "<td class='alias'>" + traffic[i].ALIAS + "</td>";
+                        if (traffic[i].PACKET == "START")
+                            content += "<td class='online'>ONLINE</td>";
+                        else
+                            content += "<td class='delay'>" + ((traffic[i].DELAY != undefined) ? traffic[i].DELAY : "") + "</td>";
+                        content += "<td class='netid'>" + traffic[i].SRC_ID + "</td>";
+                        content += "<td class='infra'>" + traffic[i].SYS + "</td>";
+                        content += "</tr>";
+
+                        $("#hblink" + tgid).append(content);
                     }
-
-                    /* deal with content */
-                    content = '<tr class=' + bgClass + '>';
-                    content += "<td>" + traffic[i].DATE + "</td>";
-                    content += "<td>" + traffic[i].TIME + "</td>";
-                    content += "<td>" + traffic[i].TS + "</td>";
-                    content += "<td class='callsign'><a target='_blank' href=https://qrz.com/db/" + traffic[i].CALLSIGN + ">" + traffic[i].CALLSIGN + "</a></td>";
-                    content += "<td class='dmrid'>(" + traffic[i].DMRID + ")</td>";
-                    content += "<td class='firstname'>" + enhanceNames(traffic[i].NAME) + "</td>";
-                    content += "<td class='talkgroup'>" + traffic[i].TGID + "</td>";
-                    content += "<td class='alias'>" + traffic[i].ALIAS + "</td>";
-                    content += "<td class='delay'>" + ((traffic[i].DELAY != undefined) ? traffic[i].DELAY : "") + "</td>";
-                    content += "<td class='netid'>" + traffic[i].SRC_ID + "</td>";
-                    content += "<td class='infra'>" + traffic[i].SYS + "</td>";
-                    content += "</tr>";
-
-                    $("#hblink" + tgid).append(content);
                 }
             }
         }
     }
-
+    
     function log(msg) {
         console.log(msg);
     };
@@ -533,97 +512,118 @@
         }
     }
 
-    window.onload = function() {
-        var wsuri;
-        wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
+    window.onload = () => {
+        listeners = 0;
 
-        // $.ajaxSetup({ cache: false });
-        // window.location.reload(false);
+        var wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
 
-        // retrieve settings
-	    if ((cookie = JSON.parse(readCookie(cookieSettingsName))) == null)
-		    createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity);
-	    else {
-		    settings = cookie;
-
-            for(let i=0; i < settings.length; i++) {
-                var tbs = settings[i];
-
-                if (tbs.open) {
-                    $("#"+tbs.name).show();
-                    var count = tbs.colspan;
-                    if (count == null)
-                        count = 3;
-                    $("#"+tbs.name).append("<tr><td colspan="+count+">Mise à jour en cours...</td></tr>");
-                }
-                else
-                    $("#"+tbs.name).hide();
-            }
-        }
+        if (getConfigFromLocalStorage != null)
+            getConfigFromLocalStorage();
 
         if (isNaN(displayLines))
             displayLines = 10;
 
-        if ("WebSocket" in window) {
-            sock = new WebSocket(wsuri);
-        } else if ("MozWebSocket" in window) {
-            sock = new MozWebSocket(wsuri);
-        } else {
-            log("Browser does not support WebSocket!");
+        tgorder.forEach(tg => {
+            $("#insertPoint").append($("<div id='tg"+tg+"marker'></div>"));
+        });
+
+        function WSConnection() {
+            'use strict';
+            this.socket = {};
         }
 
-        if (sock) {
-            sock.onopen = () => {
-                log("Connected to " + wsuri)
-            }
+        WSConnection.prototype.connect = (url) => {
+            'use strict';
 
-            sock.onclose = (e) => {
-                log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
-                sock = null;
-            }
+            return new Promise((resolve, reject) => {
+                if ("WebSocket" in window)
+                    this.socket = new WebSocket(url);
+                else if ("MozWebSocket" in window)
+                    this.socket = new MozWebSocket(url);
+                else {
+                    log("Browser does not support WebSocket!");
+                    resolve();
+                }
 
-            sock.onmessage = (e) => {
-				var data = null;
+                this.socket.onopen = () => {
+                    log("Connected to " + url)
+                    resolve();
+                };
 
-				try {
-					data = JSON.parse(e.data);
+                this.socket.onmessage = (e) => {
+                    var data = null;
 
-                    // console.log("");
-                    // console.log(data);
-                    // console.log("");
+                    try {
+                        if (themeSettings == "auto")
+                            adjustTheme();
 
-   					if (data != null) {
-						if (data.CTABLE) {
-							CTable = data.CTABLE;
-	
-							if (CTable != null)
-								treatTables(CTable);
-						}
-						else
-						if (data.TRAFFIC)
-							doTraffic(data.TRAFFIC);
-	   					else
-						if (data.BRIDGES)
-						   	updateBridges(data.BRIDGES);
-						else	
-						if (data.CONFIG) {
-							var CTable = data.CONFIG.CTABLE;
+                        data = JSON.parse(e.data);
 
-							if (CTable != null)
-								treatTables(CTable);
-						}
-						else
-					   	if (data.BTABLE)
-							log(JSON.stringify(data.BTABLE));
-	   					else
-						if (data.STATUS)
-							log(data.STATUS);
-					}
-				} catch(error) {
-				   log(error);
-				}
-           }
-        }
+                        // console.log("");
+                        // console.log(data);
+                        // console.log("");
+
+                        if (data != null) {
+                            if (data.BIGEARS) {                                
+                                $("#listeners").text("\uD83D\uDD75 SWL " + data.BIGEARS);
+                            }
+
+                            if (data.CTABLE != null)
+                                treatTables(data.CTABLE);
+                            else
+                            if (data.TRAFFIC)
+                                doTraffic(data.TRAFFIC);
+                            else
+                            if (data.BRIDGES)
+                                updateBridges(data.BRIDGES);
+                            else	
+                            if (data.CONFIG) {
+                                // if (data.CONFIG.USERS)
+                                //     subscribers = data.CONFIG.USERS.results;
+
+                                if (data.CONFIG.BIGEARS) {
+                                    $("#listeners").text("\uD83D\uDD75 SWL " + data.CONFIG.BIGEARS);
+                                }
+
+                                if (data.CONFIG.PACKETS)
+                                    doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+                            } 
+                            else
+                            if (data.BTABLE)
+                                log(JSON.stringify(data.BTABLE));
+                            else
+                            if (data.STATUS)
+                                log(data.STATUS);
+                        }
+                    } catch(error) {
+                        log(error);
+                    }
+                };
+
+                socket.onerror = function (error) {
+                    console.log('WebSocket error: ' + error);
+                    reject(error);
+                };
+
+                socket.onclose = function (e) {
+                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e.reason + "')");
+                    this.sock = null;
+                };
+            });
+        };
+
+        WSConnection.prototype.disconnect = () => {
+            'use strict';
+            console.log("Disconnect request from local app layer");
+            this.socket.close();
+        };
+        
+
+        socket = new WSConnection().connect(wsuri);
     };
- </script>
+
+    window.onunload = () => {
+        socket = null;
+    }
+</script>
 </html>

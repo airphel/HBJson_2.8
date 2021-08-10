@@ -1,0 +1,28 @@
+<div id="infoLine">
+	This is an info line
+</div>
+<marquee id="marquee" direction="left" behavior="scroll" scrollamount="6">Your own marquee</marquee>
+<br>
+<div class="dropdown">
+	<button class="button">HB' Server</button>
+    <div class="dropdown-content">
+        <a target="_blank" href="index.html">Monitor</a>
+    </div>
+</div>
+<div class="dropdown">
+    <button class="button">Hotspot</button>
+    <div class="dropdown-content">
+        <a target="_blank" href="http://pi-star.local/">pi-star</a>
+    </div>
+</div>
+<a target="_self" href="loglast.html"><button class="button">Log+ Conf</button></a>
+<a target="_self" href="map.html"><button class="button">QSO'Map</button></a>
+<a target="_blank" onclick="javascript:saveSettings()"><button class="button">Save</button></a>
+<div class="dropdown">
+    <button class="button">Mode</button>
+    <div class="dropdown-content">
+        <a target="_blank" onclick="javascript:document.documentElement.className = 'theme-dark';">Dark</a>
+        <a target="_blank" onclick="javascript:document.documentElement.className = 'theme-light';">Light</a>
+        <a target="_blank" onclick="javascript:themeSettings='auto';adjustTheme()">Auto</a>
+    </div>
+</div>
