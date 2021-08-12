@@ -1,13 +1,18 @@
 
-**HBJson is a micro service providing JSON data from HBLink**
+** HBJson is a micro service providing JSON data from HBLink **
+    - almost not templated easily modified
+    - file or sql database data
+    - map location of transmitting OMs
 
     cd /opt
     git clone https://github.com/Avrahqedivra/HBJson.git
     cd HBJson
+    
+    edit config.py to match your needs
 
     run with : python3 monitor.py
     
-    connect with your browser on http://monitor-ip:port
+    connect with your browser on http://monitorip:port
 
 
 **HBmonitor is a "web dashboard" for HBlink by N0MJS.**
