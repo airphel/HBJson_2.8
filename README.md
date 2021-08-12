@@ -1,6 +1,6 @@
 
 ** HBJson is a micro service providing JSON data from HBLink **
-    - almost not templated easily modified
+    - almost not templated easily editable
     - file or sql database data
     - map location of transmitting OMs
 
