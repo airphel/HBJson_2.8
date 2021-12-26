@@ -2,7 +2,7 @@
   "count": 1, 
   "results": [
 	  {
-		"id": 0000000,
+		"id": "0000000",
 		"callsign": "XXXXXX",
 		"fname": "John Doe",
 		"city": "Nowhere",
