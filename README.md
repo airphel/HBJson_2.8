@@ -1,5 +1,5 @@
 
-** HBJson is a micro service providing JSON data from HBLink **
+** HBJson is a micro service providing JSON data from HBLink or HBNet **
     
     - almost not templated easily editable
     - file or sql database data
