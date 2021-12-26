@@ -1,2 +1,17 @@
 {
+  "count": 1, 
+  "results": [
+	  {
+		"id": 0000000,
+		"callsign": "XXXXXX",
+		"fname": "John Doe",
+		"city": "Nowhere",
+		"state": "91Essonne",
+		"country": "France",
+		"remarks": "DMR",
+		"surname": "",
+		"radio_id": "",
+		"name": ""
+	  }
+  ]
 }
