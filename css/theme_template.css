@@ -1,4 +1,68 @@
-::-webkit-scrollbar {
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fCRc4EsA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fABc4EsA.woff2) format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fCBc4EsA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fBxc4EsA.woff2) format('woff2');
+  unicode-range: U+0370-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fCxc4EsA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fChc4EsA.woff2) format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fBBc4.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+a::-webkit-scrollbar {
   display: none;
 }
 .ellipsis {
@@ -8,13 +72,89 @@
 }
 
 html, body {
-  font-size: 10pt;
-  font-family: -apple-system, BlinkMacSystemFont, calibri, Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: var(--color-fz-html);
+  font-family: var(--color-font-html);
   background-color: var(--color-page);
   width:100%;
-  height:100%;            
+  height:100%;
   margin: 0;
+  font-weight: bold;
 }
+
+/*Tabs*/
+#tabs {
+  border-radius: var(--app-border-radius);
+  overflow: hidden;
+  /*border: 0.5px solid var(--color-table-border);*/
+  background-color: var(--color-page);
+}
+
+/*Head area*/
+#tabs .head {
+    display: inline-block;
+    width: 100%;
+    border-radius: var(--app-border-radius);
+    /*border-bottom: 0.5px solid var(--color-table-border);*/
+}
+
+#tabs .head ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#tabs .head li {
+    float: left;
+    border: none;
+    cursor: pointer;
+    padding: 4px 20px 0 20px;
+    transition: 0.3s;
+    font-size: 17px;
+    color: var(--color-light);
+}
+#tabs li:hover {
+    background-color: var(--color-dropdown-hover);
+}
+/*Head area active tab*/
+#tabs li.active {
+    background-color: var(--color-bg-headerRow);
+}
+/*Content area*/
+#tabs .content > div {
+  display: none;
+  /*padding: 6px 12px;*/
+  color: var(--color-light);
+}
+#tabs .tables {
+  margin-top: 0;
+}
+/*Content area active tab*/
+#tabs .content > div.active {
+    display: block;
+}
+#tabs .content {
+  max-height: 43rem;
+  scrollbar-width: thin;
+  overflow-y: auto;
+}
+.content thead {
+  top: 0;
+  position: sticky;
+}
+.content::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+  background-color: #404040;
+}
+.content::-webkit-scrollbar-thumb {
+  background-color: #569cd6;
+}
+.content thead th {
+  top: 0;
+  position: sticky;
+}
+/*End*/
+/***************************************************************/
 #footer {
   margin-top: 2rem;
   color:var(--color-footer);
@@ -22,9 +162,10 @@ html, body {
   font-weight:bold; 
   text-align: center;
 }
-a:link {
+a:link, .alink {
   color: var(--color-alink);
   text-decoration: none;
+  cursor: pointer;
 }
 /* visited link */
 a:visited {
@@ -32,12 +173,12 @@ a:visited {
   text-decoration: none;
 }
 /* mouse over link */
-a:hover {
+a:hover, .alink:hover {
   color: var(--color-ahover);
   text-decoration: underline;
 }
 /* selected link */
-a:active {
+a:active, .alink:active {
   color: var(--color-aactive);
   text-decoration: none;
 }
@@ -53,9 +194,10 @@ a:active {
   background-color: var(--color-tooltip-bg);
   color: var(--color-tooltip-fg);
   text-align: left;
-  border-radius: 3px;
+  border-radius: var(--app-border-radius);
   padding: 8px 0;
-  left: 100%;
+  left: 25%;
+  top: 100%;
   opacity: 1;
 /* Position the tooltip */
   position: absolute;
@@ -80,7 +222,7 @@ a:active {
   text-decoration: none;
   display: inline-block;
   margin: 4px 2px;
-  border-radius: 3px;
+  border-radius: var(--app-border-radius);
 }
 /* The container 
   <div>
@@ -95,8 +237,9 @@ a:active {
   display: none;
   position: absolute;
   background-color: var(--color-dropdown-content);
-  min-width: 10rem;
+  width: max-content;
   z-index: 750;
+  border: .5px solid var(--color-table-border);
 }
 /* Links inside the dropdown */
 .dropdown-content a {
@@ -120,7 +263,7 @@ a:active {
 }
 
 table, td, th {
-  font-weight: var(--font-weight-table);
+  font-weight: var(--color-fw-table);
   border: .5px solid var(--color-table-border);
   padding: 1px;
   border-collapse: collapse;
@@ -182,25 +325,26 @@ thead {
   width: 6rem;
 }
 .thletime { 
-  width: 4rem;
+  width: 5rem;
 }
 .thleslot { 
   width: 2rem;
 }
 .thletx { 
-  width: 11rem;
+  width: 10rem;
 }
 .thlename { 
   width: 11rem;
 }
-.thletg { 
+.thletg {
+  font-weight: normal;
   width: 4em;
 }
 .thlelog { 
   width: 18rem;
 }
 .thledelay { 
-  width: 6rem;
+  width: 4rem;
 }
 .thlenetid { 
   width: 7rem;
@@ -302,7 +446,7 @@ thead {
 }
 
 .lastheard {
-  font-weight: normal;
+  font-weight: var(--color-fw-lastheard);
 }
 .firstname {
   text-align: left;
@@ -320,6 +464,7 @@ thead {
 .callsign {
   text-align: left;
   padding-left: 0.5rem;
+  width: 6rem;
 }
 .callsign a {
   color: var(--color-callsign-a);
@@ -329,27 +474,34 @@ thead {
   text-decoration: underline;
 }
 .dmrid {
-  font-size: 0.7rem;
-  font-weight: normal;
+  font-size: 0.8rem;
+  font-weight: var(--color-fw-dmrid);
   color: var(--color-dmrid);
   text-align: end;
   padding-right: 0.5rem;
+  width: 4rem;
 }
 .delay {
-  font-weight: var(--font-weight-delay);
+  font-weight: var(--color-fw-delay);
 }
 .online {
   color: var(--color-online);
 }
+.connected {
+  color: var(--color-connected);
+}
+.disconnected {
+  color: var(--color-disconnected);
+}
 .netid {
   text-align: right;
   padding-right: 1rem;
-  font-weight: normal;
+  font-weight: var(--color-fw-netid);
 }
 .infra {
   text-align: left;
   padding-left: 1rem;
-  font-weight: normal;
+  font-weight: var(--color-fw-infra);
 }
 
 .message a:hover {
@@ -383,13 +535,13 @@ color: #569cd6;
   MASTERS STYLE CLASSES
 */
 .thmsmaster { 
-  width: 10rem;
+  width: 12rem;
 }
 .thmsnetid { 
   width: 12rem;
 }
 .thmstime { 
-  width: 5rem;
+  width: 7rem;
 }
 .thmsslot { 
   width: 3rem;
@@ -401,23 +553,23 @@ color: #569cd6;
   width: 25rem;
 }
 .msMasters {
-color: #569cd6;
-font-weight: normal;
+  color: #569cd6;
+  font-weight: var(--color-fw-msmasters);
 }
 .msCallsign {
   color: var(--color-fg-mscallsign);
   font-weight: var(--color-fw-mscallsign);
-  border-bottom: 1px dotted #000000;
+  /* border-bottom: 1px dotted #000000; */
   display: inline-block;
 }
 .msRepeat {
   font-size: 0.7rem;
   color: var(--color-msRepeat);
-  font-weight: normal;
+  font-weight: var(--color-fw-msrepeat);
 }
 .msLocation {
-  font-size: 0.7rem;
-  font-weight: normal;
+  font-size: 0.85rem;
+  font-weight: var(--color-fw-mslocation);
   color: #569cd6;
 }
 .msNetID {
@@ -445,18 +597,18 @@ font-weight: normal;
 }
 .msTSRX {
   font-size: 0.9rem;  
-  color: var(--color-fg-msTSTX);
+  color: var(--color-fg-msTSRX);
 }
 
 /* PEERS STYLE CLASSES */
 .thpemaster { 
-  width: 10rem;
+  width: 12rem;
 }
 .thpenetid { 
   width: 12rem;
 }
 .thpetime { 
-  width: 5rem;
+  width: 7rem;
 }
 .thpeslot { 
   width: 3rem;
@@ -491,8 +643,143 @@ font-weight: normal;
   filter: var(--map-tiles-filter);
 }
 
+/* modal */
+/* The Modal (background) */
+.modal {  
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1000; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  width: 40rem;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -20rem;
+  transform: translateY(-50%);
+
+  max-height: 40rem;
+  overflow-y: auto;
+}
+
+/* The Close Button */
+.close {
+  position:absolute;
+  color: var(--color-light);
+  top: 4px;
+  right: 4px;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover, .close:focus {
+  color: var(--color-light);
+  text-decoration: none;
+  cursor: default;
+}
+
+.thlscallsign {
+  width: 10rem;
+}
+
+.thlsip {
+  width: 10rem;
+}
+
+.thlsport {
+  width: 10rem;
+}
+
+.thlsnetid {
+  width: 10rem;
+}
+
+.trlisteners {
+  color: var(--color-fg-marquee);  
+}
+
+/*
+  BRIDGES
+*/
+select {
+  width:100%;
+  text-align: center;
+  color: var(--color-table-fg);
+  background: var(--color-trbg);
+  border: 0;
+}
+.bridges {
+  color: var(--color-table-fg);
+}
+.thbrsystem { 
+  font-weight: bold;
+  width:13rem ;
+}
+.thbrdate { 
+    width:10rem ;
+}
+.thbrslot { 
+  width:2rem;
+}
+.thbrtg { 
+  width:4rem;
+}
+.thlbrstatus { 
+  width:8rem;
+}
+.thbrtimeout { 
+  width:8rem;
+}
+.thbraction { 
+  width:10rem;
+}
+.thbrcnx { 
+  width:13rem;
+}
+.thbrdiscnx { 
+  width:13rem;
+}
+
+.lastActive {
+  display: hidden;
+}
+
+.lastActiveTG {
+  font-weight: bold;
+  background-color: var(--color-lastActiveTG);
+}
+
+/* <div class="bullet bulletLastActiveTG">&#x2022;</div>
+.bulletLastActiveTG {
+  float: left;
+  color: var(--color-lastActiveTG);
+  background-color: var(--color-lastActiveTG);
+  border: 0.1875em solid var(--color-lastActiveTG);
+  border-radius: 50%;
+  height: 0.7rem;
+  width: 0.7rem;
+  margin: 0.1rem 0 0 0.1rem;
+}
+*/
+
+/* end modal */
+
 .theme-light {
-  /* h1 */
+  /* html, body */
+  --color-fz-html: 10pt;
+  --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+
+  /* h1 */  
   --color-fg-h1: #1e1e1e;
 
   /* map */
@@ -505,17 +792,17 @@ font-weight: normal;
   --color-footer: #8e8e8e;
   --color-fg-marquee: #404040;
 
-  --color-darkbg:#404040;
-  --color-light:#ffffff;
+  --color-darkbg:#ffffff;
+  --color-light:#404040;
 
   /* a */
-  --color-alink: #0066ff;
-  --color-avisited: #0066ff;
+  --color-alink: #004bbb;
+  --color-avisited: #004bbb;
   --color-ahover: hotpink;
-  --color-aactive: #0066ff;
+  --color-aactive: #004bbb;
 
   /* tooltip */
-  --color-tooltip-bg: #4e4e4e;
+  --color-tooltip-bg: #827777;
   --color-tooltip-fg: #000000;
 
   /* dropdown */
@@ -524,14 +811,14 @@ font-weight: normal;
   --color-dropdown-content: #f1f1f1;
 
   /* table */
-  --font-weight-table: normal;
+  --color-fw-table: normal;
   --color-table-fg: #000000;
   --color-table-border: #b0b0b0;
   --color-trbg: #f0f0f0;
   --color-bg-headerRow: #5ea6f8;
   --color-fg-headerRow: #ffffff;
 
-  --color-firstname: #569cd6;
+  --color-firstname: #004bbb;
   --color-talkgroup: #3974a5;
   --color-alias: #478d22;
   --color-callsign:#ce9178;
@@ -540,7 +827,11 @@ font-weight: normal;
 
   --color-dmrid: #3f3f3f;
   --color-online: #e52713;
-  --font-weight-delay: normal;
+
+  --color-connected: #478d22;
+  --color-disconnected:#e52713;
+
+  --color-fw-delay: normal;
   --color-message: #569cd6;
   --color-message-a-hover: #FF69B4;
 
@@ -553,7 +844,7 @@ font-weight: normal;
   --color-tgYellow: #585848;
   --color-tgPurple: #c586c0;
   --color-tgOrange: #ce9178;
-  --color-tgWhite: #ffffff;
+  --color-tgWhite: #1e1e1e;
   --color-tgPink: #EBC6FD;
 
   /* map */
@@ -566,10 +857,13 @@ font-weight: normal;
 
   --color-fg-msTS: #1e1e1e;
   --color-bg-msTS: #fefefe;
+
   --color-fg-msTS1: #c247b8;
   --color-bg-msTS1: #fefefe;
+
   --color-fg-msTS2: #569cd6;
   --color-bg-msTS2: #fefefe;
+
   --color-fg-msTSTX: #f57f68;
   --color-fg-msTSRX: #3fcc26;
 
@@ -589,9 +883,32 @@ font-weight: normal;
   --color-fg-log: #1e1e1e;
   --color-bg-even: #cbe3ff;
   --color-bg-odd: #ffffff;
+
+  --app-border-radius: 2px;
+
+  --color-bg-select: #fdfdfd;
+  --color-scrollbartrack: #f0f0f0;
+  --color-scrollbarthumb: #569cd6;
+  --color-bg-overlay: rgba(0, 0, 0, 0.3); 
+
+  --color-fw-lastheard: normal;
+  --color-fw-dmrid: normal;
+  --color-fw-netid: normal;
+  --color-fw-infra: normal;
+  --color-fw-msmasters: normal;
+  --color-fw-msrepeat: normal;
+  --color-fw-mslocation: normal;
+
+  --color-lastActiveTG: #5aeb0d;
+
+  --color-button-disabled: #A0A0A0;
 }
 
 .theme-dark {
+  /* html, body */
+  --color-fz-html: 10pt;
+  --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+
   /* h1 */
   --color-fg-h1: #fefefe;
 
@@ -609,22 +926,23 @@ font-weight: normal;
   --color-light:#ffffff;
 
   /* a */
-  --color-alink: #0066ff;
-  --color-avisited: #0066ff;
+  --color-alink: #569cd6;
+  --color-avisited: #569cd6;
   --color-ahover: hotpink;
-  --color-aactive: #0066ff;
+  --color-aactive: #569cd6;
 
   /* tooltip */
   --color-tooltip-bg: #4e4e4e;
-  --color-tooltip-fg: #000000;
+  --color-tooltip-fg: #ffffff;
 
   /* dropdown */
   --color-dropdown-hover: #525252;
   --color-dropdown-btn: #356244;
-  --color-dropdown-content: #f1f1f1;
+  --color-dropdown-content: #a1a1a1;
 
   /* table */
-  --font-weight-table: bold;
+  --color-fw-table: bold;
+  --color-table-fg: #ffffff;
   --color-table-border: #404040;
   --color-trbg: #1e1e1e;
   --color-bg-headerRow: #37373d;
@@ -638,12 +956,16 @@ font-weight: normal;
   --color-callsign-a-hover: hotpink;
 
   --color-dmrid: #fefefe;
-  --color-online: #e52713;
-  --font-weight-delay: bold;
+  --color-online: #be3a1f;
+  
+  --color-connected: #478d22;
+  --color-disconnected:#e52713;
+
+  --color-fw-delay: bold;
   --color-message: #569cd6;
   --color-message-a-hover: #FF69B4;
 
-  --color-fg-infoline:#8E8E8E;
+  --color-fg-infoline:#cccccc;
 
   --color-tgBlue: #D2E5FB;
   --color-tgGreen: #DCDCAA;
@@ -665,10 +987,13 @@ font-weight: normal;
 
   --color-fg-msTS: #000000;
   --color-bg-msTS: #1e1e1e;
+
   --color-fg-msTS1: #c586c0;
   --color-bg-msTS1: #1e1e1e;
+
   --color-fg-msTS2: #569cd6;
   --color-bg-msTS2: #1e1e1e;
+
   --color-fg-msTSTX: #fba392;
   --color-fg-msTSRX: #CEFDC6;
 
@@ -688,4 +1013,23 @@ font-weight: normal;
   --color-fg-log: #fefefe;
   --color-bg-even: #3d3d3d;
   --color-bg-odd: #505050;
+
+  --app-border-radius: 2px;
+
+  --color-bg-select: #222222;
+  --color-scrollbartrack: #404040;
+  --color-scrollbarthumb: #569cd6;
+  --color-bg-overlay: rgba(255, 255, 255, 0.1);
+
+  --color-fw-lastheard: normal;
+  --color-fw-dmrid: normal;
+  --color-fw-netid: normal;
+  --color-fw-infra: normal;
+  --color-fw-msmasters: normal;
+  --color-fw-msrepeat: normal;
+  --color-fw-mslocation: normal;
+
+  --color-lastActiveTG: #A70000;
+
+  --color-button-disabled: #000047;
 }

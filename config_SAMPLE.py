@@ -20,6 +20,8 @@ OPB_FILTER = ""
 TGID_FILTER = ""
 # tg order on html monitor page, for example "38,7,39,777,700"
 TGID_ORDER = ""
+# hide OMs with DMRID starting with, for example with "208,206"
+HIDE_DMRID = ""
 
 # Authorization of access to dashboard
 WEB_AUTH =  False
@@ -32,6 +34,13 @@ SQL_USER      = 'ubuntu'
 SQL_PASS      = 'SQLPASSWORD'
 SQL_HOST      = 'localhost'
 SQL_DATABASE  = 'hbjson'
+
+# Dispay lastactive TG table
+LAST_ACTIVE_TG  = False
+
+# Lastheard and Traffic sizes
+LAST_HEARD_SIZE = 2000
+TRAFFIC_SIZE    = 500
 
 # Files and stuff for loading alias files for mapping numbers to names
 PATH            = './'                           # MUST END IN '/'

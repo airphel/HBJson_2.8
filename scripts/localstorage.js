@@ -5,6 +5,40 @@ settings = [{ name: "openbridges", "open": true }, { "map": { "zoom" : 6.5 } }, 
 // localStorage.setItem('theme', themeName);
 // localStorage.getItem('theme', themeName);
 
+var names = [];    
+
+names["Andre"] = "André";
+names["Francois"] = "François";
+names["Herve"] = "Hervé";
+names["Jerome"] = "Jérôme";
+names["Jerôme"] = "Jérôme";
+names["Stephane"] = "Stéphane";
+names["Gerard"] = "Gérard";
+names["Jean-Noel"] = "Jean-Noël";
+names["Remi"] = "Rémi";
+names["Clement"] = "Clément";
+names["Frederic"] = "Frédéric";
+names["Jeremy"] = "Jérémy";
+names["Jean-Francois"] = "Jean-François";
+names["Gregory"] = "Grégory";    
+names["Anne-Cecile"] = "Anne-Cécile";
+names["Mickael"] = "Mickaël";
+names["Theophile"] = "Théophile";
+names["Sebastien"] = "Sébastien";
+names["Sbastien"] = "Sébastien";
+names["Raphael"] = "Raphaël";
+names["Cedric"] = "Cédric";
+names["Rene"] = "René";
+names["Nathanael"] = "Nathanaël";
+names["Joel"] = "Joël";
+names["Jeremie"] = "Jérémie";
+
+String.prototype.capitalize = function (lower) {
+    return (lower ? this.toLowerCase() : this).replace(/(?:^|\s|['`‘’.-])[^\x00-\x60^\x7B-\xDF](?!(\s|$))/g, function (a) {
+        return a.toUpperCase();
+    });
+};
+
 function createCookie(name, value, days) {
     var expires;
 
@@ -32,6 +66,15 @@ function readCookie(name) {
     return null;
 }
 
+function getTgTableState(name) {
+    for(let i=0; i < settings.length; i++) {
+        if (settings[i].name != null && settings[i].name == name)
+            return settings[i];
+    }
+
+    return null;
+}
+
 function saveSettings() {
     themeSettings = document.documentElement.className;
     settings = [
@@ -42,6 +85,15 @@ function saveSettings() {
         { "name": "peers",          "open": $('#peers').is(':visible'), "colspan": $("#theadPeers tr th").length }
     ];
 
+    if (tgorder != null) {
+        tgorder.forEach(tg => {
+            var tgName = "tgId"+tg;
+            var tgId = "hblink"+tg;
+            if (document.getElementById(tgName) != null)
+                settings.push({ "name": tgId, "open": $("#" + tgId).is(":visible"), "colspan": $("#" + tgName + " tr th").length });
+        });
+    }
+    
     createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity);
 }
 
@@ -95,8 +147,8 @@ function getConfigFromLocalStorage() {
                     $("#"+tbs.name).show();                                                            
                     var count = tbs.colspan;
                     if (count == null)
-                        count = 3;
-                    $("#"+tbs.name).append("<tr><td colspan="+count+">Mise à jour en cours...</td></tr>");
+                        count = 5;
+                    $("#"+tbs.name).append("<tr><td class='infoline' colspan="+(count+1)+">Mise à jour en cours...</td></tr>");
                 }
                 else
                     $("#"+tbs.name).hide();

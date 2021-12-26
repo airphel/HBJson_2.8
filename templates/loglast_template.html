@@ -18,12 +18,16 @@
     </style>
 
     <head>
-        <link rel="shortcut icon" href="ispt.ico">
+        <link rel="shortcut icon" href="site.ico">
         <meta charset="UTF-8">
         <meta http-equiv="refresh" content="20000"/>
         <meta name="robots" content="noindex, nofollow">
         <title>My Site Title</title>
         
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap" rel="stylesheet">
+
         <link rel="stylesheet" href="theme_template.css">
         <link rel="stylesheet" href="mysite_template.css">
 
@@ -51,7 +55,7 @@
             
                 <div id="footer">
                     <span>Copyright (c) 2019, 2020, 2021 NumeriX
-                        <br><a href=https://github.com/avrahqedivra/HBJson>redesigned by jmc 2021</a>.
+                        <br><a href=https://github.com/avrahqedivra/HBJson>redesigned by jmc 2021, 2022</a>.
                         <br><br>
                     </span>
                 </div>
@@ -61,38 +65,15 @@
     </body>
 
     <script>
-        var names = [];
-
-        names["Andre"] = "André";
-        names["Francois"] = "François";
-        names["Herve"] = "Hervé";
-        names["Jerome"] = "Jérôme";
-        names["Jerôme"] = "Jérôme";
-        names["Stephane"] = "Stéphane";
-        names["Gerard"] = "Gérard";
-        names["Jean-Noel"] = "Jean-Noël";
-        names["Remi"] = "Rémi";
-        names["Clement"] = "Clément";
-        names["Frederic"] = "Frédéric";
-        names["Jeremy"] = "Jérémy";
-        names["Jean-Francois"] = "Jean-François";
-        names["Gregory"] = "Grégory";    
-        names["Anne-Cecile"] = "Anne-Cécile";
-        names["Mickael"] = "Mickaël";
-        names["Theophile"] = "Théophile";
-        names["Sebastien"] = "Sébastien";
-        names["Raphael"] = "Raphaël";
-        names["Cedric"] = "Cédric";
-        names["Rene"] = "René";
-        names["Nathanael"] = "Nathanaël";
-        names["Joel"] = "Joël";
-        names["Jeremie"] = "Jérémie";
-
         function enhanceNames(name) {
-            if (names[name] != null)
-                return names[name];
+            if (name != null) {
+                name = name.replace(/None/g, "");
 
-            return name;            
+                if (names != null && names[name] != null)
+                    return names[name].capitalize(true);
+            }
+
+            return name.capitalize(true);
         }
 
         function treatLogLast(logLast) {
@@ -176,7 +157,7 @@
 
         window.onload = () => {
             tgfilter = new Set("<<<TGID_FILTER>>>".split(','));                
-            var wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
+            var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>";
 
             if (getConfigFromLocalStorage != null)
                 getConfigFromLocalStorage();

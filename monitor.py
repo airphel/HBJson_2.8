@@ -37,11 +37,18 @@
 import json
 import csv
 import logging
+import time as ptime
 import datetime
-
+import base64
+import urllib
+import platform
 import os
+import binascii
+
+from urllib import parse
 
 from itertools import islice
+from ssl import SSL_ERROR_WANT_X509_LOOKUP
 from subprocess import check_call, CalledProcessError
 
 # Twisted modules
@@ -54,8 +61,9 @@ from twisted.web.client import URI
 from twisted.web.resource import Resource, NoResource
 from twisted.web.static import File
 from twisted.web import server
-
-import base64
+from twisted.web.server import Session
+from twisted.python.components import registerAdapter
+from zope.interface import Interface, Attribute, implementer
 
 # Autobahn provides websocket service under Twisted
 from autobahn.twisted.websocket import WebSocketServerProtocol, WebSocketServerFactory
@@ -66,7 +74,6 @@ from time import time, strftime, localtime
 from pickle import loads
 from binascii import b2a_hex as h
 from os.path import getmtime
-from time import time
 
 # Utilities from K0USY Group sister project
 from dmr_utils3.utils import int_id, get_alias, try_download, mk_full_id_dict, bytes_4
@@ -77,7 +84,6 @@ from config import *
 # MYSQL stuff (pip install mysql-connector-python)
 from mysql.connector import connect, Error
 import pandas as pd
-import XlsxWriter
 
 # SP2ONG - Increase the value if HBlink link break occurs
 NetstringReceiver.MAX_LENGTH = 500000000
@@ -105,13 +111,13 @@ BTABLE['BRIDGES'] = {}
 BRIDGES_RX  = ''
 CONFIG_RX   = ''
 
-LASTHEARDSIZE       = 2000
-TRAFFICSIZE         = 500
+LASTHEARDSIZE       = LAST_HEARD_SIZE
+TRAFFICSIZE         = TRAFFIC_SIZE
 CTABLEJ             = ""
-BTABLEJ             = ""
 MESSAGEJ            = []
 SILENTJ             = True
 VOICEJ              = False
+LISTENERSJ          = []
 
 # Define setup setings
 CTABLE['SETUP']['LASTHEARD'] = LASTHEARD_INC
@@ -195,12 +201,31 @@ def since(_time):
     else:
         return '{}s'.format(seconds)
 
+def creation_date(path_to_file):
+    """
+    Try to get the date that a file was created, falling back to when it was
+    last modified if that isn't possible.
+    See http://stackoverflow.com/a/39501288/1709587 for explanation.
+    """
+    if platform.system() == 'Windows':
+        return os.path.getctime(path_to_file)
+    else:
+        stat = os.stat(path_to_file)
+        try:
+            return stat.st_birthtime
+        except AttributeError:
+            # We're probably on Linux. No easy way to get creation dates here,
+            # so we'll settle for when its content was last modified.
+            return stat.st_mtime
+
 def replaceSystemStrings(data):
     return data.replace("<<<site_logo>>>", sitelogo_html).replace("<<<system_name>>>", REPORT_NAME) \
-        .replace("<<<button_bar>>>", buttonbar_html).replace("<<<SOCKER_SERVER_PORT>>>", str(SOCKET_SERVER_PORT)) \
+        .replace("<<<button_bar>>>", buttonbar_html) \
         .replace("<<<TGID_FILTER>>>", str(TGID_FILTER)).replace("<<<TGID_ORDER>>>", str(TGID_ORDER)) \
-        .replace("<<<SOCKER_SERVER_PORT>>>", str(SOCKET_SERVER_PORT)) \
-        .replace("<<<DISPLAY_LINES>>>", str(DISPLAY_LINES))#.replace("class=\"theme-dark\"", "class=\"theme-light\"")
+        .replace("<<<SOCKET_SERVER_PORT>>>", str(SOCKET_SERVER_PORT)) \
+        .replace("<<<DISPLAY_LINES>>>", str(DISPLAY_LINES)) \
+        .replace("<<<LAST_ACTIVE_TG>>>", str(LAST_ACTIVE_TG)) \
+        .replace("<<<HIDE_DMRID>>>", str(HIDE_DMRID))#.replace("class=\"theme-dark\"", "class=\"theme-light\"")
 
 def logMySQL(_data):
     if SQL_LOG == True:
@@ -228,6 +253,8 @@ def logMySQL(_data):
                     else:
                         REPORT_NAME = p[12].strip()
 
+                    logging.info(_data)
+
                     # log packet for lastlog
                     cursor.execute("INSERT INTO log (date,time,type,packet,sys,srcid,netidname,ts,tgid,alias,dmrid,callsign,name,delay) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)", (REPORT_DATE, REPORT_TIME, REPORT_TYPE, REPORT_PACKET, REPORT_SYS, REPORT_SRC_ID, REPORT_NETID_NAME, REPORT_TS, REPORT_TGID, REPORT_ALIAS, REPORT_DMRID, REPORT_CALLSIGN, REPORT_NAME, REPORT_DELAY))
 
@@ -240,6 +267,93 @@ def logMySQL(_data):
         except Error as e:
             if LOGINFO == True:
                 logging.info('MYSQL ERROR: {}'.format(e))
+
+private_secret = os.urandom(64)
+
+def generateRandomSessionKey():
+    session_key = binascii.hexlify(os.urandom(16))
+    return session_key
+
+def initIpMap():
+    if SQL_LOG == True:
+        try:
+            with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS, database=SQL_DATABASE) as connection:
+                with connection.cursor(buffered=True) as cursor:
+                    # get tables list
+                    tableNotFound = True
+                    cursor.execute("SHOW TABLES")
+                    
+                    # check if our table is already there
+                    for (table,) in cursor:
+                        if (table == "ipmap"):
+                            tableNotFound = False
+                            break
+
+                    # create table if does not exist
+                    if tableNotFound == True:
+                        print("ipmap table not found, creating a new empty table")
+                        cursor.execute("CREATE TABLE ipmap ( \
+                                            ip VARCHAR(16), \
+                                            port VARCHAR(8), \
+                                            callsign VARCHAR(16), \
+                                            netid VARCHAR(16), \
+                                            PRIMARY KEY (ip, port) \
+                                            )")
+        except Error as e:
+            if LOGINFO == True:
+                logging.info('MYSQL ERROR: {}'.format(e))
+
+
+def mapIpAdresses():
+    global LISTENERSJ
+
+    if SQL_LOG == True:
+        try:
+            with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS, database=SQL_DATABASE) as connection:
+                with connection.cursor(buffered=True) as cursor:
+                    _rows = []
+
+                    for system in CTABLE['MASTERS']:
+                        for peer in CTABLE['MASTERS'][system]['PEERS']:
+                            record = CTABLE['MASTERS'][system]['PEERS'][peer]
+                            if record["CALLSIGN"] and record["IP"] and record["PORT"]:
+                                _callsign = record["CALLSIGN"].strip()
+                                _netid = str(peer)
+                                _ip = record["IP"].strip()
+                                _port = str(record["PORT"])
+                                _rows.append((_ip, _port, _callsign, _netid))
+
+                    if len(_rows) > 0:
+                        cursor.executemany("INSERT IGNORE INTO ipmap (ip,port,callsign,netid) VALUES (%s,%s,%s,%s)", _rows)
+                        connection.commit()
+
+                    if len(dashboard_server.clients) > 0:
+                        _query = ""
+
+                        for client in dashboard_server.clients:
+                            _p = client.peer.split(":")
+                            if len(_query) > 0:
+                                _query = _query + " or "
+                            _query = _query + "ip='"+_p[1] + "'"
+
+                        # print("select * from ipmap where " + _query)
+                        cursor.execute("select * from ipmap where " + _query)
+
+                        listeners = cursor.fetchall()
+
+                        LISTENERSJ = []
+
+                        for row in listeners:
+                            LISTENERSJ.append({
+                                'CALLSIGN': row[2], 'IP': row[0], 'PORT': row[1], 'NETID': row[3]
+                            })
+
+                        # print(LISTENERSJ)
+
+        except Error as e:
+            #if LOGINFO == True:
+            logging.info('MYSQL ERROR: {}'.format(e))
+
 
 ##################################################
 # Cleaning entries in tables - Timeout (5 min) 
@@ -284,7 +398,7 @@ def cleanTE():
             if td > 3:
                  del CTABLE['OPENBRIDGES'][system]['STREAMS'][streamId]
 
-
+                    
 def add_hb_peer(_peer_conf, _ctable_loc, _peer):
     _ctable_loc[int_id(_peer)] = {}
     _ctable_peer = _ctable_loc[int_id(_peer)]
@@ -465,7 +579,7 @@ def update_hblink_table(_config, _stats_table):
         if _config[_hbp]['MODE'] == 'MASTER':
             for _peer in _config[_hbp]['PEERS']:
                 if int_id(_peer) not in _stats_table['MASTERS'][_hbp]['PEERS'] and _config[_hbp]['PEERS'][_peer]['CONNECTION'] == 'YES':
-                    logger.info('Adding peer to CTABLE that has registerred: %s', int_id(_peer))
+                    logger.info('Adding peer to CTABLE that has registered: %s', int_id(_peer))
                     add_hb_peer(_config[_hbp]['PEERS'][_peer], _stats_table['MASTERS'][_hbp]['PEERS'], _peer)
 
     # Is there a system in monitor that's been removed from HBlink's config?
@@ -550,7 +664,7 @@ def build_bridge_table(_bridges):
                 _stats_table[_bridge][system['SYSTEM']]['EXP_TIME'] = 'N/A'
                 _stats_table[_bridge][system['SYSTEM']]['TO_ACTION'] = 'None'
 
-            if system['ACTIVE'] == True:
+            if system['ACTIVE'] == True:                
                 _stats_table[_bridge][system['SYSTEM']]['ACTIVE'] = 'Connected'
             elif system['ACTIVE'] == False:
                 _stats_table[_bridge][system['SYSTEM']]['ACTIVE'] = 'Disconnected'
@@ -573,15 +687,27 @@ def build_bridge_table(_bridges):
 #
 build_time = time()
 def build_stats():
-    global build_time
+    global build_time, LISTENERSJ
     now = time()
-    if True: #now > build_time + 1:
+    if now > build_time + 2:
         if CONFIG:
-            CTABLEJ = { 'CTABLE' : CTABLE, 'EMPTY_MASTERS' : EMPTY_MASTERS, "BIGEARS": str(len(dashboard_server.clients)) }
-            dashboard_server.broadcast(CTABLEJ)
-        if BRIDGES and BRIDGES_INC:
-            BTABLEJ = { 'BRIDGES': BTABLE['BRIDGES'] }
-            # dashboard_server.broadcast(BTABLEJ)
+            # CTABLEJ = { 'CTABLE' : CTABLE, 'EMPTY_MASTERS' : EMPTY_MASTERS, "BIGEARS": str(len(dashboard_server.clients)), "LISTENERS": LISTENERSJ }
+            # dashboard_server.broadcast(CTABLEJ)
+
+            for client in dashboard_server.clients:
+                if client.page != "ccs7":
+                    if client.page == "dashboard":
+                        CTABLEJ = { 'CTABLE' : CTABLE, 'EMPTY_MASTERS' : EMPTY_MASTERS, 'BIGEARS': str(len(dashboard_server.clients)), 'LISTENERS': LISTENERSJ }
+                        client.sendMessage(json.dumps(CTABLEJ, ensure_ascii = False).encode('utf-8'))
+                    elif client.page != "bridges":
+                        CTABLEJ = { 'BIGEARS': str(len(dashboard_server.clients)), 'LISTENERS': LISTENERSJ }
+                        client.sendMessage(json.dumps(CTABLEJ, ensure_ascii = False).encode('utf-8'))
+
+                    if BRIDGES and BRIDGES_INC and client.page == "bridges":
+                        client.sendMessage(json.dumps({ "BTABLE": { 'BRIDGES': BTABLE['BRIDGES'] }}, ensure_ascii = False).encode('utf-8'))
+            
+            mapIpAdresses()
+
         build_time = now
 
 
@@ -616,7 +742,7 @@ def rts_update(p):
             if action == 'START':
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TIMEOUT'] = timeout
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TS'] = True
-
+                
                 if sourcePeer in (None, '') or peer in (None, ''):
                     CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = ''
                 else:
@@ -626,7 +752,7 @@ def rts_update(p):
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SRC'] = peer
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SUB'] = '{} ({})'.format(alias_short(sourceSub, subscriber_ids), sourceSub)
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['DEST'] = '{} ({})'.format(alias_tgid(destination,talkgroup_ids),destination)
-
+              
             if action == 'END':
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TS'] = False
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['TXRX'] = ''
@@ -661,7 +787,7 @@ def rts_update(p):
             CTABLE['PEERS'][system][timeSlot]['TYPE'] = ''
             CTABLE['PEERS'][system][timeSlot]['SUB'] = ''
             CTABLE['PEERS'][system][timeSlot]['SRC'] = ''
-            CTABLE['PEERS'][system][timeSlot]['DEST'] = ''
+            CTABLE['PEERS'][system][timeSlot]['DEST'] = ''                                                  
             CTABLE['PEERS'][system][timeSlot]['TXRX'] = ''
 
     build_stats()
@@ -671,7 +797,8 @@ def createlocalUsersFromSql():
     try:
         with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS,database=SQL_DATABASE) as connection:
             with connection.cursor(buffered=True) as cursor:
-                cursor.execute('select * from local_subscribers where (remarks="CRITERIA" or remarks="OTHERCRITERIA");')
+                # cursor.execute('select * from local_subscribers where callsign like("FS%") or callsign like("BS%") or callsign like("FI%") and callsign not like "%0";')
+                cursor.execute('select * from local_subscribers where (remarks="SHIELD" or remarks="FRS") and callsign not like "%0";')
                 subscribers = cursor.fetchall()
 
                 SUBSCRIBERSJ = []
@@ -697,13 +824,17 @@ def createlocalUsersFromSql():
 ######################################################################
 # 
 # LOG+
-#
+#     
 
-def createlogLastFromSql():
+def createlogLastFromSql(EndPacketOnly):
     try:
         with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS,database=SQL_DATABASE) as connection:
             with connection.cursor(buffered=True) as cursor:
-                cursor.execute('select * from log where packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                if EndPacketOnly:
+                    cursor.execute('select * from log where packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                else:
+                    cursor.execute('select * from log order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                    
                 logs = cursor.fetchall()
 
                 MESSAGEJ = []
@@ -713,6 +844,8 @@ def createlogLastFromSql():
                     REPORT_TIME     = row[2]
                     REPORT_DELAY    = row[14]
                     REPORT_INFRA    = row[5]
+
+                    REPORT_PACKET   = row[4]
 
                     REPORT_SRC_ID   = row[6]
                     REPORT_DMRID    = row[11]
@@ -728,16 +861,17 @@ def createlogLastFromSql():
                     REPORT_NAME     = row[13]
 
                     MESSAGEJ.append({
-                        'DATE': REPORT_DATE, 
-                        'TIME': REPORT_TIME, 
-                        'TS': REPORT_TS, 
-                        'CALLSIGN': REPORT_CALLSIGN, 
-                        'DMRID': REPORT_DMRID, 
-                        'NAME': REPORT_NAME, 
-                        'TGID': REPORT_TGID, 
-                        'ALIAS': REPORT_LOGP, 
+                        'DATE': REPORT_DATE,
+                        'TIME': REPORT_TIME,
+                        'TS': REPORT_TS,
+                        'PACKET': REPORT_PACKET, 
+                        'CALLSIGN': REPORT_CALLSIGN,
+                        'DMRID': REPORT_DMRID,
+                        'NAME': REPORT_NAME,
+                        'TGID': REPORT_TGID,
+                        'ALIAS': REPORT_LOGP,
                         'DELAY': REPORT_DELAY,
-                        'SYS': REPORT_INFRA, 
+                        'SYS': REPORT_INFRA,
                         'SRC_ID':  REPORT_NETID })
 
                 return MESSAGEJ
@@ -787,37 +921,80 @@ def createLogTableJson():
 
         return MESSAGEJ
 
-def usrpToExcel():
-    if SQL_LOG == True:
-        try:
-            with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS, database=SQL_DATABASE) as connection:
-                with connection.cursor(buffered=True) as cursor:
-                    # update usrp from log file
-                    cursor.execute("update usrp a inner join (select t1.dmrid, sum(t1.delay) as tt from log t1 join (select id from usrp) t2 on t1.dmrid=t2.id group by t1.dmrid) b ON a.id = b.dmrid set tottime = b.tt;")
-                    connection.commit()
+# "radioid", "https://database.radioid.net/static/users.json");
+# "theshield", "http://theshield.site/local_subscriber_ids.json");
+def fetchRemoteUsersFiles(fileurl):
+    if 'fileurl' != "":
+        logging.info('requesting: %s', fileurl)
 
-                    # read updated usrp table sorted by tph
-                    cursor.execute("select * from hbjsons.usrp order by convert(tph, unsigned integer) asc;")
-                    df_bytph = pd.DataFrame(list(cursor.fetchall()), columns = [desc[0] for desc in cursor.description])
+        filename = str(fileurl.rsplit('/', 1)[-1])
+        filepath = PATH + "assets/" + filename
 
-                    cursor.execute("select * from hbjsons.usrp order by logdate asc;")
-                    df_bylogdate = pd.DataFrame(list(cursor.fetchall()), columns = [desc[0] for desc in cursor.description])
+        # keep shield file always updated
+        if filename != "local_subscriber_ids.json":
+            if os.path.exists(filepath):
+                _time = int(time()) - int(creation_date(filepath))
+                # check if file needs new download from remote
+                if int(_time/60/60/24) < 7:
+                    return filename
 
-                    cursor.execute("select * from hbjsons.usrp order by convert(tottime, unsigned integer) asc;")
-                    df_bytottime = pd.DataFrame(list(cursor.fetchall()), columns = [desc[0] for desc in cursor.description])
+        # file is older than 7 days, download 
+        with urllib.request.urlopen(fileurl) as url:
+            with open(filepath, 'w') as users_json:
+                users_json.write(url.read().decode("utf-8"))
+                return filename
 
-                    with pd.ExcelWriter("/tmp/usrp.xlsx", engine="xlsxwriter") as writer:
-                        df_bytph.to_excel(writer, sheet_name = "by tph")
-                        df_bylogdate.to_excel(writer, sheet_name = "by log date")
-                        df_bytottime.to_excel(writer, sheet_name = "by tot time")
+    return ""    
 
-        except Error as e:
-            if LOGINFO == True:
-                logging.info('MYSQL ERROR: {}'.format(e))
+def getLastHeardFromSQL():
+    try:
+        with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS,database=SQL_DATABASE) as connection:
+            with connection.cursor(buffered=True) as cursor:                
+                cursor.execute('select * from log where packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                logs = cursor.fetchall()
+
+                MESSAGEJ = []
+
+                for row in logs:
+                    REPORT_DATE     = row[1]
+                    REPORT_TIME     = row[2]
+                    REPORT_DELAY    = row[14]
+                    REPORT_INFRA    = row[5]
+
+                    REPORT_SRC_ID   = row[6]
+                    REPORT_DMRID    = row[11]
+
+                    REPORT_TS       = row[8]
+                    REPORT_TGID     = row[9]
+                    REPORT_LOGP     = row[10]
+
+                    REPORT_NETID    = row[7]
+
+                    REPORT_CALLSIGN = row[12]
+
+                    REPORT_NAME     = row[13]
+
+                    MESSAGEJ.append({
+                        'DATE': REPORT_DATE, 
+                        'TIME': REPORT_TIME, 
+                        'TS': REPORT_TS, 
+                        'CALLSIGN': REPORT_CALLSIGN, 
+                        'DMRID': REPORT_DMRID, 
+                        'NAME': REPORT_NAME, 
+                        'TGID': REPORT_TGID, 
+                        'ALIAS': REPORT_LOGP, 
+                        'DELAY': REPORT_DELAY,
+                        'SYS': REPORT_INFRA, 
+                        'SRC_ID':  REPORT_NETID })
+
+                return MESSAGEJ
+
+    except Error as e:
+        print("Error {} ", e)
 
 ######################################################################
 #
-# PROCESS INCOMING MESSAGES AND TAKE thE CORRECT ACTION DEPENING ON
+# PROCESS INCOMING MESSAGES AND TAKE THE CORRECT ACTION DEPENING ON
 #    THE OPCODE
 #
 def process_message(_bmessage):
@@ -825,6 +1002,8 @@ def process_message(_bmessage):
     _message = _bmessage.decode('utf-8', 'ignore')
     opcode = _message[:1]
     _now = strftime('%Y-%m-%d %H:%M:%S %Z', localtime(time()))
+
+    start = ptime.perf_counter()
 
     if opcode == OPCODE['CONFIG_SND']:
         logging.debug('got CONFIG_SND opcode')
@@ -923,9 +1102,11 @@ def process_message(_bmessage):
 
                     # remove all previous START packet if any
                     for record in traffic["TRAFFIC"]:
+                        # add padding zeroes if needed
                         if len(record["TIME"]) == 5:
                             record["TIME"] = record["TIME"] + ":00"
 
+                        # add only "END" packets
                         if record["PACKET"] != "START":
                             MESSAGEJ.append(record)
 
@@ -946,11 +1127,17 @@ def process_message(_bmessage):
                 jsonStr = { 'DATE': _now[0:10], 'TIME': _now[11:16], 'PACKET' : 'UNKNOWN GROUP VOICE LOG MESSAGE' }
 
             dashboard_server.broadcast( {"TRAFFIC": jsonStr, "BIGEARS": str(len(dashboard_server.clients))  } )
+            
+            # logging.info('Process [' + REPORT_PACKET + '] Message Took ' + str(int((ptime.perf_counter() - start) * 1000)) + 'ms')
         else:
             logging.debug('{} UNKNOWN LOG MESSAGE'.format(_now[10:19]))
-
     else:
         logging.debug('got unknown opcode: {}, message: {}'.format(repr(opcode), repr(_message[1:])))
+
+    # for key, value in OPCODE.items():
+    #     if value == opcode:            
+    #         logging.info('Process [' + key + '] Message Took ' + str(int((ptime.perf_counter() - start))) + 'ms')
+    #         break
 
 def load_dictionary(_message):
     data = _message[1:]
@@ -973,7 +1160,6 @@ class report(NetstringReceiver):
 
     def stringReceived(self, data):
         process_message(data)
-
 
 class reportClientFactory(ReconnectingClientFactory):
     def __init__(self):
@@ -1008,89 +1194,123 @@ class reportClientFactory(ReconnectingClientFactory):
 # WEBSOCKET COMMUNICATION WITH THE DASHBOARD CLIENT
 #
 class dashboard(WebSocketServerProtocol):
-    def onConnect(self, request):
+    def onConnect(self, request):        
         logging.info('Client connecting: %s', request.peer)
+        if 'page' in request.params:
+            self.page = request.params["page"][0]
+            logging.info('Client Page: %s', self.page)
+        else:
+            self.page = ""        
 
     def onOpen(self):
-        logging.info('WebSocket connection open.')
-        self.factory.register(self)
+        # don't send anything if we are in ccs7manager
+        if self.page != "ccs7":
+            logging.info('WebSocket connection open.')
+            self.factory.register(self)
 
-        _message = {}
-        _message["CTABLE"] = CTABLE
-        _message["EMPTY_MASTERS"] = EMPTY_MASTERS
-        _message["PACKETS"] = {}
-        _message["BIGEARS"] = str(len(dashboard_server.clients))
+            _message = {}
 
-        INITIALLIST = []
+            if self.page == "dashboard":
+                _message["CTABLE"] = CTABLE
+                _message["EMPTY_MASTERS"] = EMPTY_MASTERS
 
-        if SQL_LOG == True:
-            _message["USERS"] = createlocalUsersFromSql()
-        else:
-            with open(PATH + LOCAL_SUB_FILE, 'r') as infile:
-                _message["USERS"] = json.load(infile)
+            _message["PACKETS"] = {}
+            _message["BIGEARS"] = str(len(dashboard_server.clients))
+            _message["LISTENERS"] = LISTENERSJ
 
-        # read saved history or create traffic file for later
-        if os.path.exists(LOG_PATH + "lastheard.json"):
-            with open(LOG_PATH + "lastheard.json", 'r') as infile:
-                _traffic = json.load(infile)
-                if _traffic and _traffic["TRAFFIC"]:
-                    _traffic = reversed(_traffic["TRAFFIC"])
-                    INITIALLIST = []
-                    for record in _traffic:
-                        found = False
-                        for added in INITIALLIST:
-                            if added["DMRID"] == record["DMRID"]:
-                                found = True
-                                break
+            INITIALLIST = []
 
-                        if not found:
-                            INITIALLIST.append(record)
+            if SQL_LOG == True:
+                _message["USERS"] = createlocalUsersFromSql()
+            else:
+                with open(PATH + LOCAL_SUB_FILE, 'r') as infile:
+                    _message["USERS"] = json.load(infile)
 
-                    # will be sent in the config packet
-                    # self.sendMessage(json.dumps({ "TRAFFIC": INITIALLIST[-TRAFFICSIZE:] }, ensure_ascii = False).encode('utf-8'))
+            # read saved history or create traffic file for later
+            if os.path.exists(LOG_PATH + "lastheard.json"):
+                if SQL_LOG == True:                
+                    _traffic = createlogLastFromSql(False)
+                    if _traffic:
+                        for record in _traffic:
+                            found = False
+                            for added in INITIALLIST:
+                                if added["DMRID"] == record["DMRID"]:
+                                    found = True
+                                    break
+                                
+                            if not found:
+                                INITIALLIST.append(record)
                 else:
-                    logging.info("Creating empty " + LOG_PATH + "lastheard.json")
-                    with open(LOG_PATH + "lastheard.json", 'w') as outfile:
-                        json.dump({ "TRAFFIC" : [] }, outfile)
-        else:
-            logging.info("Creating empty " + LOG_PATH + "lastheard.json")
-            with open(LOG_PATH + "lastheard.json", 'w') as outfile:
-                json.dump({ "TRAFFIC" : [] }, outfile)
+                    with open(LOG_PATH + "lastheard.json", 'r') as infile:
+                        _traffic = json.load(infile)
 
-        _message["PACKETS"] = { "TRAFFIC": INITIALLIST[-TRAFFICSIZE:] }
+                        if _traffic and _traffic["TRAFFIC"]:
+                            _traffic = reversed(_traffic["TRAFFIC"])
+                            for record in _traffic:
+                                found = False
+                                for added in INITIALLIST:
+                                    if added["DMRID"] == record["DMRID"]:
+                                        found = True
+                                        break
+                                    
+                                if not found:
+                                    INITIALLIST.append(record)
 
-        self.sendMessage(json.dumps({ "CONFIG": _message }, ensure_ascii = False).encode('utf-8'))
+                            # will be sent in the config packet
+                            # self.sendMessage(json.dumps({ "TRAFFIC": INITIALLIST[-TRAFFICSIZE:] }, ensure_ascii = False).encode('utf-8'))
+                        else:
+                            logging.info("Creating empty " + LOG_PATH + "lastheard.json")
+                            with open(LOG_PATH + "lastheard.json", 'w') as outfile:
+                                json.dump({ "TRAFFIC" : [] }, outfile)
+            else:
+                logging.info("Creating empty " + LOG_PATH + "lastheard.json")
+                with open(LOG_PATH + "lastheard.json", 'w') as outfile:
+                    json.dump({ "TRAFFIC" : [] }, outfile)
 
-        # _message = {}
-        # _message["BTABLE"] = BTABLE
-        # self.sendMessage(json.dumps({ "BTABLE": _message }, ensure_ascii = False).encode('utf-8'))
+            _message["PACKETS"] = { "TRAFFIC": INITIALLIST[-TRAFFICSIZE:] }
 
-        logger.info('Deleting INITIALLIST after init')
-        del _message
-        del INITIALLIST
+            self.sendMessage(json.dumps({ "CONFIG": _message }, ensure_ascii = False).encode('utf-8'))
+
+            # if caller pages is bridges, send bridges
+            if self.page == "bridges":
+                self.sendMessage(json.dumps({ "BTABLE": BTABLE }, ensure_ascii = False).encode('utf-8'))
+
+            mapIpAdresses()
+
+            logger.info('Deleting INITIALLIST after init')
+            del _message
+            del INITIALLIST
 
     def onMessage(self, payload, isBinary):
         try: 
-            _command = json.loads(payload.decode('UTF-8'))            
-            logging.info("command received: {}".format(_command))
-            if _command:
-                if _command["request"] == "user" and _command["callsign"]:
-                    response = ""
+            if not isBinary:
+                _command = json.loads(payload.decode('utf-8'))            
+                logging.info("command received: {}".format(_command))
+                if _command:
+                    if _command.get("request"):
+                        if _command["request"] == "user" and _command["callsign"]:
+                            response = ""
 
-                    with open(PATH + SUBSCRIBER_FILE, 'r') as infile:
-                        USERS = json.load(infile)["users"]
-                        for user in USERS:
-                            if user["callsign"] == _command["callsign"]:
-                                response = json.dumps({"USER": user }, ensure_ascii = False).encode('UTF-8')
-                                self.sendMessage(response, isBinary)
-                                break
+                            with open(PATH + SUBSCRIBER_FILE, 'r') as infile:
+                                USERS = json.load(infile)["users"]
+                                for user in USERS:
+                                    if user["callsign"] == _command["callsign"]:
+                                        response = json.dumps({"USER": user }, ensure_ascii = False).encode('utf-8')
+                                        self.sendMessage(response, isBinary)
+                                        break
 
-                        logging.info("response sent: {}".format(response))
-                elif _command["request"] == "loglast":
-                    # depending on SQL_LOG use SQL or text file option
-                    self.sendMessage(json.dumps({"LOGLAST": createlogLastFromSql() if SQL_LOG == True else createLogTableJson()  }, ensure_ascii = False).encode('UTF-8'), isBinary)
-                elif _command["request"] == "userslist":
-                    self.sendMessage(json.dumps({"USERS": createlocalUsersFromSql() }, ensure_ascii = False).encode('UTF-8'), isBinary)
+                                logging.info("response sent: {}".format(response))
+                        elif _command["request"] == "loglast":
+                            # depending on SQL_LOG use SQL or text file option
+                            self.sendMessage(json.dumps({"LOGLAST": createlogLastFromSql(True) if SQL_LOG == True else createLogTableJson()  }, ensure_ascii = False).encode('utf-8'), isBinary)
+                        elif _command["request"] == "userslist":
+                            self.sendMessage(json.dumps({"USERS": createlocalUsersFromSql() }, ensure_ascii = False).encode('utf-8'), isBinary)
+                    elif _command.get("fileurl") and _command["fileurl"].startswith("http"):
+                        filename = fetchRemoteUsersFiles(_command["fileurl"])
+                        self.sendMessage(json.dumps({"FILENAME": filename }, ensure_ascii = False).encode('utf-8'), isBinary)
+                        # with open(filename, 'r') as infile:                            
+                        #     self.sendMessage(json.dumps(json.load(infile), ensure_ascii = False).encode('UTF-8'))
+                        #     infile.close()
             
         except CalledProcessError as err:
             logging.info('Error: %s', err)
@@ -1152,7 +1372,7 @@ class staticFile(Resource):
     def __init__(self, file_Name, file_Folder, file_contentType):
         self.file_Name = file_Name
         self.file_Folder = file_Folder
-        self.file_contentType = file_contentType
+        self.file_contentType = file_contentType        
         Resource.__init__(self)
 
     def render_GET(self, request):
@@ -1163,11 +1383,14 @@ class staticFile(Resource):
             else:
                 filepath = "{}/{}".format(self.file_Folder, self.file_Name.decode("UTF-8"))
 
+            self.file_size = os.path.getsize(filepath)
+
             logging.info(filepath)
 
             @defer.inlineCallbacks
             def _setContentDispositionAndSend(file_path, file_name, content_type):
                 request.setHeader('content-disposition', 'filename=' + file_name.decode("UTF-8"))
+                request.setHeader('content-length', str(self.file_size))
                 request.setHeader('content-type', content_type)
 
                 with open(file_path, 'rb') as f:                    
@@ -1195,11 +1418,33 @@ class loglast(Resource):
     def render_GET(self, request):
         return str.encode(replaceSystemStrings(get_template(PATH + "templates/loglast_template.html")))
 
+class ccs7manager(Resource):
+    def __init__(self):
+        Resource.__init__(self)
+
+    def render_GET(self, request):
+        return str.encode(replaceSystemStrings(get_template(PATH + "templates/ccs7manager.html")))
+
+class ISessionVars(Interface):
+    authenticated = Attribute("A bool value which shows if session has been authenticated.")
+
+@implementer(ISessionVars)
+class SessionVars(object):
+    def __init__(self, session):
+        self.authenticated = False
+
+registerAdapter(SessionVars, Session, ISessionVars)
+
 class web_server(Resource):    
     def __init__(self):
         Resource.__init__(self)
 
     def getChild(self, name, request):
+        session = request.getSession()
+        sessionVars = ISessionVars(session)
+        if sessionVars.authenticated != True:
+            return self
+
         page = name.decode("utf-8")
 
         if page == '' or page == 'index.html':
@@ -1208,7 +1453,9 @@ class web_server(Resource):
         if page == 'loglast.html':
             return loglast()
 
-        #
+        if page == 'ccs7manager.html':
+            return ccs7manager()
+
         # deal with static files (images, css etc...)
         # call static file with file name, location folder, controlType
         #
@@ -1217,7 +1464,7 @@ class web_server(Resource):
         if page.endswith(".css"):
             return staticFile(name, "css", "text/css; charset=utf-8")
         elif page.endswith(".js"):
-            return staticFile(name, "scripts", "text/html; charset=utf-8")
+            return staticFile(name, "scripts", "application/javascript; charset=utf-8")
         elif page.endswith(".jpg") or page.endswith(".jpeg"):
             return staticFile(name, "images", "image/jpeg")
         elif page.endswith(".gif"):
@@ -1228,42 +1475,49 @@ class web_server(Resource):
             return staticFile(name, "images", "image/svg+xml")
         elif page.endswith(".ico"):
             return staticFile(name, "images", "image/x-icon")            
-        elif page.endswith(".json"):
+        elif page.endswith(".json"):            
             return staticFile(name, "assets", "application/json")
         elif page.endswith(".txt"):
             return staticFile(name, "html", "text/plain")
-        elif page.endswith(".xls") or page.endswith(".xlsx"):
-            if page == "usrp.xlsx":
-                usrpToExcel()
-                return staticFile(name, "/tmp", "application/vnd.ms-excel")
-            else:
-                return staticFile(name, "html", "application/vnd.ms-excel")
+        elif page.endswith(".woff2"):
+            return staticFile(name, "webfonts", "font/woff2;")
+        elif page.endswith(".woff"):
+            return staticFile(name, "webfonts", "font/woff;")
+        elif page.endswith(".ttf"):
+            return staticFile(name, "webfonts", "font/ttf;")
 
         return NoResource()
 
     def render_GET(self, request):
         logging.info('static website requested: %s', request)
+        session = request.getSession()
 
         if WEB_AUTH:
-          user = WEB_USER.encode('utf-8')
-          password = WEB_PASS.encode('utf-8')
-          auth = request.getHeader('Authorization')
-          if auth and auth.split(' ')[0] == 'Basic':
-             decodeddata = base64.b64decode(auth.split(' ')[1])
-             if decodeddata.split(b':') == [user, password]:
-                 logging.info('Authorization OK')
-                 return index_html.encode('utf-8')
+            user = WEB_USER.encode('utf-8')
+            password = WEB_PASS.encode('utf-8')
+            auth = request.getHeader('Authorization')
+            if auth and auth.split(' ')[0] == 'Basic':
+                decodeddata = base64.b64decode(auth.split(' ')[1])
+                if decodeddata.split(b':') == [user, password]:
+                    logging.info('Authorization OK')
+                    sessionVars = ISessionVars(session)
+                    sessionVars.authenticated = True
+                    return index_html.encode('utf-8')
 
-          request.setResponseCode(http.UNAUTHORIZED)
-          request.setHeader('www-authenticate', 'Basic realm="realmname"')
-          logging.info('Someone wanted to get access without authorization')
+            sessionVars = ISessionVars(session)
+            sessionVars.authenticated = False
+            request.setResponseCode(http.UNAUTHORIZED)
+            request.setHeader('www-authenticate', 'Basic realm="realmname"')
+            logging.info('Someone wanted to get access without authorization')
 
-          return "<html<head></hread><body style=\"background-color: #EEEEEE;\"><br><br><br><center> \
+            return "<html<head></hread><body style=\"background-color: #EEEEEE;\"><br><br><br><center> \
                     <fieldset style=\"width:600px;background-color:#e0e0e0e0;text-algin: center; margin-left:15px;margin-right:15px; \
                      font-size:14px;border-top-left-radius: 10px; border-top-right-radius: 10px; \
                      border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;\"> \
                   <p><font size=5><b>Authorization Required</font></p></filed></center></body></html>".encode('utf-8')
         else:
+            sessionVars = ISessionVars(session)
+            sessionVars.authenticated = True
             return index_html.encode('utf-8')
         
 if __name__ == '__main__':
@@ -1285,7 +1539,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.5.1:\n\t2021 Jean-Michel Cohen, F-16987\n\n')
+                '\n\n\tHBJSON v2.5.4:\n\t2021 Jean-Michel Cohen, F4JDN\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):
@@ -1342,7 +1596,7 @@ if __name__ == '__main__':
     update_stats = task.LoopingCall(build_stats)
     update_stats.start(FREQUENCY)
 
-    # Start a timout loop
+    # Start a timeout loop
     if CLIENT_TIMEOUT > 0:
         timeout = task.LoopingCall(timeout_clients)
         timeout.start(10)
@@ -1372,4 +1626,8 @@ if __name__ == '__main__':
 
     # reactor.listenTCP(JSON_SERVER_PORT, factory)
 
+    # create ipmap if needed
+    initIpMap()
+
     reactor.run()
+

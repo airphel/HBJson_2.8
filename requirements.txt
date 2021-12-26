@@ -1,8 +1,7 @@
 Twisted
 dmr_utils3
-bitstring
 autobahn
-json
-mysql-connector
+mysql-connector-python
 pandas
-XlsxWriter
+bitstring
+json

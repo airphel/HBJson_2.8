@@ -2,15 +2,16 @@
 <html class="theme-dark">
     <head>
         <meta charset="UTF-8"/>
-	    <meta name="description" content="Copyright (c) 2021 jmc. All rights reserved."/>
+	    <meta name="description" content="Copyright (c) 2021, 2022 jmc. All rights reserved."/>
 
-        <title>HBJSON Monitor</title>
+        <title>太阳的门</title>
         <link rel="shortcut icon" href="site.ico"/>
+
         <link rel="stylesheet" href="theme_template.css"/>
-        <link rel="stylesheet" href="mysite_template.css"/>
+        <link rel="stylesheet" href="mysite_template.css"/>        
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="crossorigin=""/>
-        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="crossorigin=""></script>
-        <script src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
+        <script type="application/javascript" src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="crossorigin=""></script>
+        <script type="application/javascript" src=" https://unpkg.com/@joergdietrich/leaflet.terminator@1.0.0/L.Terminator.js"></script>
     </head>
 
 	<body>
@@ -25,6 +26,27 @@
                     <<<button_bar>>>
                 </div>
                 <br/>
+
+                <!-- The Modal -->
+                <div id="listenersModal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <table class="tables tablefixed">
+                            <thead id="theadListeners" tbodyid="listeners">
+                                <tr class="headerRow">
+                                    <th class="thlscallsign">Callsign</th>
+                                    <th class="thlsip">IP</th>
+                                    <th class="thlsport">Port</th>
+                                    <th class="thlsnetid">NetID</th>
+                                    </tr>
+                            </thead>
+                            <tbody id="listeners">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div name="hbtables">
                     <div id="insertPoint">
                         <div id="lastcallercontainer"style="text-align: left;">
@@ -38,7 +60,7 @@
                                 <div>TG777<div style="background-color: #bc7ebb" class="legendIndicator"></div></div>
                                 <div>TX<div style="background-color: #fbd379" class="legendIndicator"></div></div>
                                 <div>IND<div style="background-color: #fefefe" class="legendIndicator"></div></div>
-                                <div>SWL<div id="listeners" class="legendIndicator">0</div></div>
+                                <div>SWL<div id="btnlisteners" class="legendIndicator">0</div></div>
                             </div>
                         </div>
                         <div id="mapfrance">
@@ -48,7 +70,7 @@
                 </div>
             
                 <div id="footer">
-                    <span>Copyright (c) 2021 <a href=https://github.com/avrahqedivra/HBJson>jmc</a></span>
+                    <span>Copyright (c) 2021, 2022 <a href=https://github.com/avrahqedivra/HBJson>jmc</a></span>
                 </div>
                 <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
             </div>                
@@ -100,13 +122,14 @@
 
         .legendIndicator {
             float: right;
-            width: 1rem;
-            height: 1rem;
+            width: 1.0rem;
+            height: 1.0rem;
             color: var(--color-fg-marquee);
             background-color: var(--color-page);
             display: inline-block;
             margin-left: 1rem;
             text-align: center;
+            cursor: default;
         }
 
         .leaflet-tooltip-left:before {
@@ -143,41 +166,44 @@
         }
     </style>
 
+    <script type="application/javascript">
+        $(document).ready(function() {
+            $(window).click(function(e) {
+                if (event.target == document.getElementById("listenersModal"))
+                    $("#listenersModal").hide();
+            });        
+
+            $(document).on("click", ".close", function() {
+                $("#listenersModal").hide();
+            });
+
+            $(document).on("dblclick", "#btnlisteners", function(e) {
+                if (e.ctrlKey) {
+                    $("#listeners tr").remove();
+                    var content = "";
+
+                    listenerList = uniqByKeepLast(listenerList, swl => swl.NETID);
+
+                    listenerList.forEach(swl => {
+                        content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+                    });
+
+                    $("#listeners").append(content);
+                    $("#listenersModal").show();
+                }
+            });
+        });
+    </script> 
+
     <!-- 
         france, dom, belgique, suisse geojson 
     -->
-    <script src="mapssvg.js"></script>
+    <script type="application/javascript" src="mapssvg.js"></script>
 
-    <script>
-        var names = [];    
-
-        names["Andre"] = "André";
-        names["Francois"] = "François";
-        names["Herve"] = "Hervé";
-        names["Jerome"] = "Jérôme";
-        names["Jerôme"] = "Jérôme";
-        names["Stephane"] = "Stéphane";
-        names["Gerard"] = "Gérard";
-        names["Jean-Noel"] = "Jean-Noël";
-        names["Remi"] = "Rémi";
-        names["Clement"] = "Clément";
-        names["Frederic"] = "Frédéric";
-        names["Jeremy"] = "Jérémy";
-        names["Jean-Francois"] = "Jean-François";
-        names["Gregory"] = "Grégory";    
-        names["Anne-Cecile"] = "Anne-Cécile";
-        names["Mickael"] = "Mickaël";
-        names["Theophile"] = "Théophile";
-        names["Sebastien"] = "Sébastien";
-        names["Raphael"] = "Raphaël";
-        names["Cedric"] = "Cédric";
-        names["Rene"] = "René";
-        names["Nathanael"] = "Nathanaël";
-        names["Joel"] = "Joël";
-        names["Jeremie"] = "Jérémie";
-        
+    <script type="application/javascript">
+        // see names list in localstorage
         function enhanceNames(name) {
-            if (names[name] != null)
+            if (names != null && names[name] != null)
                 return names[name];
 
             return name;            
@@ -217,31 +243,32 @@
 
                     var user = getUser(packet.DMRID.substr(0, 7));
 
-                    if ((packet.CALLSIGN.startsWith("FR") && !packet.CALLSIGN.startsWith("FRS")) || packet.CALLSIGN.startsWith("FS") || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
-                        dept = packet.CALLSIGN.substring(2, 4);
-                        if (dept == "97") { // treat 971 to 97x
-                            if ((user != null) && user.STATE.toString().startsWith("97")) {                                
-                                if ((dept = parseInt(user.STATE)) < 10)
-                                    dept = "0"+dept;
-                                
-                                country = user.COUNTRY;
-                            }
-                        } else {
-                            if (dept == "99") {
-                                if ((user != null) && user.STATE.trim() != "") {
+                    if (packet.CALLSIGN.startsWith("FRS")) { // case FRSxxxx
+                        if (user != null) {
+                            if ((dept = parseInt(user.STATE)) < 10)
+                                dept = "0"+dept;                                
+                        }
+                    } else {
+                        if (packet.CALLSIGN.startsWith("FS") || packet.CALLSIGN.startsWith("FR") || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
+                            dept = packet.CALLSIGN.substring(2, 4);
+                            if (dept == "97") { // treat 971 to 97x
+                                if ((user != null) && user.STATE.toString().startsWith("97")) {                                
+                                    if ((dept = parseInt(user.STATE)) < 10)
+                                        dept = "0"+dept;
+                                    
                                     country = user.COUNTRY;
-                                    dept = user.STATE;
+                                }
+                            } else {
+                                if (dept == "99") {
+                                    if ((user != null) && user.STATE.trim() != "") {
+                                        country = user.COUNTRY;
+                                        dept = user.STATE;
+                                    }
                                 }
                             }
-                        }
-                    } 
-                    else {                        
-                        if (packet.CALLSIGN.startsWith("FRS")) { // case FRSxxxx
-                            if (user != null) {
-                                if ((dept = parseInt(user.STATE)) < 10)
-                                    dept = "0"+dept;                                
-                            }
-                        } else { // HAMs
+                        } 
+                        else {                        
+                            // HAMs
                             // sock.send(JSON.stringify({"request": "user", "callsign": packet.CALLSIGN }));
                         }
                     }
@@ -260,7 +287,7 @@
                             case  "38": bgcolor = "#569cd6"; break;
                             case  "39": bgcolor = "#a3e978" /*"#9fd87c"*/; break;
                             case "777": bgcolor = "#bc7ebb"; break;
-                            default:    bgcolor = "#fefefe"; break;
+                            default:    bgcolor = "#569cd6"; break;
                         }
 
                         if (!foundStartPacket)
@@ -305,13 +332,16 @@
         }
 
         function doTraffic(t) {
-            var traffic = null;
-
             if (t != null)  {
-                if (!Array.isArray(t))
-                    traffic = [t];
-                else 
+                if (Array.isArray(t))
                     traffic = t;
+                else {
+                    // remove any previous "START" packet
+                    for(let i=0; i < traffic.length; i++)
+                        traffic[i].PACKET = "END";
+
+                    traffic.push(t);
+                }
 
                 // sort in reverse order
                 traffic.sort((a, b) => {
@@ -493,6 +523,8 @@
 
         window.onload = () => {
             listeners = 0;
+            traffic = [];
+            listenerList = [];            
             currentZoom = 6.5;
             subscribers = null;
             departments = [];            
@@ -501,7 +533,7 @@
 
             getConfigFromLocalStorage();
 
-            var wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
+            var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>?page=map";
 
             initMap();
 
@@ -546,20 +578,26 @@
                                 // console.log(data);
                                 // console.log("");
                                 if (data.BIGEARS)
-                                    $("#listeners").text(data.BIGEARS);
+                                    $("#btnlisteners").text(data.BIGEARS);
+
+                                if (data.LISTENERS)
+                                    listenerList = data.LISTENERS;
 
                                 if (data.TRAFFIC)
                                     doTraffic(data.TRAFFIC);                                    
                                 else
                                 if (data.CONFIG) {
                                     if (data.CONFIG.BIGEARS)
-                                        $("#listeners").text(data.CONFIG.BIGEARS);
+                                        $("#btnlisteners").text(data.CONFIG.BIGEARS);
 
                                     if (data.CONFIG.USERS)
                                         subscribers = data.CONFIG.USERS;
 
                                     if (data.CONFIG.PACKETS)
                                         doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+
+                                    if (data.CONFIG.LISTENERS)
+                                        listenerList = data.CONFIG.LISTENERS;
                                 } 
                                 else
                                 if (data.USER)

@@ -24,13 +24,51 @@
 
                 <div id="buttonArea">
                     <<<button_bar>>>
-                    <button class="button" id="listeners">&#x1F441 0</button>
+                    <button class="button" id="btnlisteners">&#x1F441; 0</button>
                 </div>
         
+                <!-- The Modal -->
+                <div id="listenersModal" class="modal">
+                    <!-- Modal content -->
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <table class="tables tablefixed">
+                            <thead id="theadListeners" tbodyid="listeners">
+                                <tr class="headerRow">
+                                    <th class="thlscallsign">Callsign</th>
+                                    <th class="thlsip">IP</th>
+                                    <th class="thlsport">Port</th>
+                                    <th class="thlsnetid">NetID</th>
+                                    </tr>
+                            </thead>
+                            <tbody id="listeners">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div name="hbtables">
+                    <table id="lastActive" class="tables lastActive tablefixed" style="display: none;">
+                        <thead>
+                            <tr class="headerRow">
+                                <th class="thledate">Date</th>
+                                <th class="thletime">Heure</th>
+                                <th class="thleslot">Slot</th>
+                                <th class="thletx" colspan=2>TX Connectés</th>
+                                <th class="thlename">Name</th>
+                                <th class="thletg">TG</th>
+                                <th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>
+                                <th class="thledelay">TX (s)</th>
+                                <th class="thlenetid">NetID</th>
+                                <th class="thlemaster">Master Infra</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lastActiveBody"></tbody>
+                    </table>
+
                     <div id="insertPoint"></div>
                     <br>
-                    <table class="tables tablefixed">
+                    <table class="tables tablefixed network">
                         <thead  id="theadOpenbridges" tbodyid="openbridges">
                             <tr class="headerRow">
                             <th class="thopmaster">OpenBridge</th>
@@ -42,7 +80,7 @@
                         </tbody>
                     </table>
                     <br>
-                    <table class="tables tablefixed">
+                    <table class="tables tablefixed network">
                         <thead id="theadMasters" tbodyid="masters">
                             <tr class="headerRow">
                                 <th class="thmsmaster">Master</th>
@@ -57,7 +95,7 @@
                         </tbody>
                     </table>
                     <br>
-                    <table class="tables tablefixed">
+                    <table class="tables tablefixed network">
                         <thead id="theadPeers" tbodyid="peers">
                             <tr class="headerRow">
                             <th class="thpemaster">Peer</th>
@@ -74,15 +112,13 @@
                 </div>
             
                 <div id="footer">
-                    <span>Copyright (c) 2016, 2017, 2018, 2019, 2020 , Modified by NumeriX 2019,2020
+                    <div>Copyright (c) 2016, 2017, 2018, 2019, 2020 , Modified by NumeriX 2019, 2020
                         <br>The Regents of the K0USY Group. All rights reserved.
-                        <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019,2020</a>.
-                        <br><a href=https://github.com/avrahqedivra/HBJson>JSON version by jmc 2021</a>.
-                        <br><br>
-                    </span>
-
+                        <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019, 2020</a>.
+                        <br><a href=https://github.com/avrahqedivra/HBJson>JSON, MYSQL version by jmc 2021, 2022</a>.
+                    </div>
                     <br>
-                    <span>Copyright (c) 2016, 2017, 2018, 2019<br>The Regents of the <a href=http://k0usy.mystrikingly.com><p style="color:#8E8E8E">K0USY Group.</p></a></span>
+                    <span>Copyright (c) 2016, 2017, 2018, 2019<br>The Regents of the <p style="color:#8E8E8E"><a href=http://k0usy.mystrikingly.com>K0USY Group.</a></p></span>
                 </div>
                 <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
             </div>                
@@ -91,55 +127,75 @@
 
 <script type="text/javascript">
     $(document).ready(function() {
-        $(document).on("click", ".tables thead", function() {
-            $("#hblink"+$(this).attr('tgid')).toggle(100);
+        $(window).click(function(e) {
+            if (event.target == document.getElementById("listenersModal"))
+                $("#listenersModal").hide();
+        });        
+
+        $(document).on("click", ".lastheard thead", function() {
+            var hblink = "#hblink"+$(this).attr('tgid');
+            $(hblink).toggle(100);
+
+            setTimeout(() => {
+                var display = $(hblink).css('display');
+                if (display == "none")
+                    $("#tbtgId"+$(this).attr('tgid')).css("filter", "blur(1px)");
+                else
+                    $("#tbtgId"+$(this).attr('tgid')).css("filter", "blur(0)");
+            }, 125);
         });
 
-        $(document).on("click", ".tablefixed thead", function() {
+        $(document).on("click", ".network thead", function() {
             $("#"+$(this).attr('tbodyid')).toggle(100);
-        });        
+        });
+
+        $(document).on("click", ".close", function() {
+            $("#listenersModal").hide();
+        });
+
+        $(document).on("dblclick", "#btnlisteners", function(e) {
+            if (e.ctrlKey) {
+                $("#listeners tr").remove();
+                var content = "";
+
+                listenerList = uniqByKeepLast(listenerList, swl => swl.NETID);
+
+                listenerList.forEach(swl => {
+                    content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+                });
+
+                $("#listeners").append(content);
+                $("#listenersModal").show();
+            }
+        });
     });
 </script> 
 
 <script type="text/javascript">
-    var lastheardOpen = true;
     var traffic = [];
-    var sock = null;
-    var displayLines = parseInt("<<<DISPLAY_LINES>>>");
-    var names = [];    
+    var sock = null;    
+    var displayLines = parseInt("<<<DISPLAY_LINES>>>");    
+
+    listenerList = [];
     tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
     tgorder = new Set("<<<TGID_ORDER>>>".split(','));
+    hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));
+    last_active_tg = ("<<<LAST_ACTIVE_TG>>>" == "True") ? true : false;
 
-    names["Andre"] = "André";
-    names["Francois"] = "François";
-    names["Herve"] = "Hervé";
-    names["Jerome"] = "Jérôme";
-    names["Jerôme"] = "Jérôme";
-    names["Stephane"] = "Stéphane";
-    names["Gerard"] = "Gérard";
-    names["Jean-Noel"] = "Jean-Noël";
-    names["Remi"] = "Rémi";
-    names["Clement"] = "Clément";
-    names["Frederic"] = "Frédéric";
-    names["Jeremy"] = "Jérémy";
-    names["Jean-Francois"] = "Jean-François";
-    names["Gregory"] = "Grégory";    
-    names["Anne-Cecile"] = "Anne-Cécile";
-    names["Mickael"] = "Mickaël";
-    names["Theophile"] = "Théophile";
-    names["Sebastien"] = "Sébastien";
-    names["Raphael"] = "Raphaël";
-    names["Cedric"] = "Cédric";
-    names["Rene"] = "René";
-    names["Nathanael"] = "Nathanaël";
-    names["Joel"] = "Joël";
-    names["Jeremie"] = "Jérémie";
+    if (last_active_tg == true) {
+        $("#lastActive").css("display", "table");
+    }
     
+    // see names list in localstorage
     function enhanceNames(name) {
-        if (names[name] != null)
-            return names[name];
+        if (name != null) {
+            name = name.replace(/None/g, "");
 
-        return name;            
+            if (names != null && names[name] != null)
+                return names[name].capitalize(true);
+        }
+
+        return name.capitalize(true);
     }
 
     //   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
@@ -318,7 +374,7 @@
     function updateMasters(masters) {
         if (masters != null && $('#masters').is(':visible')) {
             var content = "";
-            $("#masters tr").remove(); 
+            $("#masters").empty();
 
             for (let entry in masters) {
                 done = false;
@@ -344,10 +400,14 @@
                         netID = peers[i][0];
                         record = peers[i][1];
 
-                        ts1 = (record["1"]["TXRX"] == "") ? "msTS1": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
-                        ts2 = (record["2"]["TXRX"] == "") ? "msTS2": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
-                        cnx1 = (record["1"]["TXRX"] == "") ? "msTS": ((record["1"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
-                        cnx2 = (record["2"]["TXRX"] == "") ? "msTS": ((record["2"]["TXRX"] == "TX") ? "msTSTX":"msTSRX");
+                        ts1rx = record["1"]["TXRX"];
+                        ts2rx = record["2"]["TXRX"];
+
+                        ts1 = ((ts1rx == "") ? "msTS1": ((ts1rx == "TX") ? "msTSTX":"msTSRX"));
+                        ts2 = ((ts2rx == "") ? "msTS2": ((ts2rx == "TX") ? "msTSTX":"msTSRX"));
+
+                        cnx1 = (ts1rx == "") ? "msTS": ((ts1rx == "TX") ? "msTSTX":"msTSRX");
+                        cnx2 = (ts2rx == "") ? "msTS": ((ts2rx == "TX") ? "msTSTX":"msTSRX");
 
                         hardwareType = (record["RX_FREQ"] == "N/A" && record["TX_FREQ"] == "N/A") ? "IP Network" : "Radio";
     
@@ -388,21 +448,53 @@
                 }
             }
 
-            $("#masters").append(content); 
+            $(content).appendTo("#masters"); 
             content = "";
         }
     }
 
-    function doTraffic(t) {        
-        if (t != null)  {
-            if (!Array.isArray(t)) {
-                // if (t.PACKET == "END")
-                    traffic.push( t );
+    function checkDeadOnline() {
+        try {
+            var found = false;
+
+            for(let i=0; i < traffic.length; i++) {
+                if (traffic[i].PACKET == "START") {
+                    var t = new Date(traffic[i].DATE + " " + traffic[i].TIME);
+                    if ((Date.now() - t.getTime()) > 240000) {
+                        // log("timeout, resetting status to END : " + JSON.stringify(traffic[i]));
+                        found = true;
+                        traffic[i].PACKET = "END";
+                    }
+                }
             }
-            else
+
+            if (found)
+                doTraffic(traffic);
+
+        } catch(error) {
+
+        }
+    }
+
+    function scrollIntoViewFromId(id) {
+        var el = document.getElementById(id);
+        if (el != null) {
+            el.scrollIntoView(true);
+            el.focus();
+        }
+    }
+
+    function doTraffic(t) {
+        if (t != null)  {
+            if (Array.isArray(t))
                 traffic = t;
+            else {
+                traffic.push(t);
+            }
 
             if (traffic.length > 0) {
+                checkDeadOnline();
+
                 // keeps the n last unique items
                 traffic = uniqByKeepLast(traffic, it => it.DMRID);
 
@@ -417,7 +509,7 @@
 
                 var content = "";
 
-                cleaned = true;                        
+                cleaned = true;
                 $(".lastheard tbody tr").remove(); 
 
                 for(var i=0; i < traffic.length; i++) {
@@ -451,16 +543,16 @@
                     if (document.getElementById(tgName) == null) {
                         /* build the missing table */
                         var emptyTable = '<table id=tb'+ tgName + ' class="tables lastheard tablefixed">'
-                            +'<thead id="'+ tgName +'" tgid="'+ tgid +'">' 
+                            +'<thead id="'+ tgName +'" tgid="'+ tgid +'" tbodyid=hblink' + tgid + '">' 
                                 +'<tr class="headerRow">'
                                     +'<th class="thledate">Date</th>'
                                     +'<th class="thletime">Heure</th>'
                                     +'<th class="thleslot">Slot</th>'
                                     +'<th class="thletx" colspan=2>TX Connectés</th>'
                                     +'<th class="thlename">Name</th>'
-                                    +'<th class="thletg">TG#</th>'
+                                    +'<th class="thletg">TG' + tgid + '</th>'
                                     +'<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>'
-                                    +'<th class="thledelay">Durée TX</th>'
+                                    +'<th class="thledelay">TX (s)</th>'
                                     +'<th class="thlenetid">NetID</th>'
                                     +'<th class="thlemaster">Master Infra</th>'
                                 +'</tr>'
@@ -472,16 +564,54 @@
                             $(emptyTable).insertBefore("#tg"+tgid+"marker");
                         else
                             $('#insertPoint').append(emptyTable);
-                    } 
+
+                        var tbs = getTgTableState("hblink" + tgid);
+
+                        if (tbs != null) {
+                            if (tbs.open) {
+                                var count = tbs.colspan;
+                                if (count == null)
+                                    count = 10;                                    
+
+                                $("#"+tbs.name).append("<tr><td class='infoline' colspan="+(count+1)+">Mise à jour en cours...</td></tr>");
+
+                                $("#"+tbs.name).show();
+                            }
+                            else
+                                $("#"+tbs.name).hide();
+                        }
+                    }
+
+                    if (last_active_tg == true && i == 0 && lastActiveTG != tgid) {
+                        lastActiveTG = tgid;
+                        // $('.thletg').removeClass("lastActiveTG");
+                        // $("#" + tgName + " > tr").children(".thletg").addClass("lastActiveTG")
+                        $('.headerRow').removeClass("lastActiveTG");
+                        $("#" + tgName).children(".headerRow").addClass("lastActiveTG")
+                    }
                     
+                    var callsign = traffic[i].CALLSIGN;
+                    var dmrid = traffic[i].DMRID;
+                    
+                    hide_dmrid.forEach(dh => {
+                        if (dmrid.startsWith(dh)) {
+                            callsign = "XXXXX";
+                            dmrid = "0000000";
+                        }
+                    });
+
                     /* deal with content if < displaylines */
                     if ($('#tb' + tgName +' >tbody >tr').length < displayLines) {
+                        /* empty table if data */
+                        // if ($("#"+tbs.name+" tr td.infoline"))
+                        //     $("#"+tbs.name+" tr").remove();
+
                         content = '<tr class=' + bgClass + '>';
-                        content += "<td>" + traffic[i].DATE + "</td>";
-                        content += "<td>" + traffic[i].TIME + "</td>";
-                        content += "<td>" + traffic[i].TS + "</td>";
-                        content += "<td class='callsign ellipsis'><a target='_blank' href=https://qrz.com/db/" + traffic[i].CALLSIGN + ">" + traffic[i].CALLSIGN + "</a></td>";
-                        content += "<td class='dmrid'>(" + traffic[i].DMRID + ")</td>";
+                        content += "<td class='tdDate'>" + traffic[i].DATE + "</td>";
+                        content += "<td class='tdTime'>" + traffic[i].TIME + "</td>";
+                        content += "<td class='slot'>" + traffic[i].TS + "</td>";
+                        content += "<td class='callsign ellipsis'><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
+                        content += "<td class='dmrid'>(" + dmrid + ")</td>";
                         content += "<td class='firstname ellipsis'>" + enhanceNames(traffic[i].NAME) + "</td>";
                         content += "<td class='talkgroup'>" + traffic[i].TGID + "</td>";
                         content += "<td class='alias'>" + traffic[i].ALIAS + "</td>";
@@ -497,9 +627,74 @@
                     }
                 }
             }
+
+            if (last_active_tg == true) {
+                lastActive = [];
+                for (const tgid of tgorder) {
+                    var tbody = document.getElementById("hblink"+tgid);
+                    if (tbody != null) {
+                        var tr = $(tbody).children('tr:first')
+                        tr.each(function() {
+                            var item = $(this.cells[0]).html();
+                            if (!item.startsWith("Mise")) {
+                                lastActive.push( {  
+                                                    DATE:       item,
+                                                    TIME:       $(this.cells[1]).html(),
+                                                    TS:         $(this.cells[2]).html(),
+                                                    CALLSIGN:   $(this.cells[3]).html(),
+                                                    DMRID:      $(this.cells[4]).html(),
+                                                    NAME:       $(this.cells[5]).html(),
+                                                    DMRID:      $(this.cells[4]).html(),
+                                                    TGID:       tgid,
+                                                    ALIAS:      $(this.cells[7]).html(),
+                                                    DELAY:      $(this.cells[8]).html(),
+                                                    SRC_ID:     $(this.cells[9]).html(),
+                                                    SYS:        $(this.cells[10]).html()
+                                                } );
+                            }
+                        });
+                    }
+                }
+
+                if (lastActive.length > 0) {
+                    // sort in reverse order
+                    lastActive.sort((a,b) => {
+                        aa = a.DATE + " " + a.TIME;
+                        bb = b.DATE + " " + b.TIME;
+
+                        if (aa > bb) return -1;
+                        if (aa <= bb) return 1;
+                    });
+
+                    $("#lastActive tbody tr").remove();
+
+                    for(let i=0; i < lastActive.length; i++) {
+                        var link = '\"tgId' + parseInt(lastActive[i].TGID)+ '\"';
+
+                        content = '<tr class=' + bgClass + '>';
+                        content += "<td class='tdDate'>" + lastActive[i].DATE + "</td>";
+                        content += "<td class='tdTime'>" + lastActive[i].TIME + "</td>";
+                        content += "<td class='slot'>" + lastActive[i].TS + "</td>";
+                        content += "<td class='callsign ellipsis'>" + lastActive[i].CALLSIGN + "</td>";
+                        content += "<td class='dmrid'>" + lastActive[i].DMRID + "</td>";
+                        content += "<td class='firstname ellipsis'>" + lastActive[i].NAME + "</td>";
+                        content += "<td class='alink' onclick='scrollIntoViewFromId(" + link + ")'>" + lastActive[i].TGID + "</td>";
+                        content += "<td class='alias'>" + lastActive[i].ALIAS + "</td>";
+                        if (lastActive[i].DELAY == "ONLINE")
+                            content += "<td class='online'>" + lastActive[i].DELAY + "</td>";
+                        else                        
+                            content += "<td class='delay'>" + lastActive[i].DELAY + "</td>";
+                        content += "<td class='netid'>" + lastActive[i].SRC_ID + "</td>";
+                        content += "<td class='infra'>" + lastActive[i].SYS + "</td>";
+                        content += "</tr>";
+
+                        $("#lastActiveBody").append(content);
+                    }
+                }
+            }
         }
     }
-    
+
     function log(msg) {
         console.log(msg);
     };
@@ -513,9 +708,11 @@
     }
 
     window.onload = () => {
+        lastActive = [];
         listeners = 0;
+        lastActiveTG = 0;
 
-        var wsuri = "ws://" + window.location.hostname + ":<<<SOCKER_SERVER_PORT>>>";
+        var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>?page=dashboard";
 
         if (getConfigFromLocalStorage != null)
             getConfigFromLocalStorage();
@@ -564,15 +761,19 @@
                         // console.log("");
 
                         if (data != null) {
-                            if (data.BIGEARS) {                                
-                                $("#listeners").text("\uD83D\uDD75 SWL " + data.BIGEARS);
-                            }
+                            checkDeadOnline();
 
-                            if (data.CTABLE != null)
-                                treatTables(data.CTABLE);
-                            else
+                            if (data.BIGEARS)                            
+                                $("#btnlisteners").text("\uD83D\uDD75 SWL " + data.BIGEARS);
+
+                            if (data.LISTENERS)
+                                listenerList = data.LISTENERS;
+
                             if (data.TRAFFIC)
                                 doTraffic(data.TRAFFIC);
+                            else
+                            if (data.CTABLE != null)
+                                treatTables(data.CTABLE);
                             else
                             if (data.BRIDGES)
                                 updateBridges(data.BRIDGES);
@@ -582,11 +783,14 @@
                                 //     subscribers = data.CONFIG.USERS.results;
 
                                 if (data.CONFIG.BIGEARS) {
-                                    $("#listeners").text("\uD83D\uDD75 SWL " + data.CONFIG.BIGEARS);
+                                    $("#btnlisteners").text("\uD83D\uDD75 SWL " + data.CONFIG.BIGEARS);
                                 }
 
                                 if (data.CONFIG.PACKETS)
                                     doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+
+                                if (data.CONFIG.LISTENERS)
+                                    listenerList = data.CONFIG.LISTENERS;
                             } 
                             else
                             if (data.BTABLE)
