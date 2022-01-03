@@ -1425,15 +1425,15 @@ class ccs7manager(Resource):
     def render_GET(self, request):
         return str.encode(replaceSystemStrings(get_template(PATH + "templates/ccs7manager.html")))
 
-class ISessionVars(Interface):
-    authenticated = Attribute("A bool value which shows if session has been authenticated.")
+class IAuthenticated(Interface):
+    value = Attribute("A boolean indicating session has been authenticated")
 
-@implementer(ISessionVars)
-class SessionVars(object):
+@implementer(IAuthenticated)
+class Authenticated(object):
     def __init__(self, session):
-        self.authenticated = False
+        self.value = False
 
-registerAdapter(SessionVars, Session, ISessionVars)
+registerAdapter(Authenticated, Session, IAuthenticated)
 
 class web_server(Resource):    
     def __init__(self):
@@ -1441,8 +1441,8 @@ class web_server(Resource):
 
     def getChild(self, name, request):
         session = request.getSession()
-        sessionVars = ISessionVars(session)
-        if sessionVars.authenticated != True:
+        authenticated = IAuthenticated(session)
+        if authenticated.value != True:
             return self
 
         page = name.decode("utf-8")
@@ -1500,12 +1500,12 @@ class web_server(Resource):
                 decodeddata = base64.b64decode(auth.split(' ')[1])
                 if decodeddata.split(b':') == [user, password]:
                     logging.info('Authorization OK')
-                    sessionVars = ISessionVars(session)
-                    sessionVars.authenticated = True
+                    authenticated = IAuthenticated(session)
+                    authenticated.value = True
                     return index_html.encode('utf-8')
 
-            sessionVars = ISessionVars(session)
-            sessionVars.authenticated = False
+            authenticated = IAuthenticated(session)
+            authenticated.value = False
             request.setResponseCode(http.UNAUTHORIZED)
             request.setHeader('www-authenticate', 'Basic realm="realmname"')
             logging.info('Someone wanted to get access without authorization')
@@ -1516,8 +1516,8 @@ class web_server(Resource):
                      border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;\"> \
                   <p><font size=5><b>Authorization Required</font></p></filed></center></body></html>".encode('utf-8')
         else:
-            sessionVars = ISessionVars(session)
-            sessionVars.authenticated = True
+            authenticated = IAuthenticated(session)
+            authenticated.value = True
             return index_html.encode('utf-8')
         
 if __name__ == '__main__':
@@ -1539,7 +1539,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.5.4:\n\t2021 Jean-Michel Cohen, F4JDN\n\n')
+                '\n\n\tHBJSON v2.5.5:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):
