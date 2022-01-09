@@ -131,13 +131,23 @@
                         $('#insertPoint').append(emptyTable);
                     } 
 
+                    var callsign = logLast[i].CALLSIGN;
+                    var dmrid = logLast[i].DMRID;
+
+                    hide_dmrid.forEach(dh => {
+                        if (dmrid.startsWith(dh)) {
+                            callsign = "XXXXX";
+                            dmrid = "0000000";
+                        }
+                    });
+
                     /* deal with content if < displaylines */
                     content = '<tr class=' + bgClass + '>';
                     content += "<td>" + logLast[i].DATE + "</td>";
                     content += "<td>" + logLast[i].TIME + "</td>";
                     content += "<td>" + logLast[i].TS + "</td>";
-                    content += "<td class='callsign'><a target='_blank' href=https://qrz.com/db/" + logLast[i].CALLSIGN + ">" + logLast[i].CALLSIGN + "</a></td>";
-                    content += "<td class='dmrid'>(" + logLast[i].DMRID + ")</td>";
+                    content += "<td class='callsign'><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
+                    content += "<td class='dmrid'>(" + dmrid + ")</td>";
                     content += "<td class='firstname'>" + enhanceNames(logLast[i].NAME) + "</td>";
                     content += "<td class='talkgroup'>" + logLast[i].TGID + "</td>";
                     content += "<td class='alias'>" + logLast[i].ALIAS + "</td>";
@@ -156,6 +166,7 @@
         };
 
         window.onload = () => {
+            hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));
             tgfilter = new Set("<<<TGID_FILTER>>>".split(','));                
             var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>";
 
