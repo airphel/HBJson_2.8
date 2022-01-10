@@ -262,6 +262,10 @@ a:active, .alink:active {
   background-color: #3e8e41;
 }
 
+.noiconbutton {
+  padding: 3px 4px 3px 4px;
+}
+
 table, td, th {
   font-weight: var(--color-fw-table);
   border: .5px solid var(--color-table-border);
