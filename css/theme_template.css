@@ -262,6 +262,10 @@ a:active, .alink:active {
   background-color: #3e8e41;
 }
 
+.iconbutton {
+  padding: 1px 0 3px 0;  
+}
+
 .noiconbutton {
   padding: 3px 4px 3px 4px;
 }

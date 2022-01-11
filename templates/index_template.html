@@ -21,7 +21,7 @@
 
                 <div id="buttonArea">
                     <<<button_bar>>>
-                    <button class="button" id="btnlisteners">&#x1F441; 0</button>
+                    <button class="button" style="padding: 1px 0 3px 0;" id="btnlisteners">&#x1F441; 0</button>
                 </div>
         
                 <!-- The Modal -->
@@ -518,13 +518,13 @@
                         default: bgClass = 'tgWhite'; break;
                     }
 
-                    tgorder.forEach(element => {
-                        var tbid = 'tbtg'+element;
-                        if (document.getElementById(tbid) != null) {
-                            if ($('#' + tbid + ' >tbody >tr').length == 0)
-                                $('#' + tbid).remove();
-                        }
-                    });
+                    // tgorder.forEach(element => {
+                    //     var tbid = 'tbtg'+element;
+                    //     if (document.getElementById(tbid) != null) {
+                    //         if ($('#' + tbid + ' >tbody >tr').length == 0)
+                    //             $('#' + tbid).remove();
+                    //     }
+                    // });
 
                     /* check if table already exists */
                     if (document.getElementById(tgName) == null) {
@@ -552,20 +552,20 @@
                         else
                             $('#insertPoint').append(emptyTable);
 
-                        var tbs = getTgTableState("hblink" + tgid);
+                        // var tbs = getTgTableState("hblink" + tgid);
 
-                        if (tbs != null) {
-                            if (tbs.open) {
-                                var count = tbs.colspan;
-                                if (count == null)
-                                    count = 10;
+                        // if (tbs != null) {
+                        //     if (tbs.open) {
+                        //         var count = tbs.colspan;
+                        //         if (count == null)
+                        //             count = 10;
 
-                                $("#"+tbs.name).append("<tr><td class='infoline' colspan="+(count+1)+">Mise à jour au prochain appel entrant...</td></tr>");
-                                $("#"+tbs.name).show();
-                            }
-                            else
-                                $("#"+tbs.name).hide();
-                        }
+                        //         $("#"+tbs.name).append("<tr><td class='infoline' colspan="+(count+1)+">Mise à jour au prochain appel entrant...</td></tr>");
+                        //         $("#"+tbs.name).show();
+                        //     }
+                        //     else
+                        //         $("#"+tbs.name).hide();
+                        // }
                     }
 
                     if (last_active_tg == true && i == 0 && lastActiveTG != tgid) {
@@ -582,6 +582,11 @@
 
                     if (delay > 1000)
                         delay = "xx";
+
+                    // if (packet == "START" && $('#hblink' + tgid +' >tr >td.dmrid:contains("('+ dmrid +')")').length > 0) {
+                    //     //log("tgid " + tgid + " skipping " + dmrid);
+                    //     continue;
+                    // }
 
                     hide_dmrid.forEach(dh => {
                         if (dmrid.startsWith(dh)) {
@@ -814,8 +819,9 @@
             this.socket.close();
         };
         
-
-        socket = new WSConnection().connect(wsuri);
+        setTimeout(() => {
+            socket = new WSConnection().connect(wsuri);
+        }, 250);
     };
 
     window.onunload = () => {

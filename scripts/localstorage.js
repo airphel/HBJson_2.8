@@ -145,10 +145,10 @@ function getConfigFromLocalStorage() {
             else {
                 if (tbs.open) {
                     $("#"+tbs.name).show();                                                            
-                    var count = tbs.colspan;
-                    if (count == null)
-                        count = 5;
-                    $("#"+tbs.name).append("<tr><td class='infoline' colspan="+(count+1)+">Mise à jour au prochain appel entrant...</td></tr>");
+                    // var count = tbs.colspan;
+                    // if (count == null)
+                    //     count = 5;
+                    // $("#"+tbs.name).append("<tr><td class='infoline' colspan="+(count+1)+">Mise à jour au prochain appel entrant...</td></tr>");
                 }
                 else
                     $("#"+tbs.name).hide();

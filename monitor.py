@@ -831,9 +831,9 @@ def createlogLastFromSql(EndPacketOnly):
         with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS,database=SQL_DATABASE) as connection:
             with connection.cursor(buffered=True) as cursor:
                 if EndPacketOnly:
-                    cursor.execute('select * from log where packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                    cursor.execute('select * from log where tgid in ('+TGID_ORDER+') and packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
                 else:
-                    cursor.execute('select * from log order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                    cursor.execute('select * from log where tgid in ('+TGID_ORDER+') order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
                     
                 logs = cursor.fetchall()
 
@@ -950,7 +950,7 @@ def getLastHeardFromSQL():
     try:
         with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS,database=SQL_DATABASE) as connection:
             with connection.cursor(buffered=True) as cursor:                
-                cursor.execute('select * from log where packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
+                cursor.execute('select * from log where tgid in ('+TGID_ORDER+') and packet="END" order by concat_ws(date, " ", time) desc limit ' + str(LASTHEARDSIZE) + ';')
                 logs = cursor.fetchall()
 
                 MESSAGEJ = []
@@ -1229,35 +1229,17 @@ class dashboard(WebSocketServerProtocol):
             # read saved history or create traffic file for later
             if os.path.exists(LOG_PATH + "lastheard.json"):
                 if SQL_LOG == True:                
-                    _traffic = createlogLastFromSql(False)
-                    if _traffic:
-                        for record in _traffic:
-                            found = False
-                            for added in INITIALLIST:
-                                if added["DMRID"] == record["DMRID"]:
-                                    found = True
-                                    break
-                                
-                            if not found:
-                                INITIALLIST.append(record)
+                    INITIALLIST = createlogLastFromSql(False)
                 else:
                     with open(LOG_PATH + "lastheard.json", 'r') as infile:
                         _traffic = json.load(infile)
 
                         if _traffic and _traffic["TRAFFIC"]:
                             _traffic = reversed(_traffic["TRAFFIC"])
+                            _tglist = list(TGID_ORDER.split(","))
                             for record in _traffic:
-                                found = False
-                                for added in INITIALLIST:
-                                    if added["DMRID"] == record["DMRID"]:
-                                        found = True
-                                        break
-                                    
-                                if not found:
+                                if record["TGID"] in _tglist:
                                     INITIALLIST.append(record)
-
-                            # will be sent in the config packet
-                            # self.sendMessage(json.dumps({ "TRAFFIC": INITIALLIST[-TRAFFICSIZE:] }, ensure_ascii = False).encode('utf-8'))
                         else:
                             logging.info("Creating empty " + LOG_PATH + "lastheard.json")
                             with open(LOG_PATH + "lastheard.json", 'w') as outfile:
@@ -1269,7 +1251,7 @@ class dashboard(WebSocketServerProtocol):
 
             # sorted in reverse order last in log becomes first to display
             # https://linuxhint.com/sort-json-objects-python/
-            _message["PACKETS"] = { "TRAFFIC": sorted(INITIALLIST[-TRAFFICSIZE:], key=lambda k: (k["DATE"]+" "+k["TIME"]), reverse=True) }
+            _message["PACKETS"] = { "TRAFFIC": sorted(INITIALLIST, key=lambda k: (k["DATE"]+" "+k["TIME"]), reverse=True)[:TRAFFICSIZE] }
 
             self.sendMessage(json.dumps({ "CONFIG": _message }, ensure_ascii = False).encode('utf-8'))
 
@@ -1541,7 +1523,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.6.1:\n\t2021, 2022 Jean-Michel Cohen - F4JDN\n\n')
+                '\n\n\tHBJSON v2.6.2:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):
