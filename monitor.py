@@ -85,6 +85,9 @@ from config import *
 from mysql.connector import connect, Error
 import pandas as pd
 
+# support for xlsx files
+import xlsxwriter
+
 # SP2ONG - Increase the value if HBlink link break occurs
 NetstringReceiver.MAX_LENGTH = 500000000
 
@@ -921,6 +924,22 @@ def createLogTableJson():
 
         return MESSAGEJ
 
+def tableToExcel(tableName):
+    if SQL_LOG == True:
+        try:
+            with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS, database=SQL_DATABASE) as connection:
+                with connection.cursor(buffered=True) as cursor:
+                    # read updated usrp table sorted by tph
+                    cursor.execute("select * from " + tableName + ";")
+                    df_data = pd.DataFrame(list(cursor.fetchall()), columns = [desc[0] for desc in cursor.description])
+
+                    with pd.ExcelWriter("/tmp/" + tableName + ".xlsx", engine="xlsxwriter") as writer:
+                        df_data.to_excel(writer, sheet_name = tableName)
+
+        except Error as e:
+            if LOGINFO == True:
+                logging.info('MYSQL ERROR: {}'.format(e))
+
 # "radioid", "https://database.radioid.net/static/users.json");
 # "theshield", "http://theshield.site/local_subscriber_ids.json");
 def fetchRemoteUsersFiles(fileurl):
@@ -1469,6 +1488,13 @@ class web_server(Resource):
             return staticFile(name, "webfonts", "font/woff;")
         elif page.endswith(".ttf"):
             return staticFile(name, "webfonts", "font/ttf;")
+        elif page.endswith(".xls") or page.endswith(".xlsx"):
+            # if file is in list generated from sql table
+            if page in ["table1", "table2", "table3"]:
+                tableToExcel(page[:page.index(":")])
+                return staticFile(name, "/tmp", "application/vnd.ms-excel")
+            else:
+                return staticFile(name, "html", "application/vnd.ms-excel")
 
         return NoResource()
 

@@ -95,6 +95,8 @@ function saveSettings() {
     }
     
     createCookie(cookieSettingsName, JSON.stringify(settings), settingsValidity);
+
+    alert("Sauvegarde effectuée");
 }
 
 function eraseCookie(name) {
