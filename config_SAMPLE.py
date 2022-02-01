@@ -20,6 +20,8 @@ OPB_FILTER = ""
 TGID_FILTER = ""
 # tg order on html monitor page, for example "38,7,39,777,700"
 TGID_ORDER = ""
+# dynamic tg, if not filtred by TGID_FILTER, tg will be added dynamicaly to dashboard beside those in TG_ORDER
+DYNAMIC_TG = False
 # hide OMs with DMRID starting with, for example with "208,206"
 HIDE_DMRID = ""
 

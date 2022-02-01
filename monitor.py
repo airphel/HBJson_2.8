@@ -228,6 +228,7 @@ def replaceSystemStrings(data):
         .replace("<<<SOCKET_SERVER_PORT>>>", str(SOCKET_SERVER_PORT)) \
         .replace("<<<DISPLAY_LINES>>>", str(DISPLAY_LINES)) \
         .replace("<<<LAST_ACTIVE_TG>>>", str(LAST_ACTIVE_TG)) \
+        .replace("<<<DYNAMIC_TG>>>", str(DYNAMIC_TG)) \
         .replace("<<<HIDE_DMRID>>>", str(HIDE_DMRID))#.replace("class=\"theme-dark\"", "class=\"theme-light\"")
 
 def logMySQL(_data):
@@ -881,7 +882,6 @@ def createlogLastFromSql(EndPacketOnly):
 
     except Error as e:
         print("Error {} ", e)
-
 
 def createLogTableJson():
     MESSAGEJ = []
@@ -1549,7 +1549,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.6.2:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
+                '\n\n\tHBJSON v2.6.3:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):
