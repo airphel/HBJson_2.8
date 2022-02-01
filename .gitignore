@@ -5,4 +5,4 @@ config.py
 *.log
 *.json
 logo/*.*
-monitor.py.bak
+*.bak
