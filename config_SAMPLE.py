@@ -20,6 +20,8 @@ OPB_FILTER = ""
 TGID_FILTER = ""
 # tg order on html monitor page, for example "38,7,39,777,700"
 TGID_ORDER = ""
+# TG to hilite
+TGID_HILITE = ""
 # dynamic tg, if not filtred by TGID_FILTER, tg will be added dynamicaly to dashboard beside those in TG_ORDER
 DYNAMIC_TG = False
 # hide OMs with DMRID starting with, for example with "208,206"
@@ -32,16 +34,19 @@ WEB_PASS =  'hblink'
 
 # Authorization of access to SQL
 SQL_LOG       = False
-SQL_USER      = 'ubuntu'
+SQL_USER      = 'SQLUSER'
 SQL_PASS      = 'SQLPASSWORD'
 SQL_HOST      = 'localhost'
 SQL_DATABASE  = 'hbjson'
 
 # Dispay lastactive TG table
 LAST_ACTIVE_TG  = False
+# Max lines in lastactive table (0 means all TGs defined in TG_ORDER list)
+LAST_ACTIVE_SIZE = 0
 
-# Lastheard and Traffic sizes
+# Lastheard file size
 LAST_HEARD_SIZE = 2000
+# Nb lines in first packet sent to dashboard
 TRAFFIC_SIZE    = 500
 
 # Files and stuff for loading alias files for mapping numbers to names

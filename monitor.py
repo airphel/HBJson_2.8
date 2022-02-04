@@ -225,9 +225,11 @@ def replaceSystemStrings(data):
     return data.replace("<<<site_logo>>>", sitelogo_html).replace("<<<system_name>>>", REPORT_NAME) \
         .replace("<<<button_bar>>>", buttonbar_html) \
         .replace("<<<TGID_FILTER>>>", str(TGID_FILTER)).replace("<<<TGID_ORDER>>>", str(TGID_ORDER)) \
+        .replace("<<<TGID_HILITE>>>", str(TGID_HILITE)) \
         .replace("<<<SOCKET_SERVER_PORT>>>", str(SOCKET_SERVER_PORT)) \
         .replace("<<<DISPLAY_LINES>>>", str(DISPLAY_LINES)) \
         .replace("<<<LAST_ACTIVE_TG>>>", str(LAST_ACTIVE_TG)) \
+        .replace("<<<LAST_ACTIVE_SIZE>>>", str(LAST_ACTIVE_SIZE)) \
         .replace("<<<DYNAMIC_TG>>>", str(DYNAMIC_TG)) \
         .replace("<<<HIDE_DMRID>>>", str(HIDE_DMRID))#.replace("class=\"theme-dark\"", "class=\"theme-light\"")
 

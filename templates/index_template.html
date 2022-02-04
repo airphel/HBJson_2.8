@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="theme-dark">
     <head>
-        <link rel="shortcut icon" href="HBlink.png"/>
+        <link rel="shortcut icon" type="image/png" href="HBlink.png"/>
         <meta charset="UTF-8">
         <meta http-equiv="refresh" content="20000"/>
         <title>HBJSON Monitor</title>
@@ -21,7 +21,7 @@
 
                 <div id="buttonArea">
                     <<<button_bar>>>
-                    <button class="button" style="padding: 1px 0 3px 0;" id="btnlisteners">&#x1F441; 0</button>
+                    <div class="button iconbutton" id="btnlisteners">&#x1F441; 0</div>
                 </div>
         
                 <!-- The Modal -->
@@ -53,7 +53,7 @@
                                 <th class="thleslot">Slot</th>
                                 <th class="thletx" colspan=2>TX Connectés</th>
                                 <th class="thlename">Name</th>
-                                <th class="thletg">TG</th>
+                                <th class="thletg">TGs</th>
                                 <th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>
                                 <th class="thledelay">TX (s)</th>
                                 <th class="thlenetid">NetID</th>
@@ -109,13 +109,10 @@
                 </div>
             
                 <div id="footer">
-                    <div>Copyright (c) 2016, 2017, 2018, 2019, 2020 , Modified by NumeriX 2019, 2020
-                        <br>The Regents of the K0USY Group. All rights reserved.
-                        <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019, 2020</a>.
-                        <br><a href=https://github.com/avrahqedivra/HBJson>JSON, MYSQL version by jmc - F4JDN 2021, 2022</a>.
+                    <div>Copyright (c) 2016-2020, The Regents of the <a href=http://k0usy.mystrikingly.com>K0USY Group.  All rights reserved.</a>
+                        <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019, 2020</a>&nbsp;- Modified by NumeriX 2019, 2020
+                        <br>JSON, MYSQL version by <a href=https://github.com/avrahqedivra/HBJson>jmc - F4JDN </a>2021, 2022.
                     </div>
-                    <br>
-                    <span>Copyright (c) 2016, 2017, 2018, 2019<br>The Regents of the <p style="color:#8E8E8E"><a href=http://k0usy.mystrikingly.com>K0USY Group.</a></p></span>
                 </div>
                 <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
             </div>                
@@ -171,13 +168,25 @@
 <script type="text/javascript">
     var traffic = [];
     var sock = null;    
-    var displayLines = parseInt("<<<DISPLAY_LINES>>>");    
+    var displayLines = parseInt("<<<DISPLAY_LINES>>>");
 
     listenerList = [];
     tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
     tgorder = new Set("<<<TGID_ORDER>>>".split(','));
-    hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));
+    tghilite = new Set("<<<TGID_HILITE>>>".split(','));
+    dynamic_tg = ("<<<DYNAMIC_TG>>>" == "True") ? true : false;
+    hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));    
     last_active_tg = ("<<<LAST_ACTIVE_TG>>>" == "True") ? true : false;
+
+    last_active_size = parseInt("<<<LAST_ACTIVE_SIZE>>>");
+	if (last_active_size == 0)
+		last_active_size = tgorder.size;
+
+    String.prototype.capitalize = function (lower) {
+        return (lower ? this.toLowerCase() : this).replace(/(?:^|\s|['`‘’.-])[^\x00-\x60^\x7B-\xDF](?!(\s|$))/g, function (a) {
+            return a.toUpperCase();
+        });
+    };
 
     if (last_active_tg == true) {
         $("#lastActive").css("display", "table");
@@ -507,24 +516,20 @@
                     if (tgfilter.has(''+tgid))
                         continue;
 
-                    var tgName = "tgId"+tgid;
-
-                    switch(traffic[i].TGID) {
-                        case "38": bgClass = 'tgGreen'; break;
-                        case "39": bgClass = 'tgYellow'; break;
-                        case "7": bgClass = 'tgBlue'; break;
-                        case "777": bgClass = 'tgPurple'; break;
-                        case "800": bgClass = 'tgPurple'; break;
-                        default: bgClass = 'tgWhite'; break;
+                    // add dynamic allowed tgid
+                    if (!tgorder.has(''+tgid)) {
+                        if (dynamic_tg == true)
+                            tgorder.add(tgid);
+                        else
+                            continue;
                     }
 
-                    // tgorder.forEach(element => {
-                    //     var tbid = 'tbtg'+element;
-                    //     if (document.getElementById(tbid) != null) {
-                    //         if ($('#' + tbid + ' >tbody >tr').length == 0)
-                    //             $('#' + tbid).remove();
-                    //     }
-                    // });
+                    var tgName = "tgId"+tgid;
+
+                    if (tghilite.has(traffic[i].TGID))
+                        bgClass = 'tgWhite';
+                    else
+                        bgClass = 'tgGreen';
 
                     /* check if table already exists */
                     if (document.getElementById(tgName) == null) {
@@ -582,11 +587,8 @@
 
                     if (delay > 1000)
                         delay = "xx";
-
-                    // if (packet == "START" && $('#hblink' + tgid +' >tr >td.dmrid:contains("('+ dmrid +')")').length > 0) {
-                    //     //log("tgid " + tgid + " skipping " + dmrid);
-                    //     continue;
-                    // }
+                    else if (delay < 2)
+                        delay = "PTT";
 
                     hide_dmrid.forEach(dh => {
                         if (dmrid.startsWith(dh)) {
@@ -594,6 +596,9 @@
                             dmrid = "0000000";
                         }
                     });
+
+                    if (callsign == "")
+                        callsign = dmrid;
 
                     if ($('#hblink'+traffic[i].TGID+' >tr td[dmrid='+ traffic[i].DMRID +']').length == 0) {
                         /* deal with content if < displaylines */
@@ -608,9 +613,12 @@
                             content += "<td class='slot'>" + traffic[i].TS + "</td>";
                             content += "<td class='callsign ellipsis'><a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
                             content += "<td dmrid=" +traffic[i].DMRID + " class='dmrid'>(" + dmrid + ")</td>";
-                            content += "<td class='firstname ellipsis'>" + enhanceNames(traffic[i].NAME) + "</td>";
+                            if (traffic[i].NAME.toUpperCase() == callsign)
+                                content += "<td class='firstname ellipsis'>" + callsign + "</td>";
+                            else
+                                content += "<td class='firstname ellipsis'>" + enhanceNames(traffic[i].NAME) + "</td>";
                             content += "<td class='talkgroup'>" + tgid + "</td>";
-                            content += "<td class='alias'>" + traffic[i].ALIAS + "</td>";
+                            content += "<td class='alias ellipsis'>" + traffic[i].ALIAS + "</td>";
                             if (traffic[i].PACKET == "START")
                                 content += "<td class='online'>ONLINE</td>";
                             else
@@ -634,7 +642,7 @@
                         tr.each(function() {
                             var item = $(this.cells[0]).html();
                             if (!item.startsWith("Mise")) {
-                                lastActive.push( {  
+                                lastActive.push( {
                                     DATE:       item,
                                     TIME:       $(this.cells[1]).html(),
                                     TS:         $(this.cells[2]).html(),
@@ -665,7 +673,10 @@
 
                     $("#lastActive tbody tr").remove();
 
-                    for(let i=0; i < lastActive.length; i++) {
+                    bgClass = 'tgPurple';
+
+                    // added max length last_active_size
+                    for(let i=0; i < Math.min(lastActive.length, last_active_size); i++) {
                         var link = '\"tgId' + parseInt(lastActive[i].TGID)+ '\"';
 
                         content = '<tr class=' + bgClass + '>';
@@ -676,7 +687,7 @@
                         content += "<td class='dmrid'>" + lastActive[i].DMRID + "</td>";
                         content += "<td class='firstname ellipsis'>" + lastActive[i].NAME + "</td>";
                         content += "<td class='alink' onclick='scrollIntoViewFromId(" + link + ")'>" + lastActive[i].TGID + "</td>";
-                        content += "<td class='alias'>" + lastActive[i].ALIAS + "</td>";
+                        content += "<td class='alias ellipsis'>" + lastActive[i].ALIAS + "</td>";
                         if (lastActive[i].DELAY == "ONLINE")
                             content += "<td class='online'>" + lastActive[i].DELAY + "</td>";
                         else                        
@@ -819,6 +830,7 @@
             this.socket.close();
         };
         
+
         setTimeout(() => {
             socket = new WSConnection().connect(wsuri);
         }, 250);

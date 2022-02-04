@@ -1,74 +1,30 @@
-/* cyrillic-ext */
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fCRc4EsA.woff2) format('woff2');
-  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
-}
-/* cyrillic */
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fABc4EsA.woff2) format('woff2');
-  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
-}
-/* greek-ext */
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fCBc4EsA.woff2) format('woff2');
-  unicode-range: U+1F00-1FFF;
-}
-/* greek */
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fBxc4EsA.woff2) format('woff2');
-  unicode-range: U+0370-03FF;
-}
-/* vietnamese */
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 300;
-  font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fCxc4EsA.woff2) format('woff2');
-  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+1EA0-1EF9, U+20AB;
-}
 /* latin-ext */
 @font-face {
-  font-family: 'Roboto';
+  font-family: 'Public Sans';
   font-style: normal;
-  font-weight: 300;
+  font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fChc4EsA.woff2) format('woff2');
+  src: url(https://fonts.gstatic.com/s/publicsans/v7/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuFpmJygcob18.woff2) format('woff2');
   unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 /* latin */
 @font-face {
-  font-family: 'Roboto';
+  font-family: 'Public Sans';
   font-style: normal;
-  font-weight: 300;
+  font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmSU5fBBc4.woff2) format('woff2');
+  src: url(https://fonts.gstatic.com/s/publicsans/v7/ijwGs572Xtc6ZYQws9YVwllKVG8qX1oyOymuFpmJxAco.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 a::-webkit-scrollbar {
   display: none;
 }
+
 .ellipsis {
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;  
+  text-overflow: ellipsis;
 }
 
 html, body {
@@ -159,7 +115,7 @@ html, body {
   margin-top: 2rem;
   color:var(--color-footer);
   font-size: 0.8rem; 
-  font-weight:bold; 
+  font-weight:normal; 
   text-align: center;
 }
 a:link, .alink {
@@ -224,6 +180,7 @@ a:active, .alink:active {
   margin: 4px 2px;
   border-radius: var(--app-border-radius);
 }
+
 /* The container 
   <div>
   - needed to position the dropdown content */
@@ -234,6 +191,7 @@ a:active, .alink:active {
 /* Dropdown Content (Hidden by Default) */
 .dropdown-content {
   font-size: 1rem;
+  font-weight: normal;
   display: none;
   position: absolute;
   background-color: var(--color-dropdown-content);
@@ -263,11 +221,11 @@ a:active, .alink:active {
 }
 
 .iconbutton {
-  padding: 1px 0 3px 0;  
+  padding: 2px 0 4px 0;  
 }
 
 .noiconbutton {
-  padding: 3px 4px 3px 4px;
+  padding: 4px 4px 4px 4px;
 }
 
 table, td, th {
@@ -324,6 +282,10 @@ thead {
 }
 .tgPink {
   color: var(--color-tgPink);
+}
+
+.tgtable {
+  margin-top: 2rem;  
 }
 
 /*
@@ -438,6 +400,7 @@ thead {
 }
 
 #hbtables {
+  width: var(--table-width);
   scrollbar-width: thin;
   display: block;
   overflow-y: scroll;                
@@ -464,10 +427,11 @@ thead {
 .talkgroup {
   color: var(--color-talkgroup);
 }
+
 .alias {
   color: var(--color-alias);
   text-align: left;
-  padding-left: 2rem;
+  padding-left: 1.5rem;
 }            
 .callsign {
   text-align: left;
@@ -537,6 +501,8 @@ color: #569cd6;
 .obNetID {
   color: var(--color-fg-obnetid);
   font-weight: var(--color-fw-obnetid);
+  text-align: left;
+  padding-left: 1.5rem;
 }
 
 /*
@@ -687,7 +653,7 @@ color: #569cd6;
   top: 4px;
   right: 4px;
   font-size: 28px;
-  font-weight: bold;
+  font-weight: normal;
 }
 
 .close:hover, .close:focus {
@@ -730,7 +696,7 @@ select {
   color: var(--color-table-fg);
 }
 .thbrsystem { 
-  font-weight: bold;
+  font-weight: normal;
   width:13rem ;
 }
 .thbrdate { 
@@ -763,7 +729,7 @@ select {
 }
 
 .lastActiveTG {
-  font-weight: bold;
+  font-weight: normal;
   background-color: var(--color-lastActiveTG);
 }
 
@@ -784,8 +750,9 @@ select {
 
 .theme-light {
   /* html, body */
+  --table-width: 82rem;
   --color-fz-html: 10pt;
-  --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 
   /* h1 */  
   --color-fg-h1: #1e1e1e;
@@ -876,13 +843,13 @@ select {
   --color-fg-msTSRX: #3fcc26;
 
   --color-fg-mscallsign: #be3a1f;
-  --color-fw-mscallsign: bold;
+  --color-fw-mscallsign: normal;
 
   --color-fg-tdgradient: #fefefe;
   --color-bg-tdgradient: #928888;
 
   --color-fg-obnetid: #be3a1f;  
-  --color-fw-obnetid: bold;
+  --color-fw-obnetid: normal;
 
   --color-bg-map: #e0e0e0;
 
@@ -914,8 +881,9 @@ select {
 
 .theme-dark {
   /* html, body */
+  --table-width: 82rem;
   --color-fz-html: 10pt;
-  --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Roboto,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+  --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 
   /* h1 */
   --color-fg-h1: #fefefe;
@@ -949,7 +917,7 @@ select {
   --color-dropdown-content: #a1a1a1;
 
   /* table */
-  --color-fw-table: bold;
+  --color-fw-table: normal;
   --color-table-fg: #ffffff;
   --color-table-border: #404040;
   --color-trbg: #1e1e1e;
@@ -969,7 +937,7 @@ select {
   --color-connected: #478d22;
   --color-disconnected:#e52713;
 
-  --color-fw-delay: bold;
+  --color-fw-delay: normal;
   --color-message: #569cd6;
   --color-message-a-hover: #FF69B4;
 
