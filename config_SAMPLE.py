@@ -1,4 +1,4 @@
-REPORT_NAME     = "Système d'Harmonisation Indépendant Evolutif Libre pour DMR"  # Name of the monitored HBlink system
+REPORT_NAME     = "Name of the monitored HBlink" # Name of the monitored HBlink system
 #
 CONFIG_INC      = True                          # Include HBlink stats
 HOMEBREW_INC    = True                          # Display Homebrew Peers status

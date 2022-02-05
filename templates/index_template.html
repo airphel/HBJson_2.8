@@ -242,31 +242,32 @@
             for (let openBridge in openBridges) {
                 record = openBridges[openBridge];
                 content += '<tr>';
-                    content += "<td class='obName'>" + openBridge + "</td>";
-                    content += "<td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
+                content += "<td class='obName'>" + openBridge + "</td>";
+                content += "<td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
 
-                    var entry = "";
-                    var data = null;
+                var entry = "";
+                var data = null;
 
-                    if (Object.keys(record["STREAMS"]) > 0) {
-                        for(let streamId in record["STREAMS"]) {
-                            if ((data = record["STREAMS"][streamId]) != null) {
-                                entry = "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
-                                break;
-                            }
+                if (Object.keys(record["STREAMS"])) {
+                    for(let streamId in record["STREAMS"]) {
+                        if ((data = record["STREAMS"][streamId]) != null) {
+                            if (entry != "")
+                                entry += " ";
+                            entry += "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
                         }
                     }
+                }
 
-                    var cnx = ((data == null || data[0] == "") ? "msTS": ((data && data[0] == "TX") ? "msTSRX":"msTSTX"));
-                
-                    content += '<td class="' + cnx + '">' + entry + '</td>';
+                var cnx = ((data == null || data[0] == "") ? "msTS": ((data && data[0] == "TX") ? "msTSRX":"msTSTX"));
+            
+                content += '<td class="' + cnx + ' ellipsis">' + entry + '</td>';
                 content += '</tr>';
             }
 
             $("#openbridges").append(content); 
         }
     }
-
+    
     function updatePeers(peers) {
         if (peers != null  && $('#peers').is(':visible')) {
            $("#peers tr").remove(); 

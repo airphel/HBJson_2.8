@@ -219,15 +219,6 @@ a:active, .alink:active {
 .dropdown:hover .dropbtn {
   background-color: #3e8e41;
 }
-
-.iconbutton {
-  padding: 2px 0 4px 0;  
-}
-
-.noiconbutton {
-  padding: 4px 4px 4px 4px;
-}
-
 table, td, th {
   font-weight: var(--color-fw-table);
   border: .5px solid var(--color-table-border);
