@@ -28,8 +28,8 @@
 ###############################################################################
 ###############################################################################
 #
-#   JSON service by Avrahqedivra F-16987
-#   MYSQL added by  Avrahqedivra F-16987
+#   JSON service by Avrahqedivra F4JDN, F-16987
+#   MYSQL added by  Avrahqedivra F4JDN, F-16987
 #
 ###############################################################################
 
@@ -80,6 +80,7 @@ from dmr_utils3.utils import int_id, get_alias, try_download, mk_full_id_dict, b
 
 # Configuration variables and constants
 from config import *
+from extracommand import *
 
 # MYSQL stuff (pip install mysql-connector-python)
 from mysql.connector import connect, Error
@@ -697,9 +698,6 @@ def build_stats():
     now = time()
     if now > build_time + 2:
         if CONFIG:
-            # CTABLEJ = { 'CTABLE' : CTABLE, 'EMPTY_MASTERS' : EMPTY_MASTERS, "BIGEARS": str(len(dashboard_server.clients)), "LISTENERS": LISTENERSJ }
-            # dashboard_server.broadcast(CTABLEJ)
-
             for client in dashboard_server.clients:
                 if client.page != "ccs7":
                     if client.page == "dashboard":
@@ -766,6 +764,9 @@ def rts_update(p):
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SUB'] = ''
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['SRC'] = ''
                 CTABLE['MASTERS'][system]['PEERS'][peer][timeSlot]['DEST'] = ''
+
+                # deal with Extracommands etc..
+                rts_update_extra(destination)
 
     if system in CTABLE['OPENBRIDGES']:
         if action == 'START':
@@ -965,7 +966,7 @@ def fetchRemoteUsersFiles(fileurl):
                 users_json.write(url.read().decode("utf-8"))
                 return filename
 
-    return ""    
+    return ""
 
 def getLastHeardFromSQL():
     try:
