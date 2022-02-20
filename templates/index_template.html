@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="theme-dark">
+<html class="theme-dark" manifest="hbjson.appcache">
 
 <head>
     <link rel="shortcut icon" type="image/png" href="HBlink.png" />
@@ -822,58 +822,59 @@
                 this.socket.onmessage = (e) => {
                     var data = null;
 
-                    try {
-                        if (themeSettings == "auto")
-                            adjustTheme();
+					try {
+						if (themeSettings == "auto")
+							adjustTheme();
 
-                        data = JSON.parse(e.data);
+						data = JSON.parse(e.data);
 
-                        // console.log("");
-                        // console.log(data);
-                        // console.log("");
+						// console.log("");
+						// console.log(data);
+						// console.log("");
 
-                        if (data != null) {
-                            checkDeadOnline();
+						if (data != null) {
+							checkDeadOnline();
 
-                            if (data.BIGEARS)
-                                $("#btnlisteners").text("\uD83D\uDD75 SWL " + data.BIGEARS);
+							if (data.BIGEARS)
+								$("#btnlisteners").text("\uD83D\uDD75 SWL " + data.BIGEARS);
 
-                            if (data.LISTENERS)
-                                listenerList = data.LISTENERS;
+							if (data.LISTENERS)
+								listenerList = data.LISTENERS;
 
-                            if (data.TRAFFIC)
-                                doTraffic(data.TRAFFIC);
-                            else
-                            if (data.CTABLE != null)
-                                treatTables(data.CTABLE, data.EMPTY_MASTERS);
-                            else
-                            if (data.BRIDGES)
-                                updateBridges(data.BRIDGES);
-                            else
-                            if (data.CONFIG) {
-                                // if (data.CONFIG.USERS)
-                                //     subscribers = data.CONFIG.USERS.results;
+							// FIRST PACKET IS CONFIG
+							if (data.CONFIG) {
+								// if (data.CONFIG.USERS)
+								//     subscribers = data.CONFIG.USERS.results;
 
-                                if (data.CONFIG.BIGEARS) {
-                                    $("#btnlisteners").text("\uD83D\uDD75 SWL " + data.CONFIG
-                                        .BIGEARS);
-                                }
+								if (data.CONFIG.BIGEARS) {
+									$("#btnlisteners").text("\uD83D\uDD75 SWL " + data.CONFIG.BIGEARS);
+								}
 
-                                if (data.CONFIG.PACKETS)
-                                    doTraffic(data.CONFIG.PACKETS.TRAFFIC);
+								if (data.CONFIG.PACKETS)
+									doTraffic(data.CONFIG.PACKETS.TRAFFIC);
 
-                                if (data.CONFIG.LISTENERS)
-                                    listenerList = data.CONFIG.LISTENERS;
-                            } else
-                            if (data.BTABLE)
-                                log(JSON.stringify(data.BTABLE));
-                            else
-                            if (data.STATUS)
-                                log(data.STATUS);
-                        }
-                    } catch (error) {
-                        log(error);
-                    }
+								if (data.CONFIG.LISTENERS)
+									listenerList = data.CONFIG.LISTENERS;
+							} else {
+								if (data.CTABLE)
+									treatTables(data.CTABLE, data.EMPTY_MASTERS);
+
+								if (data.BRIDGES)
+									updateBridges(data.BRIDGES);
+
+								if (data.TRAFFIC)
+									doTraffic(data.TRAFFIC);
+
+								if (data.BTABLE)
+									log(JSON.stringify(data.BTABLE));
+
+								if (data.STATUS)
+									log(data.STATUS);
+							}
+					    }
+					} catch (error) {
+						log(error);
+					}
                 };
 
                 socket.onerror = function (error) {

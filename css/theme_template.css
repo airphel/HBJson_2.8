@@ -294,7 +294,7 @@ thead {
   width: 2rem;
 }
 .thletx { 
-  width: 11rem;
+  width: 12rem;
 }
 .thlename { 
   width: 11rem;
@@ -428,7 +428,7 @@ thead {
 .callsign {
   text-align: left;
   padding-left: 0.15rem;
-  width: 6rem;
+  width: 8rem;
 }
 .callsign a {
   color: var(--color-callsign-a);
@@ -825,7 +825,7 @@ select {
 
 .theme-light {
   /* html, body */
-  --table-width: 82rem;
+  --table-width: 85rem;
   --color-fz-html: 10pt;
   --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 
@@ -909,7 +909,7 @@ select {
   --color-bg-msTS: #fefefe;
 
   --color-fg-msTSE: #569cd6;
-  --color-bg-msTSE: #dedede;
+  --color-bg-msTSE: #fefefe;
   
   --color-fg-msTS1: #c247b8;
   --color-bg-msTS1: #fefefe;
@@ -963,7 +963,7 @@ select {
 
 .theme-dark {
   /* html, body */
-  --table-width: 82rem;
+  --table-width: 85rem;
   --color-fz-html: 10pt;
   --color-font-html: -apple-system,BlinkMacSystemFont,calibri,Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 
@@ -1046,8 +1046,8 @@ select {
   --color-fg-msTS: #fefefe;
   --color-bg-msTS: #1e1e1e;
 
-  --color-fg-msTSE: #fefefe;
-  --color-bg-msTSE: #569cd6;
+  --color-fg-msTSE: #569cd6;
+  --color-bg-msTSE: #1e1e1e;
 
   --color-fg-msTS1: #c586c0;
   --color-bg-msTS1: #1e1e1e;

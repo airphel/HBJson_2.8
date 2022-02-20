@@ -696,7 +696,7 @@ build_time = time()
 def build_stats():
     global build_time, LISTENERSJ
     now = time()
-    if now > build_time + 2:
+    if True: #now > build_time + 2:
         if CONFIG:
             for client in dashboard_server.clients:
                 if client.page != "ccs7":
@@ -707,13 +707,12 @@ def build_stats():
                         CTABLEJ = { 'BIGEARS': str(len(dashboard_server.clients)), 'LISTENERS': LISTENERSJ }
                         client.sendMessage(json.dumps(CTABLEJ, ensure_ascii = False).encode('utf-8'))
 
-                    if BRIDGES and BRIDGES_INC and client.page == "bridges":
-                        client.sendMessage(json.dumps({ "BTABLE": { 'BRIDGES': BTABLE['BRIDGES'] }}, ensure_ascii = False).encode('utf-8'))
+        if BRIDGES and BRIDGES_INC and client.page == "bridges":
+            client.sendMessage(json.dumps({ "BTABLE": { 'BRIDGES': BTABLE['BRIDGES'] }}, ensure_ascii = False).encode('utf-8'))
             
-            mapIpAdresses()
+        mapIpAdresses()
 
         build_time = now
-
 
 def timeout_clients():
     now = time()
@@ -1148,7 +1147,7 @@ def process_message(_bmessage):
             else:
                 jsonStr = { 'DATE': _now[0:10], 'TIME': _now[11:16], 'PACKET' : 'UNKNOWN GROUP VOICE LOG MESSAGE' }
 
-            dashboard_server.broadcast( {"TRAFFIC": jsonStr, "BIGEARS": str(len(dashboard_server.clients))  } )
+            dashboard_server.broadcast( {"TRAFFIC": jsonStr, "CTABLE": CTABLE, "BIGEARS": str(len(dashboard_server.clients))  } )
             
             # logging.info('Process [' + REPORT_PACKET + '] Message Took ' + str(int((ptime.perf_counter() - start) * 1000)) + 'ms')
         else:
@@ -1163,8 +1162,8 @@ def process_message(_bmessage):
 
 def load_dictionary(_message):
     data = _message[1:]
-    return loads(data)
     logging.debug('Successfully decoded dictionary')
+    return loads(data)
 
 ######################################################################
 #
