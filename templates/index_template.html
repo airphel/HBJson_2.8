@@ -8,8 +8,7 @@
     <title>HBJSON Monitor</title>
     <link rel="stylesheet" href="theme_template.css">
     <link rel="stylesheet" href="mysite_template.css">
-    <meta name="description"
-        content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
+    <meta name="description" content="Copyright (c) 2016, 2017, 2018, 2019.The Regents of the K0USY Group. All rights reserved. Version SP2ONG 2019-2020 (v20200629)" />
 </head>
 
 <body>
@@ -26,373 +25,377 @@
                     <div class="button iconbutton" id="btnlisteners">&#x1F441; 0</div>
             </div>
 
-            <!-- The Modal -->
-            <div id="listenersModal" class="modal">
-                <!-- Modal content -->
-                <div class="modal-content-listeners">
-                    <span class="close close-listeners">&times;</span>
-                    <table class="tablefixed">
-                        <thead id="theadListeners" tbodyid="listeners">
-                            <tr class="headerRow">
-                                <th class="thlscallsign">Callsign</th>
-                                <th class="thlsip">IP</th>
-                                <th class="thlsport">Port</th>
-                                <th class="thlsnetid">NetID</th>
-                            </tr>
-                        </thead>
-                        <tbody id="listeners">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+			<!-- The Modal -->
+			<div id="listenersModal" class="modal">
+				<!-- Modal content -->
+				<div class="modal-content-listeners">
+					<span class="close close-listeners">&times;</span>
+					<table class="tablefixed">
+						<thead id="theadListeners" tbodyid="listeners">
+							<tr class="headerRow">
+								<th class="thlscallsign">Callsign</th>
+								<th class="thlsip">IP</th>
+								<th class="thlsport">Port</th>
+								<th class="thlsnetid">NetID</th>
+							</tr>
+						</thead>
+						<tbody id="listeners">
+						</tbody>
+					</table>
+				</div>
+			</div>
 
-            <!-- The Modal -->
-            <div id="followUpModal" class="modal">
-                <!-- Modal content -->
-                <div class="modal-content-followup">
-                    <span class="close close-followup">&times;</span>
-                    <table class="tablefixed">
-                        <thead id="theadFollowUp" tbodyid="followup">
-                            <tr class="headerRow">
-                                <th class="thlename">Name</th>
-                                <th class="thledate">Date</th>
-                                <th class="thletime">Time</th>
-                                <th class="thletg">TG</th>
-                                <th class="thlelog">LOG</th>
-                                <th class="thledelay">TX</th>
-                            </tr>
-                        </thead>
-                        <tbody id="followup">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+			<!-- The Modal -->
+			<div id="followUpModal" class="modal">
+				<!-- Modal content -->
+				<div class="modal-content-followup">
+					<span class="close close-followup">&times;</span>
+					<table class="tablefixed">
+						<thead id="theadFollowUp" tbodyid="followup">
+							<tr class="headerRow">
+								<th class="thlename">Name</th>
+								<th class="thledate">Date</th>
+								<th class="thletime">Time</th>
+								<th class="thletg">TG</th>
+								<th class="thlelog">LOG</th>
+								<th class="thledelay">TX</th>
+							</tr>
+						</thead>
+						<tbody id="followup">
+						</tbody>
+					</table>
+				</div>
+			</div>
 
-            <div name="hbtables">
-                <table id="lastActive" class="tables lastActive tablefixed" style="display: none;">
-                    <thead>
-                        <tr class="headerRow">
-                            <th class="thledate">Date</th>
-                            <th class="thletime">Heure</th>
-                            <th class="thleslot">Slot</th>
-                            <th class="thletx" colspan=2>TX Connectés</th>
-                            <th class="thlename">Name</th>
-                            <th class="thletg">TGs</th>
-                            <th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>
-                            <th class="thledelay">TX (s)</th>
-                            <th class="thlenetid">NetID</th>
-                            <th class="thlemaster">Master Infra</th>
-                        </tr>
-                    </thead>
-                    <tbody id="lastActiveBody"></tbody>
-                </table>
+			<div name="hbtables">
+				<table id="lastActive" class="tables lastActive tablefixed" style="display: none;">
+					<thead>
+						<tr class="headerRow">
+							<th class="thledate">Date</th>
+							<th class="thletime">Heure</th>
+							<th class="thleslot">Slot</th>
+							<th class="thletx" colspan=2>TX Connectés</th>
+							<th class="thlename">Name</th>
+							<th class="thletg">TGs</th>
+							<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>
+							<th class="thledelay">TX (s)</th>
+							<th class="thlenetid">NetID</th>
+							<th class="thlemaster">Master Infra</th>
+						</tr>
+					</thead>
+					<tbody id="lastActiveBody"></tbody>
+				</table>
 
-                <div id="insertPoint"></div>
-                <br>
-                <table class="tables tablefixed network">
-                    <thead id="theadOpenbridges" tbodyid="openbridges">
-                        <tr class="headerRow">
-                            <th class="thopmaster">OpenBridge</th>
-                            <th class="thopnetid">ID Réseau(x)</th>
-                            <th class="thopcalls">Appel(s) Actif(s)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="openbridges">
-                    </tbody>
-                </table>
-                <br>
-                <table class="tables tablefixed network">
-                    <thead id="theadMasters" tbodyid="masters">
-                        <tr class="headerRow">
-                            <th class="thmsmaster">Master</th>
-                            <th class="thmsnetid">NetID</th>
-                            <th class="thmstime">Connecté(s)</th>
-                            <th class="thmsslot">Slot</th>
-                            <th class="thmstx">Poste(s) Connecté(s) TX</th>
-                            <th class="thmsdest">Conf. Destination</th>
-                        </tr>
-                    </thead>
-                    <tbody id="masters">
-                    </tbody>
-                </table>
-                <br>
-                <table class="tables tablefixed network">
-                    <thead id="theadPeers" tbodyid="peers">
-                        <tr class="headerRow">
-                            <th class="thpemaster">Peer</th>
-                            <th class="thpenetid">NetID</th>
-                            <th class="thpetime">Connecté(s)</th>
-                            <th class="thpeslot">Slot</th>
-                            <th class="thpetx">Poste(s) Connecté(s) TX</th>
-                            <th class="thpedest">Conf. Destination</th>
-                        </tr>
-                    </thead>
-                    <tbody id="peers">
-                    </tbody>
-                </table>
-            </div>
+				<div id="insertPoint"></div>
+				<br>
+				<table class="tables tablefixed network">
+					<thead id="theadOpenbridges" tbodyid="openbridges">
+						<tr class="headerRow">
+							<th class="thopmaster">OpenBridge</th>
+							<th class="thopnetid">ID Réseau(x)</th>
+							<th class="thopcalls">Appel(s) Actif(s)</th>
+						</tr>
+					</thead>
+					<tbody id="openbridges">
+					</tbody>
+				</table>
+				<br>
+				<table class="tables tablefixed network">
+					<thead id="theadMasters" tbodyid="masters">
+						<tr class="headerRow">
+							<th class="thmsmaster">Master</th>
+							<th class="thmsnetid">NetID</th>
+							<th class="thmstime">Connecté(s)</th>
+							<th class="thmsslot">Slot</th>
+							<th class="thmstx">Poste(s) Connecté(s) TX</th>
+							<th class="thmsdest">Conf. Destination</th>
+						</tr>
+					</thead>
+					<tbody id="masters">
+					</tbody>
+				</table>
+				<br>
+				<table class="tables tablefixed network">
+					<thead id="theadPeers" tbodyid="peers">
+						<tr class="headerRow">
+							<th class="thpemaster">Peer</th>
+							<th class="thpenetid">NetID</th>
+							<th class="thpetime">Connecté(s)</th>
+							<th class="thpeslot">Slot</th>
+							<th class="thpetx">Poste(s) Connecté(s) TX</th>
+							<th class="thpedest">Conf. Destination</th>
+						</tr>
+					</thead>
+					<tbody id="peers">
+					</tbody>
+				</table>
+			</div>
 
-            <div id="footer">
-                <div>Copyright (c) 2016-2020, The Regents of the <a href=http://k0usy.mystrikingly.com>K0USY Group. All
-                        rights reserved.</a> <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019,
-                            2020</a>&nbsp;- Modified by NumeriX 2019, 2020 <br>JSON, MYSQL version by <a
-                                href=https://github.com/avrahqedivra/HBJson>jmc - F4JDN </a>2021, 2022. </div> </div>
-                                <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS
-                                SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
-                </div>
-    </center>
+			<div id="footer">
+				<div>Copyright (c) 2016-2020, The Regents of the <a href=http://k0usy.mystrikingly.com>K0USY Group. All rights
+						reserved.</a> <br><a href=https://github.com/sp2ong/HBmonitor>Modified by SP2ONG 2019, 2020</a>&nbsp;-
+							Modified by NumeriX 2019, 2020 <br>JSON, MYSQL version by <a
+								href=https://github.com/avrahqedivra/HBJson>jmc - F4JDN </a>2021, 2022. </div> </div> <!--THIS COPYRIGHT
+								NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS
+								MUST CARRY THIS NOTICE -->
+				</div>
+	</center>
 </body>
 
 <script type="text/javascript">
-    $(document).ready(function () {
-        $(window).click(function (e) {
-            if (event.target == document.getElementById("listenersModal"))
-                $("#listenersModal").hide();
-        });
+	$(document).ready(function () {
+		$(window).click(function (event) {
+			if (event.target == document.getElementById("listenersModal"))
+				$("#listenersModal").hide();
+		});
 
-        $(document).on("click", "#lastActive thead", function () {
-            if (hideAllTG = hideAllTG ? false : true)
-                $("#insertPoint").hide();
-            else
-                $("#insertPoint").show();
-        });
+		$(document).on("click", "#lastActive thead", function () {
+			if (hideAllTG = hideAllTG ? false:true)
+				$("#insertPoint").hide();
+			else
+				$("#insertPoint").show();
+		});
 
-        $(document).on("click", ".lastheard thead", function () {
-            var hblink = "#hblink" + $(this).attr('tgid');
-            $(hblink).toggle(100);
+		$(document).on("click", ".lastheard thead", function () {
+			var hblink = "#hblink" + $(this).attr('tgid');
+			$(hblink).toggle(100);
 
-            setTimeout(() => {
-                var display = $(hblink).css('display');
-                if (display == "none")
-                    $("#tbtgId" + $(this).attr('tgid')).css("filter", "blur(1px)");
-                else
-                    $("#tbtgId" + $(this).attr('tgid')).css("filter", "blur(0)");
-            }, 125);
-        });
+			setTimeout(() => {
+				var display = $(hblink).css('display');
+				if (display == "none")
+					$("#tbtgId" + $(this).attr('tgid')).css("filter", "blur(1px)");
+				else
+					$("#tbtgId" + $(this).attr('tgid')).css("filter", "blur(0)");
+			}, 125);
+		});
 
-        $(document).on("click", ".network thead", function () {
-            $("#" + $(this).attr('tbodyid')).toggle(100);
-        });
+		$(document).on("click", ".network thead", function () {
+			$("#" + $(this).attr('tbodyid')).toggle(100);
+		});
 
-        $(document).on("click", ".close", function () {
+		$(document).on("click", ".close", function () {
 			$("#listenersModal").hide();
 			$("#followUpModal").hide();
-        });
+		});
 
-        $(document).on("dblclick", "#btnlisteners", function (e) {
-            if (e.ctrlKey) {
-                $("#listeners tr").remove();
-                var content = "";
+		$(document).on("dblclick", "#btnlisteners", function (e) {
+			if (e.ctrlKey) {
+				$("#listeners tr").remove();
+				var content = "";
 
-                listenerList = uniqByKeepLast(listenerList, swl => swl.NETID);
+				listenerList = uniqByKeepLast(listenerList, swl => swl.NETID);
 
-                listenerList.forEach(swl => {
-                    content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl
-                        .IP + "</td><td>" + swl.PORT + "</td><td>" + swl.NETID + "</td></tr>";
-                });
+				listenerList.forEach(swl => {
+					content += "<tr class='trlisteners'><td>" + swl.CALLSIGN + "</td><td>" + swl.IP + "</td><td>" + swl
+						.PORT + "</td><td>" + swl.NETID + "</td></tr>";
+				});
 
-                $("#listeners").append(content);
-                $("#listenersModal").show();
-            }
-        });
-    });
+				$("#listeners").append(content);
+				$("#listenersModal").show();
+			}
+		});
+	});
 </script>
 
 <script type="text/javascript">
-    var traffic = [];
-    var sock = null;
-    var displayLines = parseInt("<<<DISPLAY_LINES>>>");
+	var traffic = [];
+	var sock = null;
+	var displayLines = parseInt("<<<DISPLAY_LINES>>>");
 
-    hideAllTG = false;
-    listenerList = [];
-    tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
-    tgorder = new Set("<<<TGID_ORDER>>>".split(','));
-    tghilite = new Set("<<<TGID_HILITE>>>".split(','));
-    dynamic_tg = ("<<<DYNAMIC_TG>>>" == "True") ? true : false;
-    hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));
-    last_active_tg = ("<<<LAST_ACTIVE_TG>>>" == "True") ? true : false;
+	hideAllTG = false;
+	listenerList = [];
+	tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
+	tgorder = new Set("<<<TGID_ORDER>>>".split(','));
+	tghilite = new Set("<<<TGID_HILITE>>>".split(','));
+	dynamic_tg = ("<<<DYNAMIC_TG>>>" == "True") ? true : false;
+	hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));
+	last_active_tg = ("<<<LAST_ACTIVE_TG>>>" == "True") ? true : false;
 
-    last_active_size = parseInt("<<<LAST_ACTIVE_SIZE>>>");
+	last_active_size = parseInt("<<<LAST_ACTIVE_SIZE>>>");
+	if (last_active_size == 0)
+		last_active_size = tgorder.size;
 
-    if (last_active_size == 0)
-        last_active_size = tgorder.size;
+	if (last_active_tg == true) {
+		$("#lastActive").css("display", "table");
+	}
 
-    if (last_active_tg == true)
-        $("#lastActive").css("display", "table");
+	//   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
+	function uniqByKeepFirst(a, key) {
+		let seen = new Set();
+		return a.filter(item => {
+			let k = key(item);
+			return seen.has(k) ? false : seen.add(k);
+		});
+	}
 
-    //   https://stackoverflow.com/questions/9229645/remove-duplicate-values-from-js-array
-    function uniqByKeepFirst(a, key) {
-        let seen = new Set();
-        return a.filter(item => {
-            let k = key(item);
-            return seen.has(k) ? false : seen.add(k);
-        });
-    }
+	function uniqByKeepLast(a, key) {
+		return [
+			...new Map(
+				a.map(x => [key(x), x])
+			).values()
+		]
+	}
 
-    function uniqByKeepLast(a, key) {
-        return [
-            ...new Map(
-                a.map(x => [key(x), x])
-            ).values()
-        ]
-    }
+	function updateBridges(bridges) {
+		if (bridges != null) {
+			var content = "";
 
-    function updateBridges(bridges) {
-        if (bridges != null) {
-            var content = "";
-            // console.log(JSON.stringify(bridges));
-        }
-    }
+			console.log(JSON.stringify(bridges));
+		}
+	}
 
-    function updateOpenBridges(openBridges) {
-        if (openBridges != null && $('#openbridges').is(':visible')) {
-            $("#openbridges tr").remove();
+	function updateOpenBridges(openBridges) {
+		if (openBridges != null && $('#openbridges').is(':visible')) {
+			$("#openbridges tr").remove();
 
-            // console.log("");
-            // console.log(JSON.stringify(openBridges));
-            // console.log("");
+			// console.log("");
+			// console.log(JSON.stringify(openBridges));
+			// console.log("");
 
-            var content = "";
+			var content = "";
 
-            for (let openBridge in openBridges) {
-                record = openBridges[openBridge];
-                content += '<tr>';
-                content += "<td class='obName'>" + openBridge + "</td>";
-                content += "<td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
+			for (let openBridge in openBridges) {
+				record = openBridges[openBridge];
+				content += '<tr>';
+				content += "<td class='obName'>" + openBridge + "</td>";
+				content += "<td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
 
-                var entry = "";
-                var data = null;
+				var entry = "";
+				var data = null;
 
-                if (Object.keys(record["STREAMS"])) {
-                    for (let streamId in record["STREAMS"]) {
-                        if ((data = record["STREAMS"][streamId]) != null) {
-                            if (entry != "")
-                                entry += " ";
-                            entry += "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
-                        }
-                    }
-                }
+				if (Object.keys(record["STREAMS"])) {
+					for (let streamId in record["STREAMS"]) {
+						if ((data = record["STREAMS"][streamId]) != null) {
+							if (entry != "")
+								entry += " ";
+							entry += "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
+						}
+					}
+				}
 
-                var cnx = ((data == null || data[0] == "") ? "msTS" : ((data && data[0] == "TX") ? "msTSRX" : "msTSTX"));
+				var cnx = ((data == null || data[0] == "") ? "msTS" : ((data && data[0] == "TX") ? "msTSRX" : "msTSTX"));
 
-                content += '<td class="' + cnx + ' ellipsis">' + entry + '</td>';
-                content += '</tr>';
-            }
+				content += '<td class="' + cnx + ' ellipsis">' + entry + '</td>';
+				content += '</tr>';
+			}
 
-            $("#openbridges").append(content);
-        }
-    }
+			$("#openbridges").append(content);
+		}
+	}
 
-    function updatePeers(peers) {
-        if (peers != null && $('#peers').is(':visible')) {
-            $("#peers tr").remove();
+	function updatePeers(peers) {
+		if (peers != null && $('#peers').is(':visible')) {
+			$("#peers tr").remove();
 
-            //    console.log("");
-            //    console.log(JSON.stringify(peers));
-            //    console.log("");
+			//    console.log("");
+			//    console.log(JSON.stringify(peers));
+			//    console.log("");
 
-            var content = "";
+			var content = "";
 
-            for (let peer in peers) {
-                record = peers[peer];
-                ts1 = (record["1"]["TXRX"] == "") ? "msTS1" : ((record["1"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-                ts2 = (record["2"]["TXRX"] == "") ? "msTS2" : ((record["2"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-                cnx1 = (record["1"]["TXRX"] == "") ? "msTS" : ((record["1"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-                cnx2 = (record["2"]["TXRX"] == "") ? "msTS" : ((record["2"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-                peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
+			for (let peer in peers) {
+				record = peers[peer];
+				ts1 = (record["1"]["TXRX"] == "") ? "msTS1" : ((record["1"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
+				ts2 = (record["2"]["TXRX"] == "") ? "msTS2" : ((record["2"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
+				cnx1 = (record["1"]["TXRX"] == "") ? "msTS" : ((record["1"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
+				cnx2 = (record["2"]["TXRX"] == "") ? "msTS" : ((record["2"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
+				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
 
-                content += '<tr>';
-                content += "<td class='msMasters' rowspan='3'>" + peer;
-                content += "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td>";
-                content += '</tr>';
+				content += '<tr>';
+				content += "<td class='msMasters' rowspan='3'>" + peer;
+				content += "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td>";
+				content += '</tr>';
 
-                content += '<tr>';
-                content += '<td rowspan="2">';
-                content += '<div class="tooltip">';
-                content += '<div class="msCallsign">' + record["CALLSIGN"] + '</div>';
-                content += '<span class="msNetID">&nbsp;(Id: ' + record["RADIO_ID"] + ')</span>';
-                content += '<span class="tooltiptext">';
-                content += '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">';
-                content += '&nbsp;&nbsp;&nbsp;<b><font color="yellow">Linked Time Slot:&nbsp;</font></b>' + record["SLOTS"];
-                content += '</span>';
-                content += '</span>';
-                content += '</div>';
-                content += '<br>';
+				content += '<tr>';
+				content += '<td rowspan="2">';
+				content += '<div class="tooltip">';
+				content += '<div class="msCallsign">' + record["CALLSIGN"] + '</div>';
+				content += '<span class="msNetID">&nbsp;(Id: ' + record["RADIO_ID"] + ')</span>';
+				content += '<span class="tooltiptext">';
+				content += '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">';
+				content += '&nbsp;&nbsp;&nbsp;<b><font color="yellow">Linked Time Slot:&nbsp;</font></b>' + record["SLOTS"];
+				content += '</span>';
+				content += '</span>';
+				content += '</div>';
+				content += '<br>';
 
-                content += '<div class="msLocation">' + record["LOCATION"] + '</div>';
-                content += '</td>';
+				content += '<div class="msLocation">' + record["LOCATION"] + '</div>';
+				content += '</td>';
 
 
-                content += '<td class="' + peState + '" rowspan="2">';
-                content += record["STATS"]["CONNECTED"] + "<br><div style='font: 8pt arial, sans-serif'>"
-                            + record["STATS"]["PINGS_SENT"] + " / " + record["STATS"]["PINGS_ACKD"] + " / " 
-                            + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) + "</div>";
-                content + '</td>';
+				content += '<td class="' + peState + '" rowspan="2">';
+				content += record["STATS"]["CONNECTED"] + '<br><div style="font: 8pt arial, sans-serif">' + record["STATS"][
+					"PINGS_SENT"
+				] + " / " + record["STATS"]["PINGS_ACKD"] + " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"][
+					"PINGS_ACKD"
+				]) + "</div>";
+				content + '</td>';
 
-                content += '<td class="' + ts1 + '">TS1</td>';
-                content += '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>';
-                content += '<td class="' + cnx1 + '">' + record["1"]["DEST"] + '</td>';
-                content += '</tr>';
+				content += '<td class="' + ts1 + '">TS1</td>';
+				content += '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>';
+				content += '<td class="' + cnx1 + '">' + record["1"]["DEST"] + '</td>';
+				content += '</tr>';
 
-                content += '<tr>';
-                content += '<td class="' + ts2 + '">TS2</td>';
-                content += '<td class="' + cnx2 + '">' + record["2"]["SUB"] + '</td>';
-                content += '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td>';
-                content += '</tr>'
-            }
+				content += '<tr>';
+				content += '<td class="' + ts2 + '">TS2</td>';
+				content += '<td class="' + cnx2 + '">' + record["2"]["SUB"] + '</td>';
+				content += '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td>';
+				content += '</tr>'
+			}
 
-            $("#peers").append(content);
-        }
-    }
+			$("#peers").append(content);
+		}
+	}
 
-    // https://gist.github.com/umidjons/9614157
-    function sortMastersPeersByOnlineTime(peers) {
-        var peersArray = [];
+	// https://gist.github.com/umidjons/9614157
+	function sortMastersPeersByOnlineTime(peers) {
+		var peersArray = [];
 
-        // convert to array
-        for (var key in peers)
-            peersArray.push([key, peers[key]]);
+		// convert to array
+		for (var key in peers) {
+			peersArray.push([key, peers[key]]);
+		}
 
-        // convert online time to seconds
-        for (let i = 0; i < peersArray.length; i++) {
-            var t = peersArray[i]["1"]["CONNECTED"].split(" ");
-            switch (t.length) {
-                case 3:
-                    peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
-                    break;
+		// convert online time to seconds
+		for (let i = 0; i < peersArray.length; i++) {
+			var t = peersArray[i]["1"]["CONNECTED"].split(" ");
+			switch (t.length) {
+				case 3:
+					peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600 + parseInt(t[2]));
+					break;
 
-                case 2:
-                    chr = t[0].slice(-1);
-                    if (chr == 'd')
-                        peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600);
-                    else
-                    if (chr == 'h')
-                        peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60);
-                    else
-                    if (chr == 'm')
-                        peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]));
-                    break;
+				case 2:
+					chr = t[0].slice(-1);
+					if (chr == 'd')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 86400 + parseInt(t[1]) * 3600);
+					else
+					if (chr == 'h')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 3600 + parseInt(t[1]) * 60);
+					else
+					if (chr == 'm')
+						peersArray[i]["1"]["ONLINE"] = "" + (parseInt(t[0]) * 60 + parseInt(t[1]));
+					break;
 
-                case 1:
-                    peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0]);
-                    break;
+				case 1:
+					peersArray[i]["1"]["ONLINE"] = "" + parseInt(t[0]);
+					break;
 
-                default:
-                    peersArray[i]["1"]["ONLINE"] = "0";
-                    break;
-            }
-        }
+				default:
+					peersArray[i]["1"]["ONLINE"] = "0";
+					break;
+			}
+		}
 
-        // sort peers array
-        peersArray.sort((a, b) => {
-            y = parseInt(a[1]["ONLINE"]);
-            x = parseInt(b[1]["ONLINE"]);
+		// sort peers array
+		peersArray.sort((a, b) => {
+			y = parseInt(a[1]["ONLINE"]);
+			x = parseInt(b[1]["ONLINE"]);
 
-            return x < y ? -1 : x > y ? 1 : 0;
-        });
+			return x < y ? -1 : x > y ? 1 : 0;
+		});
 
-        return peersArray;
-    }
+		return peersArray;
+	}
 
     function updateMasters(masters, emaster) {
         if (masters != null && $('#masters').is(':visible')) {
@@ -510,317 +513,330 @@
         }
     }
 
-    function checkDeadOnline() {
-        try {
-            var found = false;
+	function checkDeadOnline() {
+		try {
+			var found = false;
 
-            for (let i = 0; i < traffic.length; i++) {
-                if (traffic[i].PACKET == "START") {
-                    var t = new Date(traffic[i].DATE + " " + traffic[i].TIME);
-                    if ((Date.now() - t.getTime()) > 240000) {
-                        // log("timeout, resetting status to END : " + JSON.stringify(traffic[i]));
-                        found = true;
-                        traffic[i].PACKET = "END";
-                    }
-                }
-            }
+			for (let i = 0; i < traffic.length; i++) {
+				if (traffic[i].PACKET == "START") {
+					var t = new Date(traffic[i].DATE + " " + traffic[i].TIME);
+					if ((Date.now() - t.getTime()) > 240000) {
+						// log("timeout, resetting status to END : " + JSON.stringify(traffic[i]));
+						found = true;
+						traffic[i].PACKET = "END";
+					}
+				}
+			}
 
-            if (found)
-                doTraffic(traffic);
+			if (found)
+				doTraffic(traffic);
 
-        } catch (error) {
+		} catch (error) {
 
-        }
-    }
+		}
+	}
 
-    function scrollIntoViewFromId(id) {
-        var el = document.getElementById(id);
-        if (el != null) {
-            el.scrollIntoView(true);
-            el.focus();
-        }
-    }
+	function scrollIntoViewFromId(id) {
+		if (hideAllTG) {
+			hideAllTG = false;
+			$("#insertPoint").show();
+		};
 
-    function followUpdUser(dmrid) {
-        $("#followup tr").remove();
-        var content = "";
-        var bgClass = "";
+		var el = document.getElementById(id);
+		if (el != null) {
+			el.scrollIntoView(true);
+			el.focus();
+		}
+	}
 
-        traffic.forEach(om => {
-            if (om.PACKET == "END" && om.DMRID == dmrid) {
-                if (tghilite.has(om.TGID))
-                    bgClass = 'tgWhite';
-                else
-                    bgClass = 'tgGreen';
+	function followUpdUser(dmrid) {
+		$("#followup tr").remove();
+		var content = "";
+		var bgClass = "";
 
-                var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
-                if (om.DELAY == 0)
-                    bgClass += " darker ";
+		traffic.forEach(om => {
+			if (om.PACKET == "END" && om.DMRID == dmrid) {
+				if (tghilite.has(om.TGID))
+					bgClass = 'tgWhite';
+				else
+					bgClass = 'tgGreen';
 
-                content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om
-                    .NAME) +
-                    "</td><td class='tdDate'>" + om.DATE + "</td><td class'tdTime'>" + om.TIME +
-                    "</td><td class=''>" + om
-                    .TGID + "</td><td class='alias ellipsis'>" + om.ALIAS + "</td><td class='delay'>" + delay +
-                    "</td></tr>";
-            }
-        });
+				var delay = (om.DELAY == 0) ? "PTT" : om.DELAY;
+				if (om.DELAY == 0)
+					bgClass += " darker ";
 
-        $("#followup").append(content);
-        $("#followUpModal").show();
-    }
+				content += "<tr class='" + bgClass + "'><td class='firstname ellipsis'>" + enhanceNames(om.NAME) +
+					"</td><td class='tdDate'>" + om.DATE 
+                    + "</td><td class'tdTime'>" + om.TIME 
+                    + "</td><td class=''>" + om.TGID 
+                    + "</td><td class='alias ellipsis'>" + om.ALIAS 
+                    + "</td><td class='delay'>" + delay 
+                    + "</td></tr>";
+			}
+		});
 
-    function doTraffic(t) {
-        if (t != null) {
-            if (Array.isArray(t))
-                traffic = t;
-            else
-                traffic.unshift(t);
+		$("#followup").append(content);
+		$("#followUpModal").show();
+	}
 
-            if (traffic.length > 0) {
-                checkDeadOnline();
+	function doTraffic(t) {
+		if (t != null) {
+			if (Array.isArray(t))
+				traffic = t;
+			else
+				traffic.unshift(t);
 
-                // keeps the n first unique items
-                // traffic = uniqByKeepFirst(traffic, it => it.DMRID);
+			if (traffic.length > 0) {
+				checkDeadOnline();
 
-                var content = "";
+				// keeps the n first unique items
+				// traffic = uniqByKeepFirst(traffic, it => it.DMRID);
 
-                cleaned = true;
-                $(".lastheard tbody tr").remove();
+				var content = "";
 
-                for (var i = 0; i < traffic.length; i++) {
-                    var tgid = parseInt(traffic[i].TGID);
+				cleaned = true;
+				$(".lastheard tbody tr").remove();
 
-                    // skip excluded TG
-                    if (tgfilter.has('' + tgid))
-                        continue;
+				for (var i = 0; i < traffic.length; i++) {
+					var tgid = parseInt(traffic[i].TGID);
 
-                    // add dynamic allowed tgid
-                    if (!tgorder.has('' + tgid)) {
-                        if (dynamic_tg == true)
-                            tgorder.add(tgid);
-                        else
-                            continue;
-                    }
+					// skip excluded TG
+					if (tgfilter.has('' + tgid))
+						continue;
 
-                    var tgName = "tgId" + tgid;
+					// add dynamic allowed tgid
+					if (!tgorder.has('' + tgid)) {
+						if (dynamic_tg == true)
+							tgorder.add(tgid);
+						else
+							continue;
+					}
 
-                    if (tghilite.has(traffic[i].TGID))
-                        bgClass = 'tgWhite';
-                    else
-                        bgClass = 'tgGreen';
+					var tgName = "tgId" + tgid;
 
-                    /* check if table already exists */
-                    if (document.getElementById(tgName) == null) {
-                        /* build the missing table */
-                        var emptyTable = '<table id=tb' + tgName + ' class="tgtable tables lastheard tablefixed">' +
-                            '<thead id="' + tgName + '" tgid="' + tgid + '" tbodyid=hblink' + tgid + '">' +
-                            '<tr class="headerRow">' +
-                            '<th class="thledate">Date</th>' +
-                            '<th class="thletime">Heure</th>' +
-                            '<th class="thleslot">Slot</th>' +
-                            '<th class="thletx" colspan=2>TX Connectés</th>' +
-                            '<th class="thlename">Name</th>' +
-                            '<th class="thletg">TG' + tgid + '</th>' +
-                            '<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>' +
-                            '<th class="thledelay">TX (s)</th>' +
-                            '<th class="thlenetid">NetID</th>' +
-                            '<th class="thlemaster">Master Infra</th>' +
-                            '</tr>' +
-                            '</thead>' +
-                            '<tbody id="hblink' + tgid + '"></tbody></table>';
+					if (tghilite.has(traffic[i].TGID))
+						bgClass = 'tgWhite';
+					else
+						bgClass = 'tgGreen';
 
-                        /* insert new table into tg tables area regarding tgorder */
-                        if (document.getElementById("tg" + tgid + "marker") != null)
-                            $(emptyTable).insertBefore("#tg" + tgid + "marker");
-                        else
-                            $('#insertPoint').append(emptyTable);
-                    }
+					/* check if table already exists */
+					if (document.getElementById(tgName) == null) {
+						/* build the missing table */
+						var emptyTable = '<table id=tb' + tgName + ' class="tgtable tables lastheard tablefixed">' +
+							'<thead id="' + tgName + '" tgid="' + tgid + '" tbodyid=hblink' + tgid + '">' +
+							'<tr class="headerRow">' +
+							'<th class="thledate">Date</th>' +
+							'<th class="thletime">Heure</th>' +
+							'<th class="thleslot">Slot</th>' +
+							'<th class="thletx" colspan=2>TX Connectés</th>' +
+							'<th class="thlename">Name</th>' +
+							'<th class="thletg">TG' + tgid + '</th>' +
+							'<th class="thlelog"><a target="_self" href="./loglast.html">LOG+ (Cliquez ICI) </a></th>' +
+							'<th class="thledelay">TX (s)</th>' +
+							'<th class="thlenetid">NetID</th>' +
+							'<th class="thlemaster">Master Infra</th>' +
+							'</tr>' +
+							'</thead>' +
+							'<tbody id="hblink' + tgid + '"></tbody></table>';
 
-                    if (last_active_tg == true && i == 0 && lastActiveTG != tgid) {
-                        lastActiveTG = tgid;
-                        $('.headerRow').removeClass("lastActiveTG");
-                        $("#" + tgName).children(".headerRow").addClass("lastActiveTG")
-                    }
+						/* insert new table into tg tables area regarding tgorder */
+						if (document.getElementById("tg" + tgid + "marker") != null)
+							$(emptyTable).insertBefore("#tg" + tgid + "marker");
+						else
+							$('#insertPoint').append(emptyTable);
+					}
 
-                    var callsign = traffic[i].CALLSIGN;
-                    var dmrid = traffic[i].DMRID;
-                    var delay = traffic[i].DELAY;
+					if (last_active_tg == true && i == 0 && lastActiveTG != tgid) {
+						lastActiveTG = tgid;
+						$('.headerRow').removeClass("lastActiveTG");
+						$("#" + tgName).children(".headerRow").addClass("lastActiveTG")
+					}
 
-                    if (delay > 1000)
-                        delay = "xx";
-                    else if (delay < 2)
-                        delay = "PTT";
+					var callsign = traffic[i].CALLSIGN;
+					var dmrid = traffic[i].DMRID;
+					var delay = traffic[i].DELAY;
+					var netid = traffic[i].SRC_ID;
 
-                    hide_dmrid.forEach(dh => {
-                        if (dmrid.startsWith(dh)) {
-                            callsign = "XXXXX";
-                            dmrid = "0000000";
-                        }
-                    });
+					if (delay > 1000)
+						delay = "xx";
+					else if (delay < 2)
+						delay = "PTT";
 
-                    if (callsign == "")
-                        callsign = dmrid;
+					hide_dmrid.forEach(dh => {
+						if (dmrid.startsWith(dh)) {
+							callsign = "XXXXX";
+							dmrid = "0000000";
+							netid = "XXXXX";
+						}
+					});
 
-                    if ($('#hblink' + traffic[i].TGID + ' >tr td[dmrid=' + traffic[i].DMRID + ']').length == 0) {
-                        /* deal with content if < displaylines */
-                        if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
-                            var flagUrl = getFlag(traffic[i].CALLSIGN, traffic[i].DMRID);
-                            if (flagUrl == "")
-                                flagUrl = "unlicenced.png";
+					if (callsign == "")
+						callsign = dmrid;
 
-                            content = '<tr class=' + bgClass + '>';
-                            content += "<td class='tdDate'>" + traffic[i].DATE + "</td>";
-                            content += "<td class='tdTime'>" + traffic[i].TIME + "</td>";
-                            content += "<td class='slot'>" + traffic[i].TS + "</td>";
-                            content += "<td class='callsign ellipsis'>";
-                            content += "<img class='tgflag' src='" + flagUrl + "'/>"
-                            content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
-                            content += "<td dmrid=" + traffic[i].DMRID + " class='dmrid'>(" + dmrid + ")</td>";
-                            if (traffic[i].NAME.toUpperCase() == callsign)
-                                content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + callsign + "</td>";
-                            else
-                                content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + enhanceNames(traffic[i].NAME) + "</td>";
-                            content += "<td class='talkgroup'>" + tgid + "</td>";
-                            content += "<td class='alias ellipsis'>" + traffic[i].ALIAS + "</td>";
-                            if (traffic[i].PACKET == "START")
-                                content += "<td class='online'>ONLINE</td>";
-                            else
-                                content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
-                            content += "<td class='netid'>" + traffic[i].SRC_ID + "</td>";
-                            content += "<td class='infra'>" + traffic[i].SYS + "</td>";
-                            content += "</tr>";
+					if ($('#hblink' + traffic[i].TGID + ' >tr td[dmrid=' + traffic[i].DMRID + ']').length == 0) {
+						/* deal with content if < displaylines */
+						if ($('#tb' + tgName + ' >tbody >tr').length < displayLines) {
+							var flagUrl = getFlag(traffic[i].CALLSIGN, traffic[i].DMRID);
+							if (flagUrl == "")
+								flagUrl = "shield.png";
 
-                            $("#hblink" + tgid).append(content);
-                        }
-                    }
-                }
-            }
+							content = '<tr class=' + bgClass + '>';
+							content += "<td class='tdDate'>" + traffic[i].DATE + "</td>";
+							content += "<td class='tdTime'>" + traffic[i].TIME + "</td>";
+							content += "<td class='slot'>" + traffic[i].TS + "</td>";
+							content += "<td class='callsign ellipsis'>";
+							content += "<img class='tgflag' src='" + flagUrl + "'/>"
+							content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
+							content += "<td dmrid=" + traffic[i].DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+							if (traffic[i].NAME.toUpperCase() == callsign)
+								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + callsign + "</td>";
+							else
+								content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + traffic[i].DMRID + ")'>" + enhanceNames(traffic[i].NAME) + "</td>";
+							content += "<td class='talkgroup'>" + tgid + "</td>";
+							content += "<td class='alias ellipsis'>" + traffic[i].ALIAS + "</td>";
+							if (traffic[i].PACKET == "START")
+								content += "<td class='online'>ONLINE</td>";
+							else
+								content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
+							content += "<td class='netid'>" + netid + "</td>";
+							content += "<td class='infra'>" + traffic[i].SYS + "</td>";
+							content += "</tr>";
 
-            if (last_active_tg == true) {
-                lastActive = [];
-                for (const tgid of tgorder) {
-                    var tbody = document.getElementById("hblink" + tgid);
-                    if (tbody != null) {
-                        var tr = $(tbody).children('tr:first')
-                        tr.each(function () {
-                            var item = $(this.cells[0]).html();
-                            if (!item.startsWith("Mise")) {
-                                lastActive.push({
-                                    DATE: item,
-                                    TIME: $(this.cells[1]).html(),
-                                    TS: $(this.cells[2]).html(),
-                                    CALLSIGN: $(this.cells[3]).html(),
-                                    DMRID: $(this.cells[4]).html(),
-                                    NAME: $(this.cells[5]).html(),
-                                    DMRID: $(this.cells[4]).html(),
-                                    TGID: tgid,
-                                    ALIAS: $(this.cells[7]).html(),
-                                    DELAY: $(this.cells[8]).html(),
-                                    SRC_ID: $(this.cells[9]).html(),
-                                    SYS: $(this.cells[10]).html()
-                                });
-                            }
-                        });
-                    }
-                }
+							$("#hblink" + tgid).append(content);
+						}
+					}
+				}
+			}
 
-                if (lastActive.length > 0) {
-                    // sort in reverse order
-                    lastActive.sort((a, b) => {
-                        aa = a.DATE + " " + a.TIME;
-                        bb = b.DATE + " " + b.TIME;
+			if (last_active_tg == true) {
+				lastActive = [];
+				for (const tgid of tgorder) {
+					var tbody = document.getElementById("hblink" + tgid);
+					if (tbody != null) {
+						var tr = $(tbody).children('tr:first')
+						tr.each(function () {
+							var item = $(this.cells[0]).html();
+							if (!item.startsWith("Mise")) {
+								lastActive.push({
+									DATE: item,
+									TIME: $(this.cells[1]).html(),
+									TS: $(this.cells[2]).html(),
+									CALLSIGN: $(this.cells[3]).html(),
+									DMRID: $(this.cells[4]).html(),
+									NAME: $(this.cells[5]).html(),
+									DMRID: $(this.cells[4]).html(),
+									TGID: tgid,
+									ALIAS: $(this.cells[7]).html(),
+									DELAY: $(this.cells[8]).html(),
+									SRC_ID: $(this.cells[9]).html(),
+									SYS: $(this.cells[10]).html()
+								});
+							}
+						});
+					}
+				}
 
-                        if (aa > bb) return -1;
-                        if (aa <= bb) return 1;
-                    });
+				if (lastActive.length > 0) {
+					// sort in reverse order
+					lastActive.sort((a, b) => {
+						aa = a.DATE + " " + a.TIME;
+						bb = b.DATE + " " + b.TIME;
 
-                    $("#lastActive tbody tr").remove();
+						if (aa > bb) return -1;
+						if (aa <= bb) return 1;
+					});
 
-                    bgClass = 'tgPurple';
+					$("#lastActive tbody tr").remove();
 
-                    // added max length last_active_size
-                    for (let i = 0; i < Math.min(lastActive.length, last_active_size); i++) {
-                        var link = '\"tgId' + parseInt(lastActive[i].TGID) + '\"';
+					bgClass = 'tgPurple';
 
-                        content = '<tr class=' + bgClass + '>';
-                        content += "<td class='tdDate'>" + lastActive[i].DATE + "</td>";
-                        content += "<td class='tdTime'>" + lastActive[i].TIME + "</td>";
-                        content += "<td class='slot'>" + lastActive[i].TS + "</td>";
-                        content += "<td class='callsign ellipsis'>" + lastActive[i].CALLSIGN + "</td>";
-                        content += "<td class='dmrid'>" + lastActive[i].DMRID + "</td>";
-                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + lastActive[i].DMRID + ")'>" + lastActive[i].NAME + "</td>";
-                        content += "<td class='alink' onclick='scrollIntoViewFromId(" + link + ")'>" + lastActive[i].TGID + "</td>";
-                        content += "<td class='alias ellipsis'>" + lastActive[i].ALIAS + "</td>";
-                        if (lastActive[i].DELAY == "ONLINE")
-                            content += "<td class='online'>" + lastActive[i].DELAY + "</td>";
-                        else
-                            content += "<td class='delay'>" + lastActive[i].DELAY + "</td>";
-                        content += "<td class='netid'>" + lastActive[i].SRC_ID + "</td>";
-                        content += "<td class='infra'>" + lastActive[i].SYS + "</td>";
-                        content += "</tr>";
+					// added max length last_active_size
+					for (let i = 0; i < Math.min(lastActive.length, last_active_size); i++) {
+						var link = '\"tgId' + parseInt(lastActive[i].TGID) + '\"';
 
-                        $("#lastActiveBody").append(content);
-                    }
-                }
-            }
-        }
-    }
+						content = '<tr class=' + bgClass + '>';
+						content += "<td class='tdDate'>" + lastActive[i].DATE + "</td>";
+						content += "<td class='tdTime'>" + lastActive[i].TIME + "</td>";
+						content += "<td class='slot'>" + lastActive[i].TS + "</td>";
+						content += "<td class='callsign ellipsis'>" + lastActive[i].CALLSIGN + "</td>";
+						content += "<td class='dmrid'>" + lastActive[i].DMRID + "</td>";
+						content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + lastActive[i].DMRID + ")'>" + lastActive[i].NAME + "</td>";
+						content += "<td class='alink' onclick='scrollIntoViewFromId(" + link + ")'>" + lastActive[i].TGID + "</td>";
+						content += "<td class='alias ellipsis'>" + lastActive[i].ALIAS + "</td>";
+						if (lastActive[i].DELAY == "ONLINE")
+							content += "<td class='online'>" + lastActive[i].DELAY + "</td>";
+						else
+							content += "<td class='delay'>" + lastActive[i].DELAY + "</td>";
+						content += "<td class='netid'>" + lastActive[i].SRC_ID + "</td>";
+						content += "<td class='infra'>" + lastActive[i].SYS + "</td>";
+						content += "</tr>";
 
-    function log(msg) {
-        console.log(msg);
-    };
+						$("#lastActiveBody").append(content);
+					}
+				}
+			}
+		}
+	}
 
-    function treatTables(CTable, emaster) {
-        if (CTable != null) {
-            updateOpenBridges(CTable["OPENBRIDGES"]);
-            updateMasters(CTable["MASTERS"], emaster);
-            updatePeers(CTable["PEERS"]);
-        }
-    }
+	function log(msg) {
+		console.log(msg);
+	};
 
-    window.onload = () => {
-        lastActive = [];
-        listeners = 0;
-        lastActiveTG = 0;
+	function treatTables(CTable, emaster) {
+		if (CTable != null) {
+			updateOpenBridges(CTable["OPENBRIDGES"]);
+			updateMasters(CTable["MASTERS"], emaster);
+			updatePeers(CTable["PEERS"]);
+		}
+	}
 
-        var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>?page=dashboard";
+	window.onload = () => {
+		lastActive = [];
+		listeners = 0;
+		lastActiveTG = 0;
 
-        if (getConfigFromLocalStorage != null)
-            getConfigFromLocalStorage();
+		var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>?page=dashboard";
 
-        if (isNaN(displayLines))
-            displayLines = 10;
+		if (getConfigFromLocalStorage != null)
+			getConfigFromLocalStorage();
 
-        tgorder.forEach(tg => {
-            $("#insertPoint").append($("<div id='tg" + tg + "marker'></div>"));
-        });
+		if (isNaN(displayLines))
+			displayLines = 10;
 
-        function WSConnection() {
-            'use strict';
-            this.socket = {};
-        }
+		tgorder.forEach(tg => {
+			$("#insertPoint").append($("<div id='tg" + tg + "marker'></div>"));
+		});
 
-        WSConnection.prototype.connect = (url) => {
-            'use strict';
+		if (hideAllTG)
+				$("#insertPoint").hide();
+		else
+				$("#insertPoint").show();
 
-            return new Promise((resolve, reject) => {
-                if ("WebSocket" in window)
-                    this.socket = new WebSocket(url);
-                else if ("MozWebSocket" in window)
-                    this.socket = new MozWebSocket(url);
-                else {
-                    log("Browser does not support WebSocket!");
-                    resolve();
-                }
+		function WSConnection() {
+			'use strict';
+			this.socket = {};
+		}
 
-                this.socket.onopen = () => {
-                    log("Connected to " + url)
-                    resolve();
-                };
+		WSConnection.prototype.connect = (url) => {
+			'use strict';
 
-                this.socket.onmessage = (e) => {
-                    var data = null;
+			return new Promise((resolve, reject) => {
+				if ("WebSocket" in window)
+					this.socket = new WebSocket(url);
+				else if ("MozWebSocket" in window)
+					this.socket = new MozWebSocket(url);
+				else {
+					log("Browser does not support WebSocket!");
+					resolve();
+				}
+
+				this.socket.onopen = () => {
+					log("Connected to " + url)
+					resolve();
+				};
+
+				this.socket.onmessage = (e) => {
+					var data = null;
 
 					try {
 						if (themeSettings == "auto")
@@ -871,39 +887,40 @@
 								if (data.STATUS)
 									log(data.STATUS);
 							}
-					    }
+					}
 					} catch (error) {
 						log(error);
 					}
-                };
+				};
 
-                socket.onerror = function (error) {
-                    console.log('WebSocket error: ' + error);
-                    reject(error);
-                };
+				socket.onerror = function (error) {
+					console.log('WebSocket error: ' + error);
+					reject(error);
+				};
 
-                socket.onclose = function (e) {
-                    log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code +
-                        ", reason = '" + e.reason + "')");
-                    this.sock = null;
-                };
-            });
-        };
+				socket.onclose = function (e) {
+					log("Connection closed (wasClean = " + e.wasClean + ", code = " + e.code + ", reason = '" + e
+						.reason + "')");
+					this.sock = null;
+				};
+			});
+		};
 
-        WSConnection.prototype.disconnect = () => {
-            'use strict';
-            console.log("Disconnect request from local app layer");
-            this.socket.close();
-        };
+		WSConnection.prototype.disconnect = () => {
+			'use strict';
+			console.log("Disconnect request from local app layer");
+			this.socket.close();
+		};
 
 
-        setTimeout(() => {
-            socket = new WSConnection().connect(wsuri);
-        }, 250);
-    };
+		setTimeout(() => {
+			socket = new WSConnection().connect(wsuri);
+		}, 250);
+	};
 
-    window.onunload = () => {
-        socket = null;
-    }
+	window.onunload = () => {
+		socket = null;
+	}
 </script>
+
 </html>
