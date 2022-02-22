@@ -1147,7 +1147,7 @@ def process_message(_bmessage):
             else:
                 jsonStr = { 'DATE': _now[0:10], 'TIME': _now[11:16], 'PACKET' : 'UNKNOWN GROUP VOICE LOG MESSAGE' }
 
-            dashboard_server.broadcast( {"TRAFFIC": jsonStr, "CTABLE": CTABLE, "BIGEARS": str(len(dashboard_server.clients))  } )
+            dashboard_server.broadcast( {"TRAFFIC": jsonStr, "CTABLE": CTABLE, 'EMPTY_MASTERS' : EMPTY_MASTERS, "BIGEARS": str(len(dashboard_server.clients))  } )
             
             # logging.info('Process [' + REPORT_PACKET + '] Message Took ' + str(int((ptime.perf_counter() - start) * 1000)) + 'ms')
         else:
