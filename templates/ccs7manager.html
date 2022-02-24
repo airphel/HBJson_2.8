@@ -605,12 +605,6 @@
             socket = null;
             userJson = [];
 
-            String.prototype.capitalize = function (lower) {                
-                return (lower ? this.toLowerCase() : this).replace(/(?:^|\s|['`‘’.-])[^\x00-\x60^\x7B-\xDF](?!(\s|$))/g, function (a) {
-                    return a.toUpperCase();
-                });
-            };
-
             getConfigFromLocalStorage();
 
             // Check for the various File API support.
