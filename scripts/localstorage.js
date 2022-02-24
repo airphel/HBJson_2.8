@@ -224,6 +224,11 @@ function getFlag(callsign, dmrid) {
 
 mcc = [
 {
+    "dmrid": "111",
+    "country": "United States of America",
+    "code": "US"
+},
+{
     "dmrid": "113",
     "country": "United States of America",
     "code": "US"
