@@ -708,7 +708,8 @@ def build_stats():
                         client.sendMessage(json.dumps(CTABLEJ, ensure_ascii = False).encode('utf-8'))
 
         if BRIDGES and BRIDGES_INC and client.page == "bridges":
-            client.sendMessage(json.dumps({ "BTABLE": { 'BRIDGES': BTABLE['BRIDGES'] }}, ensure_ascii = False).encode('utf-8'))
+            for client in dashboard_server.clients:
+                client.sendMessage(json.dumps({ "BTABLE": { 'BRIDGES': BTABLE['BRIDGES'] }}, ensure_ascii = False).encode('utf-8'))
             
         mapIpAdresses()
 
