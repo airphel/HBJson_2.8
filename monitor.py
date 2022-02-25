@@ -697,8 +697,8 @@ def build_stats():
     global build_time, LISTENERSJ
     now = time()
     if True: #now > build_time + 2:
-        if CONFIG:
-            for client in dashboard_server.clients:
+        for client in dashboard_server.clients:
+            if CONFIG:            
                 if client.page != "ccs7":
                     if client.page == "dashboard":
                         CTABLEJ = { 'CTABLE' : CTABLE, 'EMPTY_MASTERS' : EMPTY_MASTERS, 'BIGEARS': str(len(dashboard_server.clients)), 'LISTENERS': LISTENERSJ }
@@ -706,9 +706,8 @@ def build_stats():
                     elif client.page != "bridges":
                         CTABLEJ = { 'BIGEARS': str(len(dashboard_server.clients)), 'LISTENERS': LISTENERSJ }
                         client.sendMessage(json.dumps(CTABLEJ, ensure_ascii = False).encode('utf-8'))
-
-        if BRIDGES and BRIDGES_INC and client.page == "bridges":
-            for client in dashboard_server.clients:
+        
+            if BRIDGES and BRIDGES_INC and client.page == "bridges":
                 client.sendMessage(json.dumps({ "BTABLE": { 'BRIDGES': BTABLE['BRIDGES'] }}, ensure_ascii = False).encode('utf-8'))
             
         mapIpAdresses()
