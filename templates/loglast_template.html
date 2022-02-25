@@ -54,6 +54,48 @@
                 <<<button_bar>>>
             </div>
 
+            <!-- The Modal -->
+            <div id="listenersModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-listeners">
+                    <span class="close close-listeners">&times;</span>
+                    <table class="tables tablefixed">
+                        <thead id="theadListeners" tbodyid="listeners">
+                            <tr class="headerRow">
+                                <th class="thlscallsign">Callsign</th>
+                                <th class="thlsip">IP</th>
+                                <th class="thlsport">Port</th>
+                                <th class="thlsnetid">NetID</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listeners">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- The Modal -->
+            <div id="followUpModal" class="modal">
+                <!-- Modal content -->
+                <div class="modal-content-followup">
+                    <span class="close close-followup">&times;</span>
+                    <table class="tablefixed">
+                        <thead id="theadFollowUp" tbodyid="followup">
+                            <tr class="headerRow">
+                                <th class="thlename">Name</th>
+                                <th class="thledate">Date</th>
+                                <th class="thletime">Time</th>
+                                <th class="thletg">TG</th>
+                                <th class="thlelog">LOG</th>
+                                <th class="thledelay">TX</th>
+                            </tr>
+                        </thead>
+                        <tbody id="followup">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             <div name="hbtables">
                 <div id="insertPoint">
                     <div style="font-size:2rem; color:var(--color-fg-infoline); padding-top: 5rem;">Téléchargement de la
@@ -62,17 +104,17 @@
             </div>
 
             <div id="footer">
-                <span>Copyright (c) 2019, 2020, 2021 NumeriX
-                    <br><a href=https://github.com/avrahqedivra/HBJson>redesigned by jmc - F4JDN 2021, 2022</a>.
-                        <br><br>
+                <span>Copyright (c) 2019, 2020, 2021 NumeriX. All rights reserved.
+                    <br>JSON, MYSQL version by <a href=https://github.com/avrahqedivra/HBJson>jmc - F4JDN </a>2021, 2022. <br>
                 </span>
             </div>
+            <br>
             <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
         </div>
     </center>
 </body>
 
-<script>
+<script type="text/javascript">
     $(document).on("click", ".close", function () {
         $("#listenersModal").hide();
         $("#followUpModal").hide();
@@ -125,35 +167,16 @@
                 logLast.unshift(t);
 
             var content = "";
+            var logLastLength = logLast.length;
 
             $(".lastheard tbody tr").remove();
 
-            for (let i = 0; i < logLast.length; i++) {
-                var tgid = parseInt(logLast[i].TGID);
+            for (let i = 0; i < logLastLength; i++) {
+                var record = logLast[i];
+                var tgid = parseInt(record.TGID);
 
                 if (!tgfilter.has('' + tgid)) {
                     var tgName = "logLast";
-
-                    switch (logLast[i].TGID) {
-                        case "38":
-                            bgClass = 'tgGreen';
-                            break;
-                        case "39":
-                            bgClass = 'tgYellow';
-                            break;
-                        case "7":
-                            bgClass = 'tgBlue';
-                            break;
-                        case "777":
-                            bgClass = 'tgPurple';
-                            break;
-                        case "800":
-                            bgClass = 'tgPurple';
-                            break;
-                        default:
-                            bgClass = 'tgWhite';
-                            break;
-                    }
 
                     /* check if table already exists */
                     if (document.getElementById(tgName) == null) {
@@ -179,9 +202,9 @@
                         $('#insertPoint').append(emptyTable);
                     }
 
-                    var callsign = logLast[i].CALLSIGN;
-                    var dmrid = logLast[i].DMRID;
-                    var delay = logLast[i].DELAY;
+                    var callsign = record.CALLSIGN;
+                    var dmrid = record.DMRID;
+                    var delay = record.DELAY;
 
                     if (delay > 1000)
                         delay = "xx";
@@ -198,38 +221,36 @@
                     if (callsign == "")
                         callsign = dmrid;
 
-                    if (tghilite.has(logLast[i].TGID))
+                    if (tghilite.has(''+tgid))
                         bgClass = 'tgWhite';
                     else
                         bgClass = 'tgGreen';
 
-                    var flagUrl = getFlag(logLast[i].CALLSIGN, logLast[i].DMRID);
+                    var flagUrl = getFlag(record.CALLSIGN, record.DMRID);
                     if (flagUrl == "")
-                        flagUrl = "unlicenced.png";
+                        flagUrl = "shield.png";
 
                     /* deal with content if < displaylines */
                     content = '<tr class=' + bgClass + '>';
-                    content += "<td class='tdDate'>" + logLast[i].DATE + "</td>";
-                    content += "<td class='tdTime'>" + logLast[i].TIME + "</td>";
-                    content += "<td class='slot'>" + logLast[i].TS + "</td>";
+                    content += "<td class='tdDate'>" + record.DATE + "</td>";
+                    content += "<td class='tdTime'>" + record.TIME + "</td>";
+                    content += "<td class='slot'>" + record.TS + "</td>";
                     content += "<td class='callsign ellipsis'>";
                     content += "<img class='tgflag' src='" + flagUrl + "'/>"
                     content += "<a target='_blank' href=https://qrz.com/db/" + callsign + ">" + callsign + "</a></td>";
-                    content += "<td dmrid=" + logLast[i].DMRID + " class='dmrid'>(" + dmrid + ")</td>";
-                    if (logLast[i].NAME.toUpperCase() == callsign)
-                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + logLast[i].DMRID +
-                        ")'>" + callsign + "</td>";
+                    content += "<td dmrid=" + record.DMRID + " class='dmrid'>(" + dmrid + ")</td>";
+                    if (record.NAME.toUpperCase() == callsign)
+                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + callsign + "</td>";
                     else
-                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + logLast[i].DMRID +
-                        ")'>" + enhanceNames(logLast[i].NAME) + "</td>";
+                        content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
                     content += "<td class='talkgroup'>" + tgid + "</td>";
-                    content += "<td class='alias ellipsis'>" + logLast[i].ALIAS + "</td>";
-                    if (logLast[i].PACKET == "START")
+                    content += "<td class='alias ellipsis'>" + record.ALIAS + "</td>";
+                    if (record.PACKET == "START")
                         content += "<td class='online'>ONLINE</td>";
                     else
                         content += "<td class='delay'>" + ((delay != undefined) ? delay : "") + "</td>";
-                    content += "<td class='netid'>" + logLast[i].SRC_ID + "</td>";
-                    content += "<td class='infra'>" + logLast[i].SYS + "</td>";
+                    content += "<td class='netid'>" + record.SRC_ID + "</td>";
+                    content += "<td class='infra'>" + record.SYS + "</td>";
                     content += "</tr>";
 
                     $("#hblink").append(content);
@@ -333,4 +354,5 @@
         socket = null
     }
 </script>
+
 </html>
