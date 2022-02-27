@@ -696,7 +696,8 @@ build_time = time()
 def build_stats():
     global build_time, LISTENERSJ
     now = time()
-    if True: #now > build_time + 2:
+
+    if True and 'dashboard_server' in locals() or 'dashboard_server' in globals(): #now > build_time + 2:
         for client in dashboard_server.clients:
             if CONFIG:            
                 if client.page != "ccs7":

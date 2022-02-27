@@ -175,7 +175,13 @@ function getFlag(callsign, dmrid) {
     if (dmrid.length > 2 && parseInt(dmrid) > 100) {
         dmrid = dmrid.substring(0, 3);
 
-        if (callsign.startsWith("BALISE") || callsign.startsWith("FRS") || dmrid.startsWith(14))
+        if (callsign.startsWith("FS"))
+            return "shield.png";
+
+        if (callsign.startsWith("14FRS"))
+            return "frs.png";
+
+        if (callsign.startsWith("BALISE") || dmrid.startsWith(14))
             return "unlicenced.png";
 
         switch (dmrid) {
