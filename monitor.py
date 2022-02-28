@@ -865,7 +865,7 @@ def createlogLastFromSql(EndPacketOnly):
 
                     REPORT_CALLSIGN = row[12]
 
-                    REPORT_NAME     = row[13]
+                    REPORT_FNAME     = row[13]
 
                     MESSAGEJ.append({
                         'DATE': REPORT_DATE,
@@ -874,7 +874,7 @@ def createlogLastFromSql(EndPacketOnly):
                         'PACKET': REPORT_PACKET, 
                         'CALLSIGN': REPORT_CALLSIGN,
                         'DMRID': REPORT_DMRID,
-                        'NAME': REPORT_NAME,
+                        'NAME': REPORT_FNAME,
                         'TGID': REPORT_TGID,
                         'ALIAS': REPORT_LOGP,
                         'DELAY': REPORT_DELAY,
@@ -910,7 +910,7 @@ def createLogTableJson():
             if len(row) < 13:
                 row.append("---")
 
-            REPORT_NAME     = row[12]
+            REPORT_FNAME     = row[12]
 
             MESSAGEJ.append({ 
                 'DATE': REPORT_DATE[:10], 
@@ -918,7 +918,7 @@ def createLogTableJson():
                 'TS': REPORT_TS[2:], 
                 'CALLSIGN': REPORT_CALLSIGN, 
                 'DMRID': REPORT_DMRID, 
-                'NAME': REPORT_NAME, 
+                'NAME': REPORT_FNAME, 
                 'TGID': REPORT_TGID[2:], 
                 'ALIAS': REPORT_LOGP, 
                 'DELAY': REPORT_DELAY,
@@ -994,7 +994,7 @@ def getLastHeardFromSQL():
 
                     REPORT_CALLSIGN = row[12]
 
-                    REPORT_NAME     = row[13]
+                    REPORT_FNAME     = row[13]
 
                     MESSAGEJ.append({
                         'DATE': REPORT_DATE, 
@@ -1002,7 +1002,7 @@ def getLastHeardFromSQL():
                         'TS': REPORT_TS, 
                         'CALLSIGN': REPORT_CALLSIGN, 
                         'DMRID': REPORT_DMRID, 
-                        'NAME': REPORT_NAME, 
+                        'NAME': REPORT_FNAME, 
                         'TGID': REPORT_TGID, 
                         'ALIAS': REPORT_LOGP, 
                         'DELAY': REPORT_DELAY,
@@ -1069,7 +1069,7 @@ def process_message(_bmessage):
             REPORT_TGID     = p[8]
             REPORT_ALIAS    = alias_tgid(int(p[8]), talkgroup_ids)
             REPORT_CALLSIGN = alias_only(int(p[6]), subscriber_ids)[0].strip()
-            REPORT_NAME     = alias_only(int(p[6]), subscriber_ids)[1].strip()
+            REPORT_FNAME     = alias_only(int(p[6]), subscriber_ids)[1].strip()
             REPORT_BOTH     = alias_short(int(p[6]), subscriber_ids)
             jsonStr = {}
 
@@ -1089,7 +1089,7 @@ def process_message(_bmessage):
                             MESSAGEJ.append(record)
 
                     # append new entry
-                    jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_NAME, 'DELAY': REPORT_DELAY }
+                    jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': REPORT_DELAY }
                     MESSAGEJ.append(jsonStr)
 
                     # keep only the N last
@@ -1133,7 +1133,7 @@ def process_message(_bmessage):
                             MESSAGEJ.append(record)
 
                     # append new entry
-                    jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_NAME, 'DELAY': 0 }
+                    jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }
                     MESSAGEJ.append(jsonStr)
 
                     # keep only the N last
@@ -1144,7 +1144,7 @@ def process_message(_bmessage):
                     file.truncate()
 
             elif REPORT_PACKET == 'END WITHOUT MATCHING START':
-                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_NAME, 'DELAY': 0 }
+                jsonStr = { 'DATE': REPORT_DATE, 'TIME': REPORT_TIME, 'TYPE': REPORT_TYPE[6:], 'PACKET': REPORT_PACKET, 'SYS': REPORT_SYS, 'SRC_ID': REPORT_SRC_ID, 'TS': REPORT_TS, 'TGID': REPORT_TGID, 'ALIAS': REPORT_ALIAS, 'DMRID': REPORT_DMRID, 'CALLSIGN': REPORT_CALLSIGN, 'NAME': REPORT_FNAME, 'DELAY': 0 }
             else:
                 jsonStr = { 'DATE': _now[0:10], 'TIME': _now[11:16], 'PACKET' : 'UNKNOWN GROUP VOICE LOG MESSAGE' }
 
