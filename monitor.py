@@ -271,6 +271,10 @@ def logMySQL(_data):
 
                     connection.commit()
 
+                    cursor.close()
+
+                connection.close()
+
         except Error as e:
             if LOGINFO == True:
                 logging.info('MYSQL ERROR: {}'.format(e))
@@ -306,6 +310,10 @@ def initIpMap():
                                             netid VARCHAR(16), \
                                             PRIMARY KEY (ip, port) \
                                             )")
+
+                    cursor.close()
+
+                connection.close()
         except Error as e:
             if LOGINFO == True:
                 logging.info('MYSQL ERROR: {}'.format(e))
@@ -356,6 +364,9 @@ def mapIpAdresses():
                             })
 
                         # print(LISTENERSJ)
+
+                        cursor.close()    
+                connection.close()
 
         except Error as e:
             #if LOGINFO == True:
@@ -671,7 +682,7 @@ def build_bridge_table(_bridges):
                 _stats_table[_bridge][system['SYSTEM']]['EXP_TIME'] = 'N/A'
                 _stats_table[_bridge][system['SYSTEM']]['TO_ACTION'] = 'None'
 
-            if system['ACTIVE'] == True:                
+            if system['ACTIVE'] == True:
                 _stats_table[_bridge][system['SYSTEM']]['ACTIVE'] = 'Connected'
             elif system['ACTIVE'] == False:
                 _stats_table[_bridge][system['SYSTEM']]['ACTIVE'] = 'Disconnected'
@@ -823,6 +834,9 @@ def createlocalUsersFromSql():
                         'REMARKS':  row[8]
                     })
 
+
+                cursor.close()    
+                connection.close()
                 return SUBSCRIBERSJ
 
     except Error as e:
@@ -881,6 +895,9 @@ def createlogLastFromSql(EndPacketOnly):
                         'SYS': REPORT_INFRA,
                         'SRC_ID':  REPORT_NETID })
 
+
+                cursor.close()    
+                connection.close()
                 return MESSAGEJ
 
     except Error as e:
@@ -938,6 +955,10 @@ def tableToExcel(tableName):
 
                     with pd.ExcelWriter("/tmp/" + tableName + ".xlsx", engine="xlsxwriter") as writer:
                         df_data.to_excel(writer, sheet_name = tableName)
+
+
+                    cursor.close()    
+                connection.close()
 
         except Error as e:
             if LOGINFO == True:
@@ -1009,6 +1030,8 @@ def getLastHeardFromSQL():
                         'SYS': REPORT_INFRA, 
                         'SRC_ID':  REPORT_NETID })
 
+                cursor.close()    
+                connection.close()
                 return MESSAGEJ
 
     except Error as e:
@@ -1552,7 +1575,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.6.3:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
+                '\n\n\tHBJSON v2.6.4:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):

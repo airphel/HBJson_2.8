@@ -4,4 +4,4 @@ autobahn
 mysql-connector-python
 pandas
 bitstring
-json
+xlsxwriter
