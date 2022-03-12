@@ -461,7 +461,17 @@
                 className: 'map-tiles'
             }).addTo(map);
 
-            geojson = L.geoJson(frbesw, { 
+            // night and day layer
+            var terminator = L.terminator();
+            terminator.setStyle({ "fillOpacity":  0.2 });
+            terminator.addTo(map);
+            
+            // night layer refresh timer
+            setInterval(() => {
+                terminator.setTime();
+            }, 5000);
+
+            geojson = L.geoJson(frbesw, {
                 style : function(feature) {
                     return {    
                         "stroke":               true,
@@ -508,17 +518,8 @@
                 else
                     geojson.setStyle({ weight: 1 });
             });
-            
-            map.addLayer(geojson);
 
-            // night and day layer
-            var terminator = L.terminator();
-            terminator.setStyle({ "fillOpacity":  0.2 });
-            terminator.addTo(map);
-            
-            setInterval(() => {
-                terminator.setTime();
-            }, 1000);
+            map.addLayer(geojson);
         }
 
         window.onload = () => {

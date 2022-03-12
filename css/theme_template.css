@@ -686,6 +686,7 @@ color: #569cd6;
 .close {
   position:absolute;
   color: var(--color-close);
+  top: -0.5rem;
   right: 4px;
   font-size: 28px;
   font-weight: normal;
@@ -701,7 +702,7 @@ color: #569cd6;
   top: -8px;
 }
 
-.close-listeners {
+.xclose-listeners {
   top: 5px;
 }
 

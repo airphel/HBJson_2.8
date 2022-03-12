@@ -256,27 +256,25 @@
 
 			for (let openBridge in openBridges) {
 				record = openBridges[openBridge];
-				content += '<tr>';
-				content += "<td class='obName'>" + openBridge + "</td>";
+				content += "<tr><td class='obName'>" + openBridge + "</td>";
 				content += "<td class='obNetID'>NetID:&nbsp;" + record["NETWORK_ID"] + "</td>";
 
 				var entry = "";
 				var data = null;
+				var streams = record["STREAMS"];
 
-				if (Object.keys(record["STREAMS"])) {
-					for (let streamId in record["STREAMS"]) {
-						if ((data = record["STREAMS"][streamId]) != null) {
-							if (entry != "")
-								entry += " ";
+				if (Object.keys(streams)) {
+					for (let streamId in streams) {
+						if ((data = streams[streamId]) != null) {
+							if (entry != "") entry += " ";
 							entry += "( " + data[0] + " | " + data[1] + " >> " + data[2] + " )";
 						}
 					}
 				}
 
-				var cnx = ((data == null || data[0] == "") ? "msTS" : ((data && data[0] == "TX") ? "msTSRX" : "msTSTX"));
+				var cnx = ((data == null || data[0] == "") ? "msTS" : ((data[0] == "TX") ? "msTSRX" : "msTSTX"));
 
-				content += '<td class="' + cnx + ' ellipsis">' + entry + '</td>';
-				content += '</tr>';
+				content += "<td class='" + cnx + " ellipsis'>" + entry + "</td></tr>";
 			}
 
 			$("#openbridges").append(content);
@@ -294,53 +292,44 @@
 			var content = "";
 
 			for (let peer in peers) {
-				record = peers[peer];
-				ts1 = (record["1"]["TXRX"] == "") ? "msTS1" : ((record["1"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-				ts2 = (record["2"]["TXRX"] == "") ? "msTS2" : ((record["2"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-				cnx1 = (record["1"]["TXRX"] == "") ? "msTS" : ((record["1"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
-				cnx2 = (record["2"]["TXRX"] == "") ? "msTS" : ((record["2"]["TXRX"] == "TX") ? "msTSTX" : "msTSRX");
+				var record = peers[peer];
+				var r1trx = record["1"]["TXRX"];
+				var r2trx = record["2"]["TXRX"];
+				
+				ts1 = (r1trx == "") ? "msTS1" : ((r1trx == "TX") ? "msTSTX" : "msTSRX");
+				cnx1 = (r1trx == "") ? "msTS" : ((r1trx == "TX") ? "msTSTX" : "msTSRX");
+
+				ts2 = (r2trx == "") ? "msTS2" : ((r2trx == "TX") ? "msTSTX" : "msTSRX");
+				cnx2 = (r2trx == "") ? "msTS" : ((r2trx == "TX") ? "msTSTX" : "msTSRX");
+
 				peState = record["STATS"]["CONNECTION"] == "YES" ? "peON" : "peOFF";
 
-				content += '<tr>';
-				content += "<td class='msMasters' rowspan='3'>" + peer;
-				content += "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td>";
-				content += '</tr>';
+				content += "<tr><td class='msMasters' rowspan='3'>" + peer;
+				content += "<br><div class='msRepeat'>Mode:&nbsp;" + record["MODE"] + "</div></td></tr>";
 
-				content += '<tr>';
-				content += '<td rowspan="2">';
-				content += '<div class="tooltip">';
-				content += '<div class="msCallsign">' + record["CALLSIGN"] + '</div>';
+				content += '<tr><td rowspan="2"><div class="tooltip"><div class="msCallsign">' + record["CALLSIGN"] + '</div>';
 				content += '<span class="msNetID">&nbsp;(Id: ' + record["RADIO_ID"] + ')</span>';
-				content += '<span class="tooltiptext">';
-				content += '<span style="font: 9pt arial,sans-serif;color:#FFFFFF">';
+				content += '<span class="tooltiptext"><span style="font: 9pt arial,sans-serif;color:#FFFFFF">';
 				content += '&nbsp;&nbsp;&nbsp;<b><font color="yellow">Linked Time Slot:&nbsp;</font></b>' + record["SLOTS"];
-				content += '</span>';
-				content += '</span>';
-				content += '</div>';
-				content += '<br>';
-
-				content += '<div class="msLocation">' + record["LOCATION"] + '</div>';
-				content += '</td>';
+				content += '</span></span></div><br><div class="msLocation">' + record["LOCATION"] + '</div></td>';
 
 
 				content += '<td class="' + peState + '" rowspan="2">';
-				content += record["STATS"]["CONNECTED"] + '<br><div style="font: 8pt arial, sans-serif">' + record["STATS"][
-					"PINGS_SENT"
-				] + " / " + record["STATS"]["PINGS_ACKD"] + " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"][
-					"PINGS_ACKD"
-				]) + "</div>";
-				content + '</td>';
+				content += record["STATS"]["CONNECTED"] 
+						+ '<br><div style="font: 8pt arial, sans-serif">' 
+						+ record["STATS"]["PINGS_SENT"] 
+						+ " / " + record["STATS"]["PINGS_ACKD"] 
+						+ " / " + (record["STATS"]["PINGS_SENT"] - record["STATS"]["PINGS_ACKD"]) 
+						+ "</div></td>";
 
 				content += '<td class="' + ts1 + '">TS1</td>';
 				content += '<td class="' + cnx1 + '">' + record["1"]["SUB"] + '</td>';
 				content += '<td class="' + cnx1 + '">' + record["1"]["DEST"] + '</td>';
 				content += '</tr>';
 
-				content += '<tr>';
-				content += '<td class="' + ts2 + '">TS2</td>';
+				content += '<tr><td class="' + ts2 + '">TS2</td>';
 				content += '<td class="' + cnx2 + '">' + record["2"]["SUB"] + '</td>';
-				content += '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td>';
-				content += '</tr>'
+				content += '<td class="' + cnx2 + '">' + record["2"]["DEST"] + '</td></tr>'
 			}
 
 			$("#peers").append(content);

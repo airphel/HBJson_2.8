@@ -317,61 +317,95 @@ def initIpMap():
         except Error as e:
             if LOGINFO == True:
                 logging.info('MYSQL ERROR: {}'.format(e))
-
+    else:
+        # create file if does not exist
+        if not os.path.exists(LOG_PATH + "ipmap.json"):
+            logging.info("Creating empty " + LOG_PATH + "ipmap.json")
+            with open(LOG_PATH + "ipmap.json", 'w') as outfile:
+                json.dump({ "IPMAP" : [] }, outfile)
 
 def mapIpAdresses():
     global LISTENERSJ
 
-    if SQL_LOG == True:
-        try:
-            with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS, database=SQL_DATABASE) as connection:
-                with connection.cursor(buffered=True) as cursor:
-                    _rows = []
+    try:
+        _rows = []
+        LISTENERSJ = []
 
-                    for system in CTABLE['MASTERS']:
-                        for peer in CTABLE['MASTERS'][system]['PEERS']:
-                            record = CTABLE['MASTERS'][system]['PEERS'][peer]
-                            if record["CALLSIGN"] and record["IP"] and record["PORT"]:
-                                _callsign = record["CALLSIGN"].strip()
-                                _netid = str(peer)
-                                _ip = record["IP"].strip()
-                                _port = str(record["PORT"])
-                                _rows.append((_ip, _port, _callsign, _netid))
+        for system in CTABLE['MASTERS']:
+            for peer in CTABLE['MASTERS'][system]['PEERS']:
+                record = CTABLE['MASTERS'][system]['PEERS'][peer]
+                if record["CALLSIGN"] and record["IP"] and record["PORT"]:
+                    _callsign = record["CALLSIGN"].strip()
+                    _netid = str(peer)
+                    _ip = record["IP"].strip()
+                    _port = str(record["PORT"])
+                    _rows.append((_ip, _port, _callsign, _netid))
 
-                    if len(_rows) > 0:
+        if len(_rows) > 0:
+            if SQL_LOG == True:
+                with connect(host=SQL_HOST, user=SQL_USER, password=SQL_PASS, database=SQL_DATABASE) as connection:
+                    with connection.cursor(buffered=True) as cursor:
                         cursor.executemany("INSERT IGNORE INTO ipmap (ip,port,callsign,netid) VALUES (%s,%s,%s,%s)", _rows)
                         connection.commit()
 
-                    if len(dashboard_server.clients) > 0:
-                        _query = ""
+                        if len(dashboard_server.clients) > 0:
+                            _query = ""
 
-                        for client in dashboard_server.clients:
-                            _p = client.peer.split(":")
-                            if len(_query) > 0:
-                                _query = _query + " or "
-                            _query = _query + "ip='"+_p[1] + "'"
+                            for client in dashboard_server.clients:
+                                _p = client.peer.split(":")
+                                if len(_query) > 0:
+                                    _query = _query + " or "
+                                _query = _query + "ip='"+_p[1] + "'"
 
-                        # print("select * from ipmap where " + _query)
-                        cursor.execute("select * from ipmap where " + _query)
+                            # print("select * from ipmap where " + _query)
+                            cursor.execute("select * from ipmap where " + _query)
 
-                        listeners = cursor.fetchall()
+                            listeners = cursor.fetchall()
 
-                        LISTENERSJ = []
+                            for row in listeners:
+                                LISTENERSJ.append({ 'CALLSIGN': row[2], 'IP': row[0], 'PORT': row[1], 'NETID': row[3] })
 
-                        for row in listeners:
-                            LISTENERSJ.append({
-                                'CALLSIGN': row[2], 'IP': row[0], 'PORT': row[1], 'NETID': row[3]
-                            })
+                            # print(LISTENERSJ)
 
-                        # print(LISTENERSJ)
+                        cursor.close()
+                    connection.close()
+            else:
+                with open(LOG_PATH + "ipmap.json", 'r+') as file:
+                    ipmap = json.load(file)
+                    updated = False
 
-                        cursor.close()    
-                connection.close()
+                    for row in _rows:
+                        found = False
+                        _callsign = row[2].strip()
+                        _netid = row[3]
+                        _ip = row[0].strip()
+                        _port = row[1]
 
-        except Error as e:
-            #if LOGINFO == True:
-            logging.info('MYSQL ERROR: {}'.format(e))
+                        if len(ipmap["IPMAP"]) > 0:
+                            for record in ipmap["IPMAP"]:
+                                if _ip == record["IP"]:
+                                    found = True
+                                    break
 
+                        if not found:
+                            updated = True
+                            ipmap["IPMAP"].append({ 'CALLSIGN': _callsign, 'IP': _ip, 'PORT': _port, 'NETID': _netid })
+
+                    if updated:
+                        file.seek(0)
+                        json.dump({ "IPMAP": ipmap["IPMAP"] }, file, indent=4)
+                        file.truncate()
+
+                    for client in dashboard_server.clients:
+                        _p = client.peer.split(":")
+                        for record in ipmap["IPMAP"]:
+                            if _p[1] == record["IP"]:
+                                print(record)
+                                LISTENERSJ.append(record)
+
+    except Error as e:
+        #if LOGINFO == True:
+        logging.info('MYSQL ERROR: {}'.format(e))
 
 ##################################################
 # Cleaning entries in tables - Timeout (5 min) 
