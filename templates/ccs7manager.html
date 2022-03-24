@@ -2,11 +2,10 @@
 <html class="theme-dark">
     <head>
         <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>CCS7 Manager</title>
-	    <meta name="description" content="CCS7 Manager - copyright (c) 2021-2022 jmc - F4JDN. All rights reserved."/>
+	    <meta name="description" content="CCS7 Manager - copyright (c) 2021, 2022 jmc - F4JDN. All rights reserved."/>
 
-        <link rel="shortcut icon" href="HBlink.png"/>
+        <link rel="shortcut icon" href="HBlink.png">
         <link rel="stylesheet" href="theme_template.css"/>
         <link rel="stylesheet" href="mysite_template.css"/>
         <link rel="stylesheet" href="ccs7manager.css">
@@ -29,7 +28,7 @@
         </div>
 
         <center>
-        <div id="shieldHeader" style="text-align: center;">
+        <div id="siteHeader" style="text-align: center;">
             <div id="sitelogo">
                 <a target='_self' href=index.html><img id="siteLogo" src="HBlink.png"/></a>
                 <h1 class="text"><<<system_name>>></h1>
@@ -43,7 +42,7 @@
                 <!-- Modal content -->
                 <div class="modal-content_ccs7">
                     <div class="caption">
-                        <div class="title">WebCCS7 Manager by FS91J1 based on F4IKZ version</div>
+                        <div class="title">WebCCS7 Manager by F4JDN based on F4IKZ version</div>
                         <div class="close_ccs7" onclick="location.href='index.html';">&times;</div>
                         <div id="help_ccs7" class="help_ccs7">?</div>
                     </div>
@@ -113,7 +112,7 @@
             </div>
 
             <div id="footer">
-                <span>Copyright (c) 2021-2022 <a href=https://github.com/avrahqedivra/HBJson>jmc - F4JDN</a></span>
+                <span>Copyright (c) 2021-22 <a href=https://github.com/avrahqedivra/HBJson>jmc - F4JDN</a></span>
             </div>
             <!--THIS COPYRIGHT NOTICE MUST BE DISPLAYED AS A CONDITION OF THE LICENCE GRANT FOR THIS SOFTWARE. ALL DERIVATEIVES WORKS MUST CARRY THIS NOTICE -->
         </div>
@@ -132,6 +131,12 @@
     <script type="application/javascript" src="localstorage.js"></script> 
 
     <script type="application/javascript">
+        String.prototype.capitalize = function (lower) {
+            return (lower ? this.toLowerCase() : this).replace(/(?:^|\s|['`‘’.-])[^\x00-\x60^\x7B-\xDF](?!(\s|$))/g, function (a) {
+                return a.toUpperCase();
+            });
+        };
+
         function sanity(pString)
         {
             if (pString == undefined)
@@ -175,13 +180,13 @@
                         return pattern;
 
                     callsign = sanity(pUser.callsign);
-                    city = sanity(pUser.city);
-                    state = sanity(pUser.state);
-                    country = sanity(pUser.country);
+                    city = sanity(pUser.city).capitalize(true);
+                    state = sanity(pUser.state).capitalize(true);
+                    country = sanity(pUser.country).capitalize(true);
 
-                    fname = sanity(pUser.trustee);
-                    name = sanity(pUser.ipsc_network);
-                    surname = sanity(pUser.assigned);
+                    fname = sanity(pUser.trustee).capitalize(true);
+                    name = sanity(pUser.ipsc_network).capitalize(true);
+                    surname = sanity(pUser.assigned).capitalize(true);
                     remarks = sanity(pUser.ts_linked);
                 } else {
                     radio_id = (pUser.radio_id == null || pUser.radio_id == "") ? sanity(pUser.id) : sanity(pUser.radio_id);
@@ -190,13 +195,13 @@
                         return pattern;
 
                     callsign = sanity(pUser.callsign);
-                    city = sanity(pUser.city);
-                    state = sanity(pUser.state);
-                    country = sanity(pUser.country);
+                    city = sanity(pUser.city).capitalize(true);
+                    state = sanity(pUser.state).capitalize(true);
+                    country = sanity(pUser.country).capitalize(true);
 
-                    fname = sanity(pUser.fname);
-                    name = sanity(pUser.name);
-                    surname = sanity(pUser.surname);
+                    fname = sanity(pUser.fname).capitalize(true);
+                    name = sanity(pUser.name).capitalize(true);
+                    surname = sanity(pUser.surname).capitalize(true);
                     remarks = sanity(pUser.remarks);
                 }
 
@@ -603,6 +608,7 @@
 
         $(document).ready(function() {
             socket = null;
+            hideAllTG = false;
             userJson = [];
 
             getConfigFromLocalStorage();
