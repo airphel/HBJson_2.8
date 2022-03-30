@@ -456,16 +456,16 @@
             //     className: 'map-tiles'
             // }).addTo(map);
 
+            // night and day layer
+            var terminator = L.terminator();
+            terminator.setStyle({ "fillOpacity":  0.2 });
+            terminator.addTo(map);
+
             var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 className: 'map-tiles'
             }).addTo(map);
 
-            // night and day layer
-            var terminator = L.terminator();
-            terminator.setStyle({ "fillOpacity":  0.2 });
-            terminator.addTo(map);
-            
             // night layer refresh timer
             setInterval(() => {
                 terminator.setTime();
