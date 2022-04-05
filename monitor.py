@@ -373,6 +373,7 @@ def mapIpAdresses():
                 with open(LOG_PATH + "ipmap.json", 'r+') as file:
                     ipmap = json.load(file)
                     updated = False
+                    # print("rows size = " + str(len(_rows)))
 
                     for row in _rows:
                         found = False
@@ -382,12 +383,14 @@ def mapIpAdresses():
                         _port = row[1]
 
                         if len(ipmap["IPMAP"]) > 0:
+                            # print("callsign = " + _callsign + " ip = " + _ip)
                             for record in ipmap["IPMAP"]:
                                 if _ip == record["IP"]:
                                     found = True
                                     break
 
                         if not found:
+                            # print("callsign = " + _callsign + " not found ip = " + _ip)
                             updated = True
                             ipmap["IPMAP"].append({ 'CALLSIGN': _callsign, 'IP': _ip, 'PORT': _port, 'NETID': _netid })
 
@@ -399,8 +402,9 @@ def mapIpAdresses():
                     for client in dashboard_server.clients:
                         _p = client.peer.split(":")
                         for record in ipmap["IPMAP"]:
+                            # print("clientip = " + _p[1] + " record['IP'] = " + record["IP"])
                             if _p[1] == record["IP"]:
-                                print(record)
+                                # print(record)
                                 LISTENERSJ.append(record)
 
     except Error as e:
