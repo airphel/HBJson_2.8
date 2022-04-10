@@ -18,10 +18,12 @@ CLIENT_TIMEOUT  = 0                             # Clients are timed out after th
 OPB_FILTER = ""
 # tg1, tg2 etc to be excluded, for example "800,801,802,3339"
 TGID_FILTER = ""
-# tg order on html monitor page, for example "38,7,39,777,700"
+# tg order on html monitor page, for example "38,7,39,777"
 TGID_ORDER = ""
 # TG to hilite
 TGID_HILITE = ""
+# TG colors is a json array string of tgid and hex rgb
+TGID_COLORS = TGID_COLORS = '{ "tx":"#fbd379", "ind":"#fefefe", "38":"#569cd6", "7":"#fca33c", "39":"#a3e978", "777":"#bc7ebb" }'
 # dynamic tg, if not filtred by TGID_FILTER, tg will be added dynamicaly to dashboard beside those in TG_ORDER
 DYNAMIC_TG = False
 # hide OMs with DMRID starting with, for example with "208,206"

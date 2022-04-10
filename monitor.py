@@ -228,6 +228,7 @@ def replaceSystemStrings(data):
         .replace("<<<button_bar>>>", buttonbar_html) \
         .replace("<<<TGID_FILTER>>>", str(TGID_FILTER)).replace("<<<TGID_ORDER>>>", str(TGID_ORDER)) \
         .replace("<<<TGID_HILITE>>>", str(TGID_HILITE)) \
+        .replace("<<<TGID_COLORS>>>", str(TGID_COLORS)) \
         .replace("<<<SOCKET_SERVER_PORT>>>", str(SOCKET_SERVER_PORT)) \
         .replace("<<<DISPLAY_LINES>>>", str(DISPLAY_LINES)) \
         .replace("<<<LAST_ACTIVE_TG>>>", str(LAST_ACTIVE_TG)) \
@@ -1615,7 +1616,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.6.4:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
+                '\n\n\tHBJSON v2.6.7:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):

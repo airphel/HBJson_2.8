@@ -54,13 +54,6 @@
                         </div>
                         <div id="legendcontainer"style="text-align: left;">
                             <div id="legendinfo">
-                                <div>TG38<div style="background-color: #569cd6" class="legendIndicator"></div></div>
-                                <div>TG39<div style="background-color: #a3e978" class="legendIndicator"></div></div>
-                                <div>TG7<div style="background-color: #fca33c" class="legendIndicator"></div></div>
-                                <div>TG777<div style="background-color: #bc7ebb" class="legendIndicator"></div></div>
-                                <div>TX<div style="background-color: #fbd379" class="legendIndicator"></div></div>
-                                <div>IND<div style="background-color: #fefefe" class="legendIndicator"></div></div>
-                                <div>SWL<div id="btnlisteners" class="legendIndicator">0</div></div>
                             </div>
                         </div>
                         <div id="mapfrance">
@@ -279,19 +272,23 @@
 
                     if (packet.PACKET == "START") {
                         // set START backbground color
-                        bgcolor = "#fbd379";
+                        bgcolor = tgcolors["tx"];
 
                         lastCaller = { "user": user, "dept": dept, "packet": packet, "timeout": Date.now() };
                         foundStartPacket = true;
                     }
                     else {
-                        switch(packet.TGID) {
-                            // set END backbground color
-                            case   "7": bgcolor = "#fca33c"; break;
-                            case  "38": bgcolor = "#569cd6"; break;
-                            case  "39": bgcolor = "#a3e978" /*"#9fd87c"*/; break;
-                            case "777": bgcolor = "#bc7ebb"; break;
-                            default:    bgcolor = "#569cd6"; break;
+                        if ((bgcolor = tgcolors[packet.TGID]) == null) {
+                            Object.keys(tgcolors).forEach(function(tg) {
+                                if (tg.endsWith("*")) {
+                                    if (packet.TGID.startsWith(""+parseInt(tg)))
+                                        if (bgcolor = tgcolors[tg])
+                                            return;
+                                }
+                            });
+
+                            if (bgcolor == null)
+                                bgcolor = tgcolors["ind"];
                         }
 
                         if (!foundStartPacket)
@@ -536,6 +533,32 @@
             departments = [];
             lastCaller = null;
             tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
+
+            try {
+                tgcolors = JSON.parse('<<<TGID_COLORS>>>');
+            } catch(e) {
+                tgcolors = { "tx":"#fbd379", "ind":"#fefefe" };
+            }
+
+            var content = "";
+
+            Object.keys(tgcolors).forEach(function(tg) {
+                var color = tgcolors[tg];
+
+                switch(tg) {
+                    case "ind":
+                    case "tx":
+                        content += "<div>" + tg.toUpperCase() + "<div style='background-color:" + color + "' class='legendIndicator'></div></div>";
+                        break;
+
+                    default:
+                        content += "<div>TG" + tg + "<div style='background-color:" + color + "' class='legendIndicator'></div></div>";
+                        break;
+                }
+            });
+            
+            content += "<div>SWL<div id='btnlisteners' class='legendIndicator'>0</div></div>";
+            $('#legendinfo').append(content);
 
             getConfigFromLocalStorage();
 
