@@ -122,6 +122,7 @@ MESSAGEJ            = []
 SILENTJ             = True
 VOICEJ              = False
 LISTENERSJ          = []
+CONTACTSJ           = []
 
 # Define setup setings
 CTABLE['SETUP']['LASTHEARD'] = LASTHEARD_INC
@@ -1283,7 +1284,7 @@ class dashboard(WebSocketServerProtocol):
             self.page = request.params["page"][0]
             logging.info('Client Page: %s', self.page)
         else:
-            self.page = ""        
+            self.page = ""
 
     def onOpen(self):
         # don't send anything if we are in ccs7manager
@@ -1300,6 +1301,7 @@ class dashboard(WebSocketServerProtocol):
             _message["PACKETS"] = {}
             _message["BIGEARS"] = str(len(dashboard_server.clients))
             _message["LISTENERS"] = LISTENERSJ
+            _message["CONTACTS"] = CONTACTSJ
 
             INITIALLIST = []
 
@@ -1665,6 +1667,10 @@ if __name__ == '__main__':
     buttonbar_html = get_template(PATH + "templates/buttonbar.html")
 
     index_html = replaceSystemStrings(get_template(PATH + "templates/index_template.html"))
+
+    if os.path.isfile(LOG_PATH + "contacts_fr_dept.json"):
+        with open(LOG_PATH + "contacts_fr_dept.json", 'r') as file:
+            CONTACTSJ = json.load(file)
 
     # Start update loop
     update_stats = task.LoopingCall(build_stats)

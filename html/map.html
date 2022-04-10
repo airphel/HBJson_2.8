@@ -216,8 +216,8 @@
                         + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
                         + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
 
-                html += ((lastCaller.user != null && lastCaller.user.CITY != "") ? ("Ville : " + lastCaller.user.CITY + "<br/>") : "");
-                html += ((lastCaller.user != null && lastCaller.user.COUNTRY.toLowerCase() == "france") ? ("Département : " + lastCaller.dept + "<br/>") : "");
+                html += ((lastCaller.user != null && lastCaller.user.city != null) ? ("Ville : " + lastCaller.user.city.capitalize(true) + "<br/>") : "");
+                html += ((lastCaller.user != null && lastCaller.user.country.toLowerCase() == "france") ? ("Département : " + lastCaller.dept + "<br/>") : "");
 
                 $('#callerinfo').empty().append(html);
                 $('#lastcallercontainer').show();
@@ -246,13 +246,13 @@
                     if (packet.CALLSIGN.startsWith("FRS")) { // case FRSxxxx
                         if (user != null) {
                             if ((dept = parseInt(user.STATE)) < 10)
-                                dept = "0"+dept;                                
+                                dept = "0"+dept;
                         }
                     } else {
                         if (packet.CALLSIGN.startsWith("FS") || packet.CALLSIGN.startsWith("FR") || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
                             dept = packet.CALLSIGN.substring(2, 4);
                             if (dept == "97") { // treat 971 to 97x
-                                if ((user != null) && user.STATE.toString().startsWith("97")) {                                
+                                if ((user != null) && user.STATE.toString().startsWith("97")) {
                                     if ((dept = parseInt(user.STATE)) < 10)
                                         dept = "0"+dept;
                                     
@@ -267,9 +267,13 @@
                                 }
                             }
                         } 
-                        else {                        
-                            // HAMs
-                            // sock.send(JSON.stringify({"request": "user", "callsign": packet.CALLSIGN }));
+                        else {
+                            for(let i=0; i < contacts.length; i++) {
+                                if (packet.DMRID == contacts[i].dmrid) {
+                                    user = contacts[i];
+                                    dept = user.dept.substr(0, 2);
+                                }
+                            }
                         }
                     }
 
@@ -421,7 +425,7 @@
                         + "Prénom : " + enhanceNames(packet.NAME) + "<br/>"
                         + "En ligne à : " + packet.TIME + " le " + packet.DATE + "<br/>";
 
-                    html += ((user != null && user.CITY != "") ? ("Ville : " + user.CITY + "<br/>") : "")
+                    html += ((user != null && user.city != null) ? ("Ville : " + user.city.capitalize(true) + "<br/>") : "")
                         + "Département : " + feature.properties.nom + " (" + code + ")<br/>";
 
                     layer.bindTooltip(html, {
@@ -525,10 +529,11 @@
         window.onload = () => {
             listeners = 0;
             traffic = [];
-            listenerList = [];            
+            contacts = [];
+            listenerList = [];
             currentZoom = 6.5;
             subscribers = null;
-            departments = [];            
+            departments = [];
             lastCaller = null;
             tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
 
@@ -585,11 +590,14 @@
                                     listenerList = data.LISTENERS;
 
                                 if (data.TRAFFIC)
-                                    doTraffic(data.TRAFFIC);                                    
+                                    doTraffic(data.TRAFFIC);
                                 else
                                 if (data.CONFIG) {
                                     if (data.CONFIG.BIGEARS)
                                         $("#btnlisteners").text(data.CONFIG.BIGEARS);
+
+                                    if (data.CONFIG.CONTACTS)
+                                        contacts = data.CONFIG.CONTACTS.results;
 
                                     if (data.CONFIG.USERS)
                                         subscribers = data.CONFIG.USERS;

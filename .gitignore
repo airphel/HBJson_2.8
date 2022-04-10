@@ -4,7 +4,9 @@ config.py
 .DS_Store
 *.log
 log/*.json
+!log/contacts_fr_dept.json
 /*.json
 logo/*.*
 *.bak
 templates/tginfo.html
+
