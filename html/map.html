@@ -206,6 +206,7 @@
             if (lastCaller != null) {
                 html =  "Dernier appel de : <br/><br/>"
                         + "Indicatif : " + lastCaller.packet.CALLSIGN + " - TG" + lastCaller.packet.TGID + "<br/>"
+                        + "DmrID : " + lastCaller.packet.DMRID + "<br/>"
                         + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
                         + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
 
@@ -265,6 +266,9 @@
                                 if (packet.DMRID == contacts[i].dmrid) {
                                     user = contacts[i];
                                     dept = user.dept.substr(0, 2);
+                                    
+                                    if (dept.startsWith("97"))
+                                        dept = user.dept.substr(0, 3);
                                 }
                             }
                         }
@@ -391,14 +395,19 @@
         // https://github.com/joergdietrich/Leaflet.Terminator
 
         function highlightFeature(e) {
-            var layer = e.target;
-            layer.setStyle( { "fillColor": "#569cd6" } );
+            // var layer = e.target;
+            // layer.setStyle( { "fillColor": "#569cd6" } );
         }        
 
         function resetHighlight(e) {
-            var layer = e.target;
-            layer.setStyle( { "fillColor": "black", "fillOpacity":  0.3 } );
-        }        
+            // var layer = e.target;
+            // layer.setStyle( { "fillColor": "black", "fillOpacity":  0.3 } );
+
+            var tooltips = document.getElementsByClassName('leaflet-tooltip-own');
+            for (var i = 0; i < tooltips.length; i++) {
+                tooltips[i].style.visibility = 'hidden';
+            }
+        }
 
         function hiliteMap(dept, country, packet, user, bgcolor) {
             Object.keys(geojson._layers).forEach(function(key) {
@@ -418,7 +427,8 @@
 
                     layer.setStyle({ 'fillColor': bgcolor, "fillOpacity":  opacity, "color": "#002000" });
 
-                    html = "<div style='padding:1px 3px 1px 3px'>Callsign : " + packet.CALLSIGN + "<br/>"
+                    html = "<div style='padding:1px 3px 1px 3px'>Callsign : " + packet.CALLSIGN + " - " + packet.DMRID + "<br/>"
+                        + "TgID : " + packet.TGID + "<br/>"
                         + "Prénom : " + enhanceNames(packet.NAME) + "<br/>"
                         + "En ligne à : " + packet.TIME + " le " + packet.DATE + "<br/>";
 
@@ -484,12 +494,12 @@
                         "fillColor":            "var(--normal-fillcolor)"
                     }
                 },
-                onEachFeature : function (feature, layer) {                    
+                onEachFeature : function (feature, layer) {
                     layer._leaflet_id = feature.properties.nom;
 
                     layer.on({
-                        // mouseover: highlightFeature,
-                        // mouseout: resetTooltip
+                        mouseover: highlightFeature,
+                        mouseout: resetHighlight
                     });
 
                     var code = ""+feature.properties.code;
@@ -504,7 +514,7 @@
                         sticky: true,
                         offset: [20, 0],
                         opacity: 0.75,
-                        className: 'leaflet-tooltip-own' 
+                        className: 'leaflet-tooltip-own'
                     });
                 }
             });
