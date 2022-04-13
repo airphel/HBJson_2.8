@@ -243,7 +243,7 @@
                                 dept = "0"+dept;
                         }
                     } else {
-                        if (packet.CALLSIGN.startsWith("FS") || packet.CALLSIGN.startsWith("FR") || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
+                        if (packet.CALLSIGN.startsWith("FS") || (packet.CALLSIGN.startsWith("FR") && !packet.DMRID.startsWith("647")) || packet.CALLSIGN.startsWith("HS") || packet.CALLSIGN.startsWith("BS") || packet.CALLSIGN.startsWith("FI")) { // best case FSxxxx
                             dept = packet.CALLSIGN.substring(2, 4);
                             if (dept == "97") { // treat 971 to 97x
                                 if ((user != null) && user.STATE.toString().startsWith("97")) {
