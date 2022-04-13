@@ -50,7 +50,8 @@
                 <div name="hbtables">
                     <div id="insertPoint">
                         <div id="lastcallercontainer"style="text-align: left;">
-                            <div id="callerinfo"></div>
+                            <div id="callerinfo">
+                            </div>
                         </div>
                         <div id="legendcontainer"style="text-align: left;">
                             <div id="legendinfo">
@@ -202,20 +203,27 @@
             return name;            
         }
 
-        function displayLastCaller() {
-            if (lastCaller != null) {
-                html =  "Dernier appel de : <br/><br/>"
-                        + "Indicatif : " + lastCaller.packet.CALLSIGN + " - TG" + lastCaller.packet.TGID + "<br/>"
-                        + "DmrID : " + lastCaller.packet.DMRID + "<br/>"
-                        + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
-                        + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
+        function displayLastCaller(callers) {
+            $("#callerinfo").empty();
 
-                html += ((lastCaller.user != null && lastCaller.user.city != null) ? ("Ville : " + lastCaller.user.city.capitalize(true) + "<br/>") : "");
-                html += ((lastCaller.user != null && lastCaller.user.country.toLowerCase() == "france") ? ("Département : " + lastCaller.dept + "<br/>") : "");
+            if (callers != null) {
+                var content = "";
 
-                $('#callerinfo').empty().append(html);
-                $('#lastcallercontainer').show();
-            } 
+                callers.forEach(lastCaller => {
+                    content +=  "<div>Dernier appel de : <br/><br/>"
+                                + "Indicatif : " + lastCaller.packet.CALLSIGN + " - TG" + lastCaller.packet.TGID + "<br/>"
+                                + "DmrID : " + lastCaller.packet.DMRID + "<br/>"
+                                + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
+                                + "En ligne à : " + lastCaller.packet.TIME + " le " + lastCaller.packet.DATE + "<br/>";
+
+                    content += ((lastCaller.user != null && lastCaller.user.city != null) ? ("Ville : " + lastCaller.user.city.capitalize(true) + "<br/>") : "");
+                    content += ((lastCaller.user != null && lastCaller.user.country != null && lastCaller.user.country.toLowerCase() == "france") ? ("Département : " + lastCaller.dept) : "");
+                    content += "</tr>";
+                });
+
+                $("#callerinfo").append(content);
+                $("#lastcallercontainer").show();
+            }
             else
                 $('#lastcallercontainer').hide();
         }
@@ -227,13 +235,13 @@
             promises.push(packets);
                 
             Promise.all(promises).then((values) => {
-                var html = null;
-                var foundStartPacket = false;                
                 const transmissions = values[0];
 
                 transmissions.forEach((packet) => {
                     var dept = "0";
                     var country = "France";
+                    var callers = [];
+                    var foundStartPacket = false;
 
                     var user = getUser(packet.DMRID.substr(0, 7));
 
@@ -278,7 +286,7 @@
                         // set START backbground color
                         bgcolor = tgcolors["tx"];
 
-                        lastCaller = { "user": user, "dept": dept, "packet": packet, "timeout": Date.now() };
+                        callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
                         foundStartPacket = true;
                     }
                     else {
@@ -294,15 +302,13 @@
                             if (bgcolor == null)
                                 bgcolor = tgcolors["ind"];
                         }
-
-                        if (!foundStartPacket)
-                            lastCaller = { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() };
                     }
 
                     hiliteMap(dept, country, packet, user, bgcolor);
+                    
+                    if (foundStartPacket)
+                        displayLastCaller(callers);
                 });
-
-                displayLastCaller();
             });
         }
 
