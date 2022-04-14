@@ -90,6 +90,12 @@
             display: none;
         }
 
+        .callerbox {
+            padding: 1rem 0 1rem 0;
+            border-radius: 4px;
+            border-bottom: 2px dotted white;
+        }
+
         #callerinfo {
             display: hidden;
             margin: 4rem 0 0 4rem;
@@ -207,10 +213,10 @@
             $("#callerinfo").empty();
 
             if (callers != null) {
-                var content = "";
+                var content = "Dernier(s) appels de : <br/>";
 
                 callers.forEach(lastCaller => {
-                    content +=  "<div>Dernier appel de : <br/><br/>"
+                    content +=  "<div class='callerbox'>"
                                 + "Indicatif : " + lastCaller.packet.CALLSIGN + " - TG" + lastCaller.packet.TGID + "<br/>"
                                 + "DmrID : " + lastCaller.packet.DMRID + "<br/>"
                                 + "Prénom : " + enhanceNames(lastCaller.packet.NAME) + "<br/>"
@@ -218,10 +224,18 @@
 
                     content += ((lastCaller.user != null && lastCaller.user.city != null) ? ("Ville : " + lastCaller.user.city.capitalize(true) + "<br/>") : "");
                     content += ((lastCaller.user != null && lastCaller.user.country != null && lastCaller.user.country.toLowerCase() == "france") ? ("Département : " + lastCaller.dept) : "");
-                    content += "</tr>";
+                    content += "</div>";
                 });
 
                 $("#callerinfo").append(content);
+
+                if (callers.length < 2)
+                    $(".callerbox").css({"border-bottom": "0"});
+                else
+                    $(".callerbox").css({"border-bottom": " 2px dotted white"});
+
+                $("div.callerbox").last().css({"border-bottom": "0"});
+
                 $("#lastcallercontainer").show();
             }
             else
@@ -237,10 +251,11 @@
             Promise.all(promises).then((values) => {
                 const transmissions = values[0];
 
+                var callers = [];
+
                 transmissions.forEach((packet) => {
                     var dept = "0";
                     var country = "France";
-                    var callers = [];
                     var foundStartPacket = false;
 
                     var user = getUser(packet.DMRID.substr(0, 7));
@@ -286,7 +301,22 @@
                         // set START backbground color
                         bgcolor = tgcolors["tx"];
 
-                        callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
+                        if (callers.length > 0) {
+                            var newCaller = true;
+                            for(let i=0; i < callers.length; i++) {
+                                if (callers[i].packet.DMRID == packet.DMRID) {
+                                    newCaller = false;
+                                    callers[i] = { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() };
+                                    break;
+                                } 
+                            }
+
+                            if (newCaller)
+                                callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
+                        }
+                        else
+                            callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
+
                         foundStartPacket = true;
                     }
                     else {
@@ -310,6 +340,7 @@
                         displayLastCaller(callers);
                 });
             });
+
         }
 
         var geojson = null;
@@ -342,14 +373,29 @@
         function doUser(user) {
         }
 
+        function keepLastStartPackets() {
+            for(let i=0; i < traffic.length; i++) {
+                var record = traffic[i];
+
+                if (record.PACKET == "START") {
+                    var t = new Date(record.DATE + " " + record.TIME);
+                    if ((Date.now() - t.getTime()) > 120000) {
+                        record.PACKET = "END";
+                    }
+                }
+            }
+        }
+
         function doTraffic(t) {
             if (t != null)  {
-                if (Array.isArray(t))
+                if (Array.isArray(t)) {
                     traffic = t;
+
+                    keepLastStartPackets();
+                }
                 else {
                     // remove any previous "START" packet
-                    for(let i=0; i < traffic.length; i++)
-                        traffic[i].PACKET = "END";
+                    keepLastStartPackets();
 
                     traffic.push(t);
                 }
