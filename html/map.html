@@ -302,20 +302,17 @@
                         bgcolor = tgcolors["tx"];
 
                         if (callers.length > 0) {
-                            var newCaller = true;
                             for(let i=0; i < callers.length; i++) {
                                 if (callers[i].packet.DMRID == packet.DMRID) {
-                                    newCaller = false;
-                                    callers[i] = { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() };
+                                    callers.splice(i, 1);
                                     break;
                                 } 
                             }
 
-                            if (newCaller) {
-                                if (callers.length > 4)
-                                    callers = callers.slice(-5);
-                                callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
-                            }
+                            if (callers.length > 4)
+                                callers = callers.slice(-5);
+                                
+                            callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
                         }
                         else
                             callers.push( { "user": user, "dept": dept, "country": country, "packet": packet, "timeout": Date.now() } );
