@@ -236,14 +236,6 @@
                 });
 
                 $("#callerinfo").append(content);
-
-                // if (callers.length < 2)
-                //     $(".callerbox").css({"border-bottom": "0"});
-                // else
-                //     $(".callerbox").css({"border-bottom": " 2px dotted white"});
-
-                // $("div.callerbox").last().css({"border-bottom": "0"});
-
                 $("#lastcallercontainer").show();
             }
             else
@@ -477,7 +469,7 @@
                 layer = geojson._layers[key];
                 feature = layer.feature;
 
-                if (country == "Espagne")
+                if (country.toLowerCase() == "espagne")
                     dept = "ES"+dept;
 
                 if (feature.properties.code == dept) {
@@ -516,7 +508,7 @@
                     zoomDelta: 0.25,
                     zoomSnap: 0,
                     minZoom: 3,
-                    maxZoom: 10 }).setView([47.0781336, 2.3282644], currentZoom);
+                    maxZoom: 10 }).setView([47.0781336, 0.340375], currentZoom);
 
             L.control.scale().addTo(map);
 
@@ -605,7 +597,6 @@
             currentZoom = 6.5;
             subscribers = null;
             departments = [];
-            lastCaller = null;
             tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
 
             try {
@@ -666,11 +657,16 @@
                     this.socket.onmessage = (e) => {
                         var data = null;
 
-                        // clears lastCaller after N minutes
-                        if ((lastCaller != null) && (Date.now() - lastCaller.timeout > 3 * 60 * 1000)) { // 3 min
-                            $('#lastcallercontainer').hide();
-                            lastCaller = null;
+                        var updated = false;
+                        for(let i=callers.length; i > 0; i--) {
+                            if ((Date.now() - callers[i-1].timeout) > 3 * 60 * 1000) {   // 3 min
+                                callers.splice(i-1, 1);
+                                updated = true;
+                            } 
                         }
+
+                        if (updated)
+                            displayLastCaller(callers);
 
                         try {
                             if (themeSettings == "auto")
