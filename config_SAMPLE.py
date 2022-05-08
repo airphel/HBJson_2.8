@@ -29,12 +29,13 @@ DYNAMIC_TG = False
 # hide OMs with DMRID starting with, for example with "208,206"
 HIDE_DMRID = ""
 
-# Authorization of access to dashboard
-WEB_AUTH =  True
-# as admin
+# Authorization of access to dashboard as admin
+# use http://mysite:port?admin to log as admin
 ADMIN_USER = 'admin'
 ADMIN_PASS = 'admin'
-# as user
+
+# Authorization of access to dashboard# as user
+WEB_AUTH =  False
 WEB_USER =  'hblink'
 WEB_PASS =  'hblink'
 

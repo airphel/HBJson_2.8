@@ -50,6 +50,7 @@ from urllib import parse
 from itertools import islice
 from ssl import SSL_ERROR_WANT_X509_LOOKUP
 from subprocess import check_call, CalledProcessError
+from wsgiref.util import request_uri
 
 # Twisted modules
 from twisted.internet.protocol import ReconnectingClientFactory
@@ -62,6 +63,7 @@ from twisted.web.resource import Resource, NoResource
 from twisted.web.static import File
 from twisted.web import server
 from twisted.web.server import Session
+from twisted.python.url import URL
 from twisted.python.components import registerAdapter
 from zope.interface import Interface, Attribute, implementer
 
@@ -1572,11 +1574,16 @@ class web_server(Resource):
         return NoResource()
 
     def render_GET(self, request):
+        admin_auth = False
         logging.info('static website requested: %s', request)
         session = request.getSession()
         authenticated = IAuthenticated(session)
 
-        if WEB_AUTH:
+        url = URL.fromText(request.uri.decode('ascii'))
+        if len(url.get("admin")) > 0:
+            admin_auth = True
+
+        if WEB_AUTH or admin_auth:
             admin_login = ADMIN_USER.encode('utf-8')
             admin_password = ADMIN_PASS.encode('utf-8')
 
@@ -1586,7 +1593,7 @@ class web_server(Resource):
             auth = request.getHeader('Authorization')
             if auth and auth.split(' ')[0] == 'Basic':
                 decodeddata = base64.b64decode(auth.split(' ')[1])
-                if decodeddata.split(b':') == [user, password] or decodeddata.split(b':') == [admin_login, admin_password]:
+                if (decodeddata.split(b':') == [user, password] and not admin_auth) or (decodeddata.split(b':') == [admin_login, admin_password] and admin_auth):
                     global BUTTONBAR_HTML
 
                     logging.info('Authorization OK')
