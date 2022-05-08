@@ -123,6 +123,7 @@ SILENTJ             = True
 VOICEJ              = False
 LISTENERSJ          = []
 CONTACTSJ           = []
+BUTTONBAR_HTML      = ""
 
 # Define setup setings
 CTABLE['SETUP']['LASTHEARD'] = LASTHEARD_INC
@@ -225,7 +226,7 @@ def creation_date(path_to_file):
 
 def replaceSystemStrings(data):
     return data.replace("<<<site_logo>>>", sitelogo_html).replace("<<<system_name>>>", REPORT_NAME) \
-        .replace("<<<button_bar>>>", buttonbar_html) \
+        .replace("<<<button_bar>>>", BUTTONBAR_HTML) \
         .replace("<<<TGID_FILTER>>>", str(TGID_FILTER)).replace("<<<TGID_ORDER>>>", str(TGID_ORDER)) \
         .replace("<<<TGID_HILITE>>>", str(TGID_HILITE)) \
         .replace("<<<TGID_COLORS>>>", str(TGID_COLORS)) \
@@ -1496,16 +1497,21 @@ class ccs7manager(Resource):
         return str.encode(replaceSystemStrings(get_template(PATH + "templates/ccs7manager.html")))
 
 class IAuthenticated(Interface):
+    mode = Attribute("A value 0 or 1 meaning User or Admin")
     value = Attribute("A boolean indicating session has been authenticated")
 
 @implementer(IAuthenticated)
 class Authenticated(object):
     def __init__(self, session):
         self.value = False
+        self.mode = 0
 
 registerAdapter(Authenticated, Session, IAuthenticated)
 
-class web_server(Resource):    
+def index_template():
+    return replaceSystemStrings(get_template(PATH + "templates/index_template.html")).encode('utf-8')
+
+class web_server(Resource):
     def __init__(self):
         Resource.__init__(self)
 
@@ -1519,7 +1525,7 @@ class web_server(Resource):
 
         if page == '' or page == 'index.html':
             return self
-        
+
         if page == 'loglast.html':
             return loglast()
 
@@ -1568,21 +1574,38 @@ class web_server(Resource):
     def render_GET(self, request):
         logging.info('static website requested: %s', request)
         session = request.getSession()
+        authenticated = IAuthenticated(session)
 
         if WEB_AUTH:
+            admin_login = ADMIN_USER.encode('utf-8')
+            admin_password = ADMIN_PASS.encode('utf-8')
+
             user = WEB_USER.encode('utf-8')
             password = WEB_PASS.encode('utf-8')
+
             auth = request.getHeader('Authorization')
             if auth and auth.split(' ')[0] == 'Basic':
                 decodeddata = base64.b64decode(auth.split(' ')[1])
-                if decodeddata.split(b':') == [user, password]:
-                    logging.info('Authorization OK')
-                    authenticated = IAuthenticated(session)
-                    authenticated.value = True
-                    return index_html.encode('utf-8')
+                if decodeddata.split(b':') == [user, password] or decodeddata.split(b':') == [admin_login, admin_password]:
+                    global BUTTONBAR_HTML
 
-            authenticated = IAuthenticated(session)
+                    logging.info('Authorization OK')
+                    authenticated.value = True
+                    if decodeddata.split(b':') == [user, password]:
+                        authenticated.mode = 0
+                        # update button bar template
+                        logging.info('user logging, switching to user menu')
+                        BUTTONBAR_HTML = get_template(PATH + "templates/buttonbar.html")
+                    else:
+                        authenticated.mode = 1
+                        # update button bar template
+                        logging.info('admin logging, switching to admin menu')
+                        BUTTONBAR_HTML = get_template(PATH + "templates/admin_buttonbar.html")
+
+                    return index_template()
+
             authenticated.value = False
+            authenticated.mode = 0
             request.setResponseCode(http.UNAUTHORIZED)
             request.setHeader('www-authenticate', 'Basic realm="realmname"')
             logging.info('Someone wanted to get access without authorization')
@@ -1593,9 +1616,9 @@ class web_server(Resource):
                      border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;\"> \
                   <p><font size=5><b>Authorization Required</font></p></filed></center></body></html>".encode('utf-8')
         else:
-            authenticated = IAuthenticated(session)
             authenticated.value = True
-            return index_html.encode('utf-8')
+            authenticated.mode = 0
+            return index_template()
         
 if __name__ == '__main__':
     logging.basicConfig(
@@ -1616,7 +1639,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.6.7:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
+                '\n\n\tHBJSON v2.7.0:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):
@@ -1626,6 +1649,10 @@ if __name__ == '__main__':
       except CalledProcessError as err:
          print(err)
     
+    # Create Static Website index file
+    sitelogo_html = get_template(PATH + "templates/sitelogo.html")
+    BUTTONBAR_HTML = get_template(PATH + "templates/buttonbar.html")
+
     # Download alias files
     result = try_download(PATH, PEER_FILE, PEER_URL, (FILE_RELOAD * 86400))
     logging.info(result)
@@ -1662,12 +1689,6 @@ if __name__ == '__main__':
     if local_peer_ids:
         logging.info('ID ALIAS MAPPER: local_peer_ids added peer_ids dictionary')
         peer_ids.update(local_peer_ids)
-
-    # Create Static Website index file
-    sitelogo_html = get_template(PATH + "templates/sitelogo.html")
-    buttonbar_html = get_template(PATH + "templates/buttonbar.html")
-
-    index_html = replaceSystemStrings(get_template(PATH + "templates/index_template.html"))
 
     if os.path.isfile(LOG_PATH + "contacts_fr_dept.json"):
         with open(LOG_PATH + "contacts_fr_dept.json", 'r') as file:

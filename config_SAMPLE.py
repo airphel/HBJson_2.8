@@ -30,7 +30,11 @@ DYNAMIC_TG = False
 HIDE_DMRID = ""
 
 # Authorization of access to dashboard
-WEB_AUTH =  False
+WEB_AUTH =  True
+# as admin
+ADMIN_USER = 'admin'
+ADMIN_PASS = 'admin'
+# as user
 WEB_USER =  'hblink'
 WEB_PASS =  'hblink'
 
