@@ -285,16 +285,42 @@
                             }
                         } 
                         else {
-                            if (new Set(["208", "647", "971", "972", "973", "974"]).has(packet.DMRID.substr(0, 3)))
-                                country = "france";
+                            if (packet.DMRID.substr(0, 3) == "206") {
+                                country = "belgium";
+                                dept = "301";
+                                state = "Bruxelles";
 
-                            for(let i=0; i < contacts.length; i++) {
-                                if (packet.DMRID == contacts[i].dmrid) {
-                                    user = contacts[i];
-                                    dept = user.dept.substr(0, 2);
-                                    
-                                    if (dept.startsWith("97"))
-                                        dept = user.dept.substr(0, 3);
+                                for(let i=0; i < contacts.length; i++) {
+                                    if (packet.DMRID == contacts[i].dmrid) {
+                                        user = contacts[i];
+                                        switch(user.dmrid.substr(0, 4)) {
+                                            // case "2060": dept = "301"; state="Bruxelles"; break;
+                                            case "2060": dept = "305"; state="West-Vlaanderen"; break;
+                                            case "2061": dept = "306"; state="Oost-Vlaanderen"; break;
+                                            case "2062": dept = "302"; state="Antwerp"; break;
+                                            case "2063": dept = "303"; state="Vlaams-Brabant"; break;
+                                            case "2064": dept = "309"; state="Limburg"; break;
+                                            case "2065": dept = "304"; state="Brabant-Wallon"; break;
+                                            case "2066": dept = "307"; state="Hainaut"; break;
+                                            case "2067": dept = "311"; state="Namur"; break;
+                                            case "2068": dept = "308"; state="Liège"; break;
+                                            case "2069": dept = "310"; state="Luxemburg"; break;
+                                            default: break;
+                                        }
+                                    }
+                                }
+                            } else {
+                                if (new Set(["208", "647", "971", "972", "973", "974"]).has(packet.DMRID.substr(0, 3)))
+                                    country = "france";
+                                
+                                for(let i=0; i < contacts.length; i++) {
+                                    if (packet.DMRID == contacts[i].dmrid) {
+                                        user = contacts[i];
+                                        dept = user.dept.substr(0, 2);
+                                        
+                                        if (dept.startsWith("97"))
+                                            dept = user.dept.substr(0, 3);
+                                    }
                                 }
                             }
                         }
@@ -503,12 +529,15 @@
         }
 
         function initMap() {
+            var centerFrance = [47.0781336, 0.340375];      // France
+            var centerBelgium = [50.65794, 4.52714];        // Belgium
+
             map = L.map('map', 
                 {   
                     zoomDelta: 0.25,
                     zoomSnap: 0,
                     minZoom: 3,
-                    maxZoom: 10 }).setView([47.0781336, 0.340375], currentZoom);
+                    maxZoom: 10 }).setView(centerFrance, currentZoom);
 
             L.control.scale().addTo(map);
 

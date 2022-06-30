@@ -173,6 +173,12 @@ function getConfigFromLocalStorage() {
 
 function getFlag(callsign, dmrid) {
     if (dmrid.length > 2 && parseInt(dmrid) > 100) {
+        // check if beacon has specific bitmap
+        for (var key in tgbeacons) {
+            if (dmrid == key)
+                return tgbeacons[key];
+        }
+
         dmrid = dmrid.substring(0, 3);
 
         if (callsign.startsWith("FS"))

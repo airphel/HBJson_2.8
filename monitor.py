@@ -237,6 +237,7 @@ def replaceSystemStrings(data):
         .replace("<<<LAST_ACTIVE_TG>>>", str(LAST_ACTIVE_TG)) \
         .replace("<<<LAST_ACTIVE_SIZE>>>", str(LAST_ACTIVE_SIZE)) \
         .replace("<<<DYNAMIC_TG>>>", str(DYNAMIC_TG)) \
+        .replace("<<<TGID_BEACONS>>>", str(TGID_BEACONS)) \
         .replace("<<<HIDE_DMRID>>>", str(HIDE_DMRID))#.replace("class=\"theme-dark\"", "class=\"theme-light\"")
 
 def logMySQL(_data):
@@ -1357,7 +1358,7 @@ class dashboard(WebSocketServerProtocol):
     def onMessage(self, payload, isBinary):
         try: 
             if not isBinary:
-                _command = json.loads(payload.decode('utf-8'))            
+                _command = json.loads(payload.decode('utf-8'))
                 logging.info("command received: {}".format(_command))
                 if _command:
                     if _command.get("request"):
@@ -1626,7 +1627,7 @@ class web_server(Resource):
             authenticated.value = True
             authenticated.mode = 0
             return index_template()
-        
+
 if __name__ == '__main__':
     logging.basicConfig(
         level=logging.INFO,
@@ -1646,7 +1647,7 @@ if __name__ == '__main__':
     logger.info('\n\n\tCopyright (c) 2016, 2017, 2018, 2019\n\tThe Regents of the K0USY Group. All rights reserved.' \
                 '\n\n\tPython 3 port:\n\t2019 Steve Miller, KC1AWV <smiller@kc1awv.net>' \
                 '\n\n\tHBMonitor v1 SP2ONG 2019-2021' \
-                '\n\n\tHBJSON v2.7.0:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
+                '\n\n\tHBJSON v2.8.0:\n\t2021, 2022 Jean-Michel Cohen, F4JDN <f4jdn@qsl.net>\n\n')
 
     # Check lastheard.log file
     if os.path.isfile(LOG_PATH+"lastheard.log"):

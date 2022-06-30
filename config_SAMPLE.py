@@ -28,6 +28,8 @@ TGID_COLORS = TGID_COLORS = '{ "tx":"#fbd379", "ind":"#fefefe", "38":"#569cd6", 
 DYNAMIC_TG = False
 # hide OMs with DMRID starting with, for example with "208,206"
 HIDE_DMRID = ""
+# beacons/icons pairs, for example '{ "2080000":"unlicenced.png", "2060000":"unlicenced.png" }'
+TGID_BEACONS = '{ "2080000":"unlicenced.png" }'
 
 # Authorization of access to dashboard as admin
 # use http://mysite:port?admin to log as admin

@@ -70,17 +70,17 @@
                         <fieldset class="group databaseGroup">
                             <legend>Databases :</legend> 
                             <select id="databaseList">
-                                <option idx="1" value="http://theshield.site/local_subscriber_ids.json">TheShield [Unlicenced]</option>
                                 <option idx="2" value="https://database.radioid.net/static/users.json">RadioID [Licenced]</option>
-                                <option idx="4" value="https://www.radioid.net/static/rptrs.json">RadioID [Repeaters]</option>
                                 <option idx="3" value="https://ham-digital.org/status/users.json">Ham Digital [Licenced]</option>
+                                <option idx="4" value="https://www.radioid.net/static/rptrs.json">RadioID [Repeaters]</option>
+                                <option idx="1" value="http://theshield.site/local_subscriber_ids.json">TheShield [Unlicenced]</option>
                             </select> 
 
                             <div style="padding-top: 1.0rem;">
                                 <input type="file" id="openfile" accept=".json" style="display:none">
                                 <button style="margin-left: 0.25rem; width: 9rem;" type="button" id="openjson">Open JSON</button>
                                 <button style="margin-right: 0.25rem; width: 9rem; float: right;" type="button" id="update">Download</button>
-                                <div style="margin: 1rem 0 0 0.25rem;">Version Date: 25/12/2021</div>
+                                <div style="margin: 1rem 0 0 0.25rem;">Version Date: 28/06/2022</div>
                             </div>
                         </fieldset>
                     </div>
@@ -454,7 +454,8 @@
 
         function updateDevicesUI() {
             setTimeout(() => {
-                var flag = !$("#countries :selected").length;
+                // var flag = !$("#countries :selected").length;
+                var flag = NumberOfRecords() == 0;
                 $("#devices").prop("disabled", flag);
                 $("#chkDevicesAll").prop("disabled", flag);
             }, 125);
@@ -466,38 +467,39 @@
             if (userJson.length > 0) {
                 $("#loaded").text("Wait... Sorting and normalizing country names");
 
-                setTimeout(() => {
-                    userJson.sort(compare);
+                userJson.sort(compare);
 
-                    for(let i=0; i < userJson.length; i++)
-                        userJson[i].country = userJson[i].country.capitalize(true);
+                for(let i=0; i < userJson.length; i++)
+                    userJson[i].country = userJson[i].country.capitalize(true);
 
-                    // deal with defined countries users
-                    for(let i=0; i < userJson.length; i++) {
-                        var country = userJson[i].country;
+                // deal with defined countries users
+                for(let i=0; i < userJson.length; i++) {
+                    var country = userJson[i].country;
 
-                        if (country != "" && !$("#countries option[value='"+country+"']").length) {
-                            var nb = RecordsPerCountry(country)
-                            if (nb > 0)
-                                $('#countries').append($('<option></option>').attr('users', nb).val(country).text(country + " (" + nb + ")"));
-                        }
+                    if (country != "" && !$("#countries option[value='"+country+"']").length) {
+                        var nb = RecordsPerCountry(country)
+                        if (nb > 0)
+                            $('#countries').append($('<option></option>').attr('users', nb).val(country).text(country + " (" + nb + ")"));
                     }
+                }
 
-                    // deal with undefined countries users 
-                    var nb = RecordsPerCountry("");
-                    if (nb > 0)
-                        $('#countries').append($('<option></option>').attr('users', nb).val("").text("Undefined" + " (" + nb + ")"));
+                // deal with undefined countries users 
+                var nb = RecordsPerCountry("");
+                if (nb > 0)
+                    $('#countries').append($('<option></option>').attr('users', nb).val("").text("Undefined" + " (" + nb + ")"));
+
+                setTimeout(() => {
+                    // check all after new download
+                    $('#chkAll').prop("checked", true);
+                    $('#countries option').prop('selected', true);
 
                     $("#loaded").text("Loading completed");
                     $("#update").attr("disabled", false);
                     $("#nbcontacts").text(NumberOfRecords());
-
-                    // check all after new download
-                    $('#chkAll').prop("checked", false).click();
-
+                
                     updateCountriesUI();
                     updateDevicesUI();
-                }, 125);
+                }, 1000);
             }
         }
 
@@ -506,8 +508,10 @@
             $("#update").attr("disabled", false);
             $("#nbcontacts").text(NumberOfRecords());
 
-            updateCountriesUI();
-            updateDevicesUI();
+            setTimeout(() => {
+                updateCountriesUI();
+                updateDevicesUI();
+            }, 250);
         }
 
         function transferCanceled(evt) {
@@ -515,8 +519,10 @@
             $("#update").attr("disabled", false);
             $("#nbcontacts").text(NumberOfRecords());
 
-            updateCountriesUI();
-            updateDevicesUI();
+            setTimeout(() => {
+                updateCountriesUI();
+                updateDevicesUI();
+            }, 250);
         }
 
         function log(msg) {
@@ -632,7 +638,7 @@
                 });
 
                 $(document).on("change", "#countries", function() {
-                    $('#chkAll').prop('checked', false);                    
+                    $('#chkAll').prop('checked', false);
                     $("#nbcontacts").text(NumberOfRecords());
                     updateDevicesUI();
                 });
@@ -642,12 +648,14 @@
                     $('#countries option').prop('selected', this.checked);
                     $('#chkNoCountries').prop('checked', false);
                     $("#nbcontacts").text(NumberOfRecords());
+                    updateDevicesUI();
                 });
 
                 $(document).on("change", "#chkNoCountries", function() {
                     $('#countries option').prop('selected', false);
                     $('#chkAll').prop('checked', false);
                     $("#nbcontacts").text(NumberOfRecords());
+                    updateDevicesUI();
                 });
 
                 $(document).on("change", "#chkdevicesAll", function() {

@@ -174,6 +174,7 @@
             for (let i = 0; i < logLastLength; i++) {
                 var record = logLast[i];
                 var tgid = parseInt(record.TGID);
+                var alias = record.ALIAS.replace("/images/flags/", "").replace("/img/flags/", "").replace("<img src=", "<img class='tgflag' src=");
 
                 if (!tgfilter.has('' + tgid)) {
                     var tgName = "logLast";
@@ -244,7 +245,7 @@
                     else
                         content += "<td class='alink firstname ellipsis' onclick='followUpdUser(" + record.DMRID + ")'>" + enhanceNames(record.NAME) + "</td>";
                     content += "<td class='talkgroup'>" + tgid + "</td>";
-                    content += "<td class='alias ellipsis'>" + record.ALIAS + "</td>";
+                    content += "<td class='alias ellipsis'>" + alias + "</td>";
                     if (record.PACKET == "START")
                         content += "<td class='online'>ONLINE</td>";
                     else
@@ -270,6 +271,13 @@
         hide_dmrid = new Set("<<<HIDE_DMRID>>>".split(','));
         tghilite = new Set("<<<TGID_HILITE>>>".split(','));
         tgfilter = new Set("<<<TGID_FILTER>>>".split(','));
+
+        try {
+		    tgbeacons = JSON.parse('<<<TGID_BEACONS>>>');
+	    } catch(e) {
+		    tgbeacons = {};
+	    }
+
         var wsuri = "ws://" + window.location.hostname + ":<<<SOCKET_SERVER_PORT>>>";
 
         if (getConfigFromLocalStorage != null)

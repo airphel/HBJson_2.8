@@ -10,4 +10,8 @@ log/*.json
 logo/*.*
 *.bak
 templates/tginfo.html
+images/nabilla.png
+html/subscribers.html
+
+
 
