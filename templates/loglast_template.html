@@ -38,6 +38,14 @@
         #insertPoint::-webkit-scrollbar-thumb {
             background-color: #569cd6;
         }
+
+        @supports (-moz-appearance:none) {
+            div[name="hbtables"] { 
+                overflow-y: scroll;
+                --table-width: 115rem;
+                margin-top: 0.5rem;
+            }
+        }
     </style>
 </head>
 
